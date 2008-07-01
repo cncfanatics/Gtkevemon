@@ -1,0 +1,83 @@
+User interface
+--------------
+ - Timer until next update is possible
+ - Automatically update (via option only)
+ - Training time in the window title
+ - Make links clickable (about dialog)
+ - Show day of skill finish
+ - Portrait generation
+
+ - Hint that the LIMITED key is needed [DONE]
+ - Make option to always have GtkEveMon in tray [DONE]
+ - Show percentage of skill training [DONE]
+ - Icons for the skills: [ALL DONE]
+   - Icon for completed (level V) skills [DONE]
+   - Icon for unfinished skills [DONE]
+   - Icon for regular skills at level <V [DONE]
+   - Icon for skill in training [DONE]
+ - Configureable EVE command [DONE]
+ - Tray right-click menu (close, uniconify) [DONE]
+
+ - Tooltips for skill tree view with description [DONE]
+ - Tooltip for tray (skills in training) [DONE]
+ - Help menu button to the right! [DONE]
+ - Help -> About dialog (URL, version) [DONE]
+ - Possibility to launch EVE online [DONE]
+ - Tray icon for notification [DONE]
+ - Tray icon when minimized [DONE]
+ - Sort skill list alphabetical [DONE]
+ - Mark currently trained skill [DONE]
+ - Mark group of currently trained skill [DONE]
+ - Application icon [DONE]
+ - Period separation of server population [DONE]
+
+Skill things
+------------
+ - Hide empty skill groups
+ - Real skill point counting [DONE]
+ - Primary/secondary attributes of skills [DONE]
+ - Skill points per hour [DONE]
+
+Tricky things
+-------------
+ - Caching of XML sheets
+ - Multiple accounts in the tabs [DONE]
+
+Skill Browser / Planner
+-----------------------
+ - On the left: Skill Browser
+ - On the right: Notebook with:
+   - Training queue
+   - Skill details
+
+ - Skill Browser:
+   - Skill filter by string
+   - Right-click -> Train to level -> 1 - 5
+   - Icons:
+     - Have it (Level 0 - 5)
+     - Dont have it
+     - Dont have it & Pre-Reqs not met
+
+ - Training queue has:
+   - TreeView with skills (and levels) to train
+   - Name, Group, Training Time, Earliest Start/End, Priority
+   - Double click opens details for that skill
+   - Right click -> Priority -> 0 - 10 ?
+
+ - Skill details:
+   - Skill description
+   - Skill attributes
+   - Time for training to all levels
+   - Dependency graph with icons
+     - Have it
+     - Have it but level too low
+     - Don't have it
+
+ - Optional:
+   - Subplan
+   - Training priorities
+   - Enabled skilles through training
+
+Networking
+----------
+ - Implement HTTP proxy support [DONE]

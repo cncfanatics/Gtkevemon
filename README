@@ -1,0 +1,70 @@
+This is the README file for GtkEveMon. It covers:
+
+* Building GtkEveMon
+* Running GtkEveMon
+* Installing GtkEveMon
+* Uninstalling GtkEveMon
+
+
+STEP 1: BUILDING
+=====================================================================
+
+GtkEveMon comes in form of source code. You can take a look at the
+code, it's all located in the "src/" directory. In order to execute
+it, it needs to be build.
+
+Execute the following commands:
+
+$ make clean
+$ make
+
+
+STEP 2: RUNNING
+=====================================================================
+
+Note that you DO NOT NEED to install GtkEveMon in order to use it.
+If you don't want to install GtkEveMon, issue the following commands,
+relative to this file:
+
+$ cd src
+$ ./gtkevemon
+
+If you're going to install GtkEveMon (read below), just type
+"gtkevemon" anywhere in your system or make a nice shortcut in
+your window manager yourself.
+
+
+OPTION: INSTALLING
+=====================================================================
+
+Make sure your current working directory is relative to this file.
+To install GtkEveMon execute the following command (as super user):
+
+# make install
+
+The files will be installed to "/usr/local/bin". If you want to change
+that, edit the Makefile.
+
+A version of the "SkillTree.xml" file is build into the binary.
+If you need to use a different version of the file, place it
+into "~/.gtkevemon" and it will be used.
+Ignore this if you don't know what I'm talking about.
+
+
+OPTION: UNINSTALLING
+=====================================================================
+
+If you want to uninstall GtkEveMon, just type
+following command (as super user):
+
+# make uninstall
+
+This will not remove your user data in your home directory.
+
+
+RESSOURCES
+=====================================================================
+
+Homepage: http://www.student.informatik.tu-darmstadt.de/~sf1017/gtkevemon/
+Forum-Thread: http://www.battleclinic.com/forum/index.php?topic=20700.0
+E-Mail: Simon Fuhrmann <SimonFuhrmann@gmx.de>
