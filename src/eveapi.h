@@ -33,9 +33,9 @@ class EveApi
     static void set_proxy_server (Http& request);
 
   public:
-    static HttpDocPtr request_charlist (EveApiAuth const& auth);
-    static HttpDocPtr request_charsheet (EveApiAuth const& auth);
-    static HttpDocPtr request_in_training (EveApiAuth const& auth);
+    static HttpDataPtr request_charlist (EveApiAuth const& auth);
+    static HttpDataPtr request_charsheet (EveApiAuth const& auth);
+    static HttpDataPtr request_in_training (EveApiAuth const& auth);
 };
 
 /* ---------------------------------------------------------------- */

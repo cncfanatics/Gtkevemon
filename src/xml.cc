@@ -13,6 +13,18 @@ XmlDocument::parse (std::string const& data)
 
 /* ---------------------------------------------------------------- */
 
+void
+XmlDocument::parse (char const* data, size_t size)
+{
+  xmlFreeDoc(this->doc);
+
+  this->doc = xmlParseMemory(data, size);
+  if (this->doc == 0)
+    throw Exception("Document not parsed successfully!");
+}
+
+/* ---------------------------------------------------------------- */
+
 xmlNodePtr
 XmlDocument::get_root_element (void)
 {

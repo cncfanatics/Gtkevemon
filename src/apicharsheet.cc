@@ -37,7 +37,7 @@ ApiCharSheet::refresh (void)
   this->implant_per = 0;
   this->implant_wil = 0;
 
-  HttpDocPtr doc = EveApi::request_charsheet(this->auth);
+  HttpDataPtr doc = EveApi::request_charsheet(this->auth);
   this->parse_xml(doc);
 
   /* Find bonus attributes for skills. */
@@ -116,12 +116,12 @@ ApiCharSheet::refresh (void)
 /* ---------------------------------------------------------------- */
 
 void
-ApiCharSheet::parse_xml (HttpDocPtr doc)
+ApiCharSheet::parse_xml (HttpDataPtr doc)
 {
   this->skills.clear();
 
   std::cout << "Parsing XML: CharacterSheet.xml ..." << std::endl;
-  XmlDocumentPtr xml = XmlDocument::create(*doc);
+  XmlDocumentPtr xml = XmlDocument::create(doc->data, doc->size);
   xmlNodePtr root = xml->get_root_element();
   this->parse_recursive(root);
 }

@@ -27,7 +27,7 @@ ApiInTraining::create (EveApiAuth const& auth)
 void
 ApiInTraining::refresh (void)
 {
-  HttpDocPtr doc = EveApi::request_in_training(this->auth);
+  HttpDataPtr doc = EveApi::request_in_training(this->auth);
   this->parse_xml(doc);
 
   /* Do some checking if end time is expired. */
@@ -41,10 +41,10 @@ ApiInTraining::refresh (void)
 /* ---------------------------------------------------------------- */
 
 void
-ApiInTraining::parse_xml (HttpDocPtr doc)
+ApiInTraining::parse_xml (HttpDataPtr doc)
 {
   std::cout << "Parsing XML: SkillInTraining.xml ..." << std::endl;
-  XmlDocumentPtr xml = XmlDocument::create(*doc);
+  XmlDocumentPtr xml = XmlDocument::create(doc->data, doc->size);
   xmlNodePtr root = xml->get_root_element();
   this->parse_recursive(root);
 }

@@ -34,7 +34,7 @@ class ApiCharacterList : public ApiBase
 
   protected:
     ApiCharacterList (EveApiAuth const& auth);
-    void parse_xml (HttpDocPtr doc);
+    void parse_xml (HttpDataPtr doc);
     void parse_recursive (xmlNodePtr node);
 
   public:

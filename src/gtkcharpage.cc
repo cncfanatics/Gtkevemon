@@ -263,15 +263,15 @@ GtkCharPage::update_gui (void)
         + Helpers::get_string_from_uint(this->skill_info.skills_at_five)
         + " at V)");
 
-    this->attr_cha_label.set_text(Helpers::get_string_from_float
+    this->attr_cha_label.set_text(Helpers::get_string_from_double
         (this->sheet->total_cha, 2));
-    this->attr_int_label.set_text(Helpers::get_string_from_float
+    this->attr_int_label.set_text(Helpers::get_string_from_double
         (this->sheet->total_int, 2));
-    this->attr_per_label.set_text(Helpers::get_string_from_float
+    this->attr_per_label.set_text(Helpers::get_string_from_double
         (this->sheet->total_per, 2));
-    this->attr_mem_label.set_text(Helpers::get_string_from_float
+    this->attr_mem_label.set_text(Helpers::get_string_from_double
         (this->sheet->total_mem, 2));
-    this->attr_wil_label.set_text(Helpers::get_string_from_float
+    this->attr_wil_label.set_text(Helpers::get_string_from_double
         (this->sheet->total_wil, 2));
   }
 
@@ -1014,7 +1014,7 @@ GtkCharPage::get_skill_remaining (bool slim)
     ss << (int)hours << "h ";
     slim_count -= 1;
   }
-  if ((!slim || slim_count > 0) && (days > 0 && hours > 0 || minutes > 0))
+  if ((!slim || slim_count > 0) && ((days > 0 && hours > 0) || minutes > 0))
   {
     ss << (int)minutes << "m ";
     slim_count -= 1;

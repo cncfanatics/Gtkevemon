@@ -167,11 +167,8 @@ GtkPortrait::fetch_from_eve_cache (void)
 }
 
 /* ---------------------------------------------------------------- */
-/* TODO: Set from Server:
- * http://img.eve.is/serv.asp?s=256&c=988282450
- * FIXME: Multiiple problems:
+/* Multiiple problems:
  *   * Dir creation for the temp JPG
- *   * HTTP class cannot handle binaries
  */
 
 bool
@@ -180,7 +177,7 @@ GtkPortrait::fetch_from_eve_online (void)
   bool success = false;
 
   /* Request the image over HTTP. */
-  HttpDocPtr portrait;
+  HttpDataPtr portrait;
   try
   {
     Http fetcher("img.eve.is", "/serv.asp?s=256&c=" + this->char_id);
@@ -204,10 +201,13 @@ GtkPortrait::fetch_from_eve_online (void)
   try
   {
     std::ofstream out(jpg_name.str().c_str());
-    out.write(portrait->c_str(), portrait->size());
+    out.write(portrait->data, portrait->size);
     out.close();
 
-    Gdk::Pixbuf::create_from_file(jpg_name.str())->save(png_name.str(), "png");
+    Gdk::Pixbuf::create_from_file(jpg_name.str())
+        ->scale_simple
+         (PORTRAIT_SIZE, PORTRAIT_SIZE, Gdk::INTERP_BILINEAR)
+        ->save(png_name.str(), "png");
   }
   catch (...)
   {

@@ -28,18 +28,18 @@ ApiCharacterList::create (EveApiAuth const& auth)
 void
 ApiCharacterList::refresh (void)
 {
-  HttpDocPtr doc = EveApi::request_charlist(auth);
+  HttpDataPtr doc = EveApi::request_charlist(auth);
   this->parse_xml(doc);
 }
 /* ---------------------------------------------------------------- */
 
 void
-ApiCharacterList::parse_xml (HttpDocPtr doc)
+ApiCharacterList::parse_xml (HttpDataPtr doc)
 {
   this->chars.clear();
 
   std::cout << "Parsing XML: Characters.xml ..." << std::endl;
-  XmlDocumentPtr xml = XmlDocument::create(*doc);
+  XmlDocumentPtr xml = XmlDocument::create(doc->data, doc->size);
   xmlNodePtr root = xml->get_root_element();
   this->parse_recursive(root);
 }

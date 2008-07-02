@@ -32,7 +32,7 @@ class ApiInTraining : public ApiBase
 
   protected:
     ApiInTraining (EveApiAuth const& auth);
-    void parse_xml (HttpDocPtr doc);
+    void parse_xml (HttpDataPtr doc);
     void parse_recursive (xmlNodePtr node);
 
   public:

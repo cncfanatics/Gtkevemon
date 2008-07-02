@@ -34,13 +34,13 @@ EveApi::set_proxy_server (Http& request)
   if (section->get_value("use_proxy")->get_bool())
   {
     request.set_proxy(section->get_value("proxy_address")->get_string(),
-        section->get_value("proxy_port")->get_int());
+        (uint16_t)section->get_value("proxy_port")->get_int());
   }
 }
 
 /* ---------------------------------------------------------------- */
 
-HttpDocPtr
+HttpDataPtr
 EveApi::request_charlist (EveApiAuth const& auth)
 {
   std::cout << "Requesting XML: Characters.xml ..." << std::endl;
@@ -49,7 +49,7 @@ EveApi::request_charlist (EveApiAuth const& auth)
   EveApi::set_proxy_server(req);
   req.set_data(HTTP_METHOD_POST, EveApi::get_post_data(auth));
   req.set_agent("GtkEveMon");
-  HttpDocPtr doc = req.request();
+  HttpDataPtr doc = req.request();
 
   //std::cout << "Successfully retrieved character list" << std::endl;
 
@@ -58,7 +58,7 @@ EveApi::request_charlist (EveApiAuth const& auth)
 
 /* ---------------------------------------------------------------- */
 
-HttpDocPtr
+HttpDataPtr
 EveApi::request_charsheet (EveApiAuth const& auth)
 {
   std::cout << "Requesting XML: CharacterSheet.xml ..." << std::endl;
@@ -67,7 +67,7 @@ EveApi::request_charsheet (EveApiAuth const& auth)
   EveApi::set_proxy_server(req);
   req.set_data(HTTP_METHOD_POST, EveApi::get_post_data(auth));
   req.set_agent("GtkEveMon");
-  HttpDocPtr doc = req.request();
+  HttpDataPtr doc = req.request();
 
   //std::cout << "Successfully retrieved character sheet" << std::endl;
 
@@ -76,7 +76,7 @@ EveApi::request_charsheet (EveApiAuth const& auth)
 
 /* ---------------------------------------------------------------- */
 
-HttpDocPtr
+HttpDataPtr
 EveApi::request_in_training (EveApiAuth const& auth)
 {
   std::cout << "Requesting XML: SkillInTraining.xml ..." << std::endl;
@@ -85,7 +85,7 @@ EveApi::request_in_training (EveApiAuth const& auth)
   EveApi::set_proxy_server(req);
   req.set_data(HTTP_METHOD_POST, EveApi::get_post_data(auth));
   req.set_agent("GtkEveMon");
-  HttpDocPtr doc = req.request();
+  HttpDataPtr doc = req.request();
 
   //std::cout << "Successfully retrieved skill in training" << std::endl;
 

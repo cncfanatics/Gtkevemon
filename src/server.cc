@@ -14,7 +14,7 @@ int Server::current_socket = 0;
 
 /* ---------------------------------------------------------------- */
 
-Server::Server (std::string const& name, std::string const& host, int port)
+Server::Server (std::string const& name, std::string const& host, uint16_t port)
 {
   this->name = name;
   this->host = host;

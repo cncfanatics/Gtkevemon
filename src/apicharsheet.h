@@ -72,7 +72,7 @@ class ApiCharSheet : public ApiBase
 
   protected:
     ApiCharSheet (EveApiAuth const& auth);
-    void parse_xml (HttpDocPtr doc);
+    void parse_xml (HttpDataPtr doc);
     void parse_recursive (xmlNodePtr node);
     void find_implant_bonus (xmlNodePtr node, char const* name, int& var);
 

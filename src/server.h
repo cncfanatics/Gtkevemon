@@ -27,20 +27,20 @@ class Server
   private:
     std::string name;
     std::string host;
-    int port;
+    uint16_t port;
 
     bool refreshing;
     bool online;
     int players;
 
   public:
-    Server (std::string const& name, std::string const& host, int port);
+    Server (std::string const& name, std::string const& host, uint16_t port);
 
     void refresh (void);
 
     std::string const& get_name (void) const;
     std::string const& get_host (void) const;
-    int get_port (void) const;
+    uint16_t get_port (void) const;
     bool is_online (void) const;
     int get_players (void) const;
     bool is_refreshing (void) const;
@@ -60,7 +60,7 @@ Server::get_host (void) const
   return this->host;
 }
 
-inline int
+inline uint16_t
 Server::get_port (void) const
 {
   return this->port;

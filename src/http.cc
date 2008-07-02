@@ -32,7 +32,7 @@ Http::Http (std::string const& host, std::string const& path)
 
 /* ---------------------------------------------------------------- */
 
-HttpDocPtr
+HttpDataPtr
 Http::request (void)
 {
   /* Some error checking. */
@@ -148,12 +148,15 @@ Http::request (void)
     throw Exception(std::string("write() failed: ") + ::strerror(errno));
   }
 
-  /* Read reply. */
-  HttpDocPtr doc = HttpDocPtr(new std::string);
+  /* Read reply into the data array. */
+  std::vector<char> data;
+  size_t dpos = 0;
+
   while (true)
   {
-    char buffer[512];
-    nbytes = ::read(sock, buffer, 511);
+    data.resize(dpos + 512, '\0');
+    char* buffer = &data[dpos];
+    nbytes = ::read(sock, buffer, 512);
 
     if (nbytes < 0)
     {
@@ -164,102 +167,96 @@ Http::request (void)
     if (nbytes == 0)
       break;
 
-    buffer[nbytes] = '\0';
-    doc->append(buffer, nbytes);
+    dpos = dpos + nbytes;
   }
+  /* Push a trailing \0. */
+  data.push_back('\0');
+  data[dpos] = '\0';
+  dpos++;
 
+  /* Ok, we're done with the connection. */
   ::close(sock);
 
-  //std::cout << "Reply: " << *doc << std::endl;
-  //std::cout << "Reply size: " << doc->size() << std::endl;
+  /* Create the result, thats the return value. */
+  HttpDataPtr result = HttpData::create();
 
-  this->strip_headers(doc);
+  /* Now strip the headers from the body and copy to result. */
+  bool chunked_read = false;
+  size_t pos = 0;
+  while (true)
+  {
+    std::string line;
+    pos = this->data_readline(line, data, pos);
 
-  return doc;
+    if (!line.empty())
+    {
+      result->headers.push_back(line);
+
+      if (line == "Transfer-Encoding: chunked")
+        chunked_read = true;
+    }
+    else
+    {
+      /* Empty header line. Content starts now. */
+      break;
+    }
+  }
+
+  if (chunked_read)
+  {
+    /* Deal with chunks *sigh*. */
+
+    /* Alloc the full size ignoring chunk space, this is a bit to much,
+     * but it doesn't care. But the size argument should be right!. */
+    result->alloc(dpos - pos);
+    result->size = 0;
+    while (true)
+    {
+      std::string line;
+      pos = this->data_readline(line, data, pos);
+      unsigned int bytes = this->get_int_from_hex(line);
+      if (bytes == 0)
+        break;
+      ::memcpy(result->data, &data[pos], bytes);
+      pos += bytes;
+      result->size += bytes;
+    }
+  }
+  else
+  {
+    /* Simply copy the buffer to the result. */
+    result->alloc(dpos - pos);
+    ::memcpy(result->data, &data[pos], dpos - pos);
+  }
+
+  /*
+  std::cout << "Received Headers:" << std::endl;
+  for (unsigned int i = 0; i < result->headers.size(); ++i)
+    std::cout << "  " << result->headers[i] << std::endl;
+  std::cout << "Reply size: " << result->size << std::endl;
+  */
+
+  return result;
 }
 
 /* ---------------------------------------------------------------- */
 
-void
-Http::strip_headers (HttpDocPtr doc)
+size_t
+Http::data_readline (std::string& dest,
+    std::vector<char> const& data, size_t pos)
 {
-  /* Find location between header and content. */
-  bool dos_nl = false;
-  size_t pos = doc->find("\n\n");
-  if (pos == std::string::npos)
+  dest.clear();
+
+  for (size_t iter = pos; true; ++iter)
   {
-    pos = doc->find("\r\n\r\n");
-    if (pos == std::string::npos)
-      return;
-    else
-      dos_nl = true;
+    if (data[iter] == '\r')
+      return iter + 2;
+
+    if (data[iter] == '\n')
+      return iter + 1;
+
+    dest.push_back(data[iter]);
   }
-
-  /* Separate header and content. */
-  std::string headers = doc->substr(0, pos + (dos_nl ? 2 : 1));
-  *doc = doc->substr(pos + (dos_nl ? 4 : 2));
-
-
-  //std::cout << "--- Headers ---" << std::endl << headers;
-  //std::cout << "--- Document ---" << std::endl << *doc;
-
-  /* Care about some headers. */
-  if (headers.find("Transfer-Encoding: chunked") != std::string::npos)
-  {
-    this->remove_chunks(doc);
-  }
-}
-
-/* ---------------------------------------------------------------- */
-
-void
-Http::remove_chunks (HttpDocPtr doc)
-{
-  unsigned int read = 0;
-  unsigned int write = 0;
-  bool read_chunk = true;
-  std::string chunk_size_str;
-  unsigned int chunk_size = 0;
-  unsigned int chunk_counter = 0;
-
-  while (read < doc->size())
-  {
-    if (read_chunk)
-    {
-      char c = doc->at(read);
-      if (c == '\r')
-      {
-      }
-      else if (c == '\n')
-      {
-        chunk_size = this->get_int_from_hex(chunk_size_str);
-        if (chunk_size == 0)
-          break;
-        chunk_size_str.clear();
-        read_chunk = false;
-        chunk_counter = 0;
-      }
-      else
-      {
-        chunk_size_str += c;
-      }
-
-      read += 1;
-    }
-    else
-    {
-      doc->at(write) = doc->at(read);
-      write += 1;
-      read += 1;
-      chunk_counter += 1;
-      if (chunk_counter >= chunk_size)
-      {
-        read_chunk = true;
-      }
-    }
-  }
-
-  doc->resize(write);
 }
 
 /* ---------------------------------------------------------------- */
