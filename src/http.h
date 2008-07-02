@@ -20,11 +20,8 @@ typedef ref_ptr<HttpData> HttpDataPtr;
 class HttpData
 {
   protected:
-    HttpData (void)
-    { this->data = 0; this->size = 0; }
-
-    HttpData (size_t size)
-    { this->data = 0; this->alloc(size); }
+    HttpData (void);
+    HttpData (size_t size);
 
   public:
     std::vector<std::string> headers;
@@ -32,24 +29,12 @@ class HttpData
     size_t size;
 
   public:
-    static HttpDataPtr create (void)
-    { return HttpDataPtr(new HttpData); }
+    static HttpDataPtr create (void);
+    static HttpDataPtr create (size_t size);
+    ~HttpData (void);
 
-    static HttpDataPtr create (size_t size)
-    { return HttpDataPtr(new HttpData(size)); }
-
-    ~HttpData (void)
-    { delete [] this->data; }
-
-    void alloc (size_t size)
-    {
-      delete [] this->data;
-      this->data = new char[size];
-      this->size = size;
-    }
+    void alloc (size_t size);
 };
-
-typedef ref_ptr<std::string> HttpDocPtr;
 
 /* ---------------------------------------------------------------- */
 
@@ -68,8 +53,6 @@ class Http
     std::string proxy;
     uint16_t proxy_port;
 
-    void strip_headers (HttpDocPtr doc);
-    void remove_chunks (HttpDocPtr doc);
     unsigned int get_int_from_hex (std::string const& str);
     size_t data_readline (std::string& dest,
         std::vector<char> const& data, size_t pos);
@@ -90,6 +73,46 @@ class Http
 };
 
 /* ---------------------------------------------------------------- */
+
+inline
+HttpData::HttpData (void)
+{
+  this->data = 0;
+  this->size = 0;
+}
+
+inline
+HttpData::HttpData (size_t size)
+{
+  this->data = 0;
+  this->alloc(size);
+}
+
+inline HttpDataPtr
+HttpData::create (void)
+{
+  return HttpDataPtr(new HttpData);
+}
+
+inline HttpDataPtr
+HttpData::create (size_t size)
+{
+  return HttpDataPtr(new HttpData(size));
+}
+
+inline
+HttpData::~HttpData (void)
+{
+  delete [] this->data;
+}
+
+inline void
+HttpData::alloc (size_t size)
+{
+  delete [] this->data;
+  this->data = new char[size];
+  this->size = size;
+}
 
 inline void
 Http::set_data (HttpMethod method, std::string const& data)

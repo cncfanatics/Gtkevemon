@@ -107,8 +107,8 @@ GtkPortrait::fetch_from_gtkevemon_cache (void)
   {
   }
 
-  if (success)
-    std::cout << "Using protrait from GtkEveMon cache!" << std::endl;
+  //if (success)
+  //  std::cout << "Using protrait from GtkEveMon cache!" << std::endl;
 
   return success;
 }
@@ -160,8 +160,8 @@ GtkPortrait::fetch_from_eve_cache (void)
     }
   }
 
-  if (success)
-    std::cout << "Fetched portrait from the EVE cache!" << std::endl;
+  //if (success)
+  //  std::cout << "Fetched portrait from the EVE cache!" << std::endl;
 
   return success;
 }
@@ -175,6 +175,9 @@ bool
 GtkPortrait::fetch_from_eve_online (void)
 {
   bool success = false;
+
+  std::cout << "Requesting portrait: " << this->char_id
+      << " ..." << std::endl;
 
   /* Request the image over HTTP. */
   HttpDataPtr portrait;
@@ -190,9 +193,11 @@ GtkPortrait::fetch_from_eve_online (void)
   }
 
   /* Generate filenames to store the fetched JPG and the destination PNG. */
-  std::string portraitdir = Config::get_conf_dir() + "/portraits";
+  std::string confdir = Config::get_conf_dir();
+  std::string portraitdir = confdir + "/portraits";
+
   std::stringstream jpg_name;
-  jpg_name << portraitdir << "/" << this->char_id << "_256.jpg";
+  jpg_name << confdir << "/" << this->char_id << "_256.jpg";
 
   std::stringstream png_name;
   png_name << portraitdir << "/" << this->char_id
@@ -205,9 +210,10 @@ GtkPortrait::fetch_from_eve_online (void)
     out.close();
 
     Gdk::Pixbuf::create_from_file(jpg_name.str())
-        ->scale_simple
-         (PORTRAIT_SIZE, PORTRAIT_SIZE, Gdk::INTERP_BILINEAR)
+        ->scale_simple(PORTRAIT_SIZE, PORTRAIT_SIZE, Gdk::INTERP_BILINEAR)
         ->save(png_name.str(), "png");
+
+    ::unlink(jpg_name.str().c_str());
   }
   catch (...)
   {
@@ -217,8 +223,8 @@ GtkPortrait::fetch_from_eve_online (void)
 
   success = this->fetch_from_gtkevemon_cache();
 
-  if (success)
-    std::cout << "Fetched portrait from EVE Online!" << std::endl;
+  //if (success)
+  //  std::cout << "Fetched portrait from EVE Online!" << std::endl;
 
   return success;
 }

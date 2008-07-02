@@ -1,5 +1,6 @@
 #include <fstream>
 #include <iostream>
+#include <cstring>
 #include <cerrno>
 
 #include "config.h"
@@ -45,7 +46,7 @@ ApiSkillTree::refresh (void)
   std::cout << "Searching XML: SkillTree.xml ...";
   std::cout.flush();
 
-  HttpDocPtr content;
+  std::string content;
   for (unsigned int i = 0; i < filenames.size(); ++i)
   {
     std::string filename(filenames[i]);
@@ -55,35 +56,23 @@ ApiSkillTree::refresh (void)
 
     std::cout << " Using local file." << std::endl;
 
-    content = new std::string;
     std::string line;
     while (std::getline(in, line))
-      (*content) += line + "\n";
+      content += line + "\n";
     in.close();
     break;
   }
 
   /* If the SkillTree.xml file could not been found,
    * use the build-in version. */
-  if (content.get() == 0)
+  if (content.empty())
   {
     std::cout << " Using build-in string." << std::endl;
-    content = new std::string(skilltree_string);
+    content = skilltree_string;
   }
 
-  /* This should not happen anymore since the SkillTree is build in. */
-  if (content.get() == 0)
-  {
-    std::cout << " Error: Cannot find." << std::endl;
-
-    std::string locations;
-    for (unsigned int i = 0; i < filenames.size(); ++i)
-      locations += filenames[i] + "\n";
-    /* File was not found. */
-    throw Exception("Could not find the SkillTree.xml file. "
-        "The following locations has been checked:\n\n"
-        + locations);
-  }
+  //HttpDataPtr data = HttpData::create(content.size() + 1);
+  //::memcpy(data->data, &content[0], content.size() * 1);
 
   this->parse_xml(content);
 }
@@ -91,14 +80,14 @@ ApiSkillTree::refresh (void)
 /* ---------------------------------------------------------------- */
 
 void
-ApiSkillTree::parse_xml (HttpDocPtr doc)
+ApiSkillTree::parse_xml (std::string const& doc)
 {
   this->skills.clear();
   this->groups.clear();
 
   std::cout << "Parsing XML: SkillTree.xml ..." << std::endl;
 
-  XmlDocumentPtr xml = XmlDocument::create(*doc);
+  XmlDocumentPtr xml = XmlDocument::create(doc);
   xmlNodePtr root = xml->get_root_element();
   this->parse_eveapi_tag(root);
 }
