@@ -15,7 +15,7 @@ class ServerList
     static void init_from_config (void);
     static void store_to_config (void);
     static void add_server (std::string const& name,
-        std::string const& host, int port = 26000);
+        std::string const& host, uint16_t port = 26000);
     static void refresh (void);
 };
 

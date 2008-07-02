@@ -66,7 +66,7 @@ ServerList::store_to_config (void)
 
 void
 ServerList::add_server (std::string const& name,
-    std::string const& host, int port)
+    std::string const& host, uint16_t port)
 {
   ServerList::list.push_back(Server(name, host, port));
 }

@@ -101,8 +101,8 @@ GuiConfiguration::GuiConfiguration (void)
 
   Gtk::Label* dir_info_label = MK_LABEL("Enter the directory where "
       "your EVE cache is located. This path will be used to "
-      "retreive character portraits. Generation of portraits is "
-      "not supported!");
+      "retreive character portraits. You don't really need to set this "
+      "because portraits are fetched online.");
   dir_info_label->property_xalign() = 0.0f;
   dir_info_label->set_line_wrap(true);
 

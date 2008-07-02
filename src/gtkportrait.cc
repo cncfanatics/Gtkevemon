@@ -209,9 +209,11 @@ GtkPortrait::fetch_from_eve_online (void)
     out.write(portrait->data, portrait->size);
     out.close();
 
-    Gdk::Pixbuf::create_from_file(jpg_name.str())
-        ->scale_simple(PORTRAIT_SIZE, PORTRAIT_SIZE, Gdk::INTERP_BILINEAR)
-        ->save(png_name.str(), "png");
+    Glib::RefPtr<Gdk::Pixbuf> image
+        = Gdk::Pixbuf::create_from_file(jpg_name.str())
+        ->scale_simple(PORTRAIT_SIZE, PORTRAIT_SIZE, Gdk::INTERP_BILINEAR);
+
+    this->cache_portrait(image);
 
     ::unlink(jpg_name.str().c_str());
   }
