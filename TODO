@@ -5,8 +5,8 @@ User interface
  - Training time in the window title
  - Make links clickable (about dialog)
  - Show day of skill finish
- - Portrait generation
 
+ - Portrait generation (online fetching) [DONE]
  - Hint that the LIMITED key is needed [DONE]
  - Make option to always have GtkEveMon in tray [DONE]
  - Show percentage of skill training [DONE]
@@ -33,7 +33,8 @@ User interface
 
 Skill things
 ------------
- - Hide empty skill groups
+ - Asynchron portrait fetching
+ - Hide empty skill groups [DONE]
  - Real skill point counting [DONE]
  - Primary/secondary attributes of skills [DONE]
  - Skill points per hour [DONE]

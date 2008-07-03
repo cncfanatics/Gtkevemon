@@ -128,12 +128,7 @@ Server::refresh (void)
       this->players = 0;
   }
 
-  if (::close(sock) < 0)
-  {
-    this->refreshing = false;
-    throw Exception(std::string("close() failed: ") + ::strerror(errno));
-  }
-
+  ::close(sock);
   this->refreshing = false;
 
   std::cout << "Server " << this->name << " online. "

@@ -528,6 +528,12 @@ GtkCharPage::update_skill_list (void)
   for (IterMapType::iterator iter = iter_map.begin();
       iter != iter_map.end(); iter++)
   {
+    if (iter->second.second == 0)
+    {
+      this->skill_store->erase(iter->second.first);
+      continue;
+    }
+
     (*iter->second.first)[this->skill_cols.points]
         = Helpers::get_dotted_str_from_int(iter->second.second);
 

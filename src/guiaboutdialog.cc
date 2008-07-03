@@ -31,8 +31,8 @@ GuiAboutDialog::GuiAboutDialog (void)
       "skill training process without starting EVE-Online.\n"
       "You will never miss to train your next skill!\n"
       "\n"
-      "Homepage: http://tinyurl.com/5na96b\n"
-      "Forum-Thread: http://tinyurl.com/6jdpts\n"
+      "Homepage: http://gtkevemon.battleclinic.com\n"
+      "Forum: http://www.battleclinic.com/forum/index.php#43\n"
       "\n"
       "<i>Simon Fuhrmann &lt;SimonFuhrmann@gmx.de&gt;</i>");
   about_label->set_use_markup(true);
