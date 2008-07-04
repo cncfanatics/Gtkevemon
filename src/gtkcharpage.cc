@@ -633,6 +633,7 @@ GtkCharPage::on_close_clicked (void)
 }
 
 /* ---------------------------------------------------------------- */
+/* FIXME This leaks somehow... Might be GTKs problem. */
 
 bool
 GtkCharPage::on_query_skillview_tooltip (int x, int y, bool key,

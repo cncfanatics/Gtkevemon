@@ -31,7 +31,7 @@ ApiInTraining::refresh (void)
   this->parse_xml(doc);
 
   /* Do some checking if end time is expired. */
-  if (this->end_time_t < EveTime::get_eve_time())
+  if (this->in_training && this->end_time_t < EveTime::get_eve_time())
     this->in_training = false;
 
   // This is to test notifications! NEVER PUT THIS IN A REVISION

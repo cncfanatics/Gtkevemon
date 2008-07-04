@@ -42,6 +42,11 @@ ImageStore::skill_progress (unsigned int level, double completed)
   Glib::RefPtr<Gdk::Pixbuf> ret(Gdk::Pixbuf::create_from_xpm_data
       (skill_progress_xpm));
 
+  /* Some safety checks. */
+  if (level > 5) level = 5;
+  if (completed < 0.0) completed = 0.0;
+  if (completed > 1.0) completed = 1.0;
+
   /* draw level */
   for (unsigned int l = 0; l < level; ++l)
     for (unsigned int x = 0; x < 6; ++x)

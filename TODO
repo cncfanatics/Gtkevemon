@@ -33,7 +33,7 @@ User interface
 
 Skill things
 ------------
- - Asynchron portrait fetching
+ - Asynchron portrait/HTTP fetching
  - Hide empty skill groups [DONE]
  - Real skill point counting [DONE]
  - Primary/secondary attributes of skills [DONE]
@@ -41,6 +41,7 @@ Skill things
 
 Tricky things
 -------------
+ - Online version checking (Help - Check version...)
  - Caching of XML sheets
  - Multiple accounts in the tabs [DONE]
 
