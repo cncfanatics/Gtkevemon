@@ -23,7 +23,6 @@ void
 GtkConfFileChooser::on_selection_change (void)
 {
   this->value->set(this->get_filename());
-  GtkPortrait::emit_update_signal();
 }
 
 /* ================================================================ */

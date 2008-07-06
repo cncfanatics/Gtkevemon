@@ -9,22 +9,10 @@
 #include "config.h"
 #include "gtkportrait.h"
 
-sigc::signal<void> GtkPortrait::sig_update_portraits;
-
-/* ---------------------------------------------------------------- */
-
-void
-GtkPortrait::emit_update_signal (void)
-{
-  GtkPortrait::sig_update_portraits.emit();
-}
-
 /* ---------------------------------------------------------------- */
 
 GtkPortrait::GtkPortrait (void)
 {
-  this->update_con = GtkPortrait::sig_update_portraits.connect
-      (sigc::mem_fun(*this, &GtkPortrait::update));
 }
 
 /* ---------------------------------------------------------------- */
@@ -32,15 +20,13 @@ GtkPortrait::GtkPortrait (void)
 GtkPortrait::GtkPortrait (std::string const& charid)
 {
   this->set(charid);
-  this->update_con = GtkPortrait::sig_update_portraits.connect
-      (sigc::mem_fun(*this, &GtkPortrait::update));
 }
 
 /* ---------------------------------------------------------------- */
 
 GtkPortrait::~GtkPortrait (void)
 {
-  this->update_con.disconnect();
+  this->http_request.disconnect();
 }
 
 /* ---------------------------------------------------------------- */
@@ -60,19 +46,14 @@ GtkPortrait::set (std::string const& charid)
   if (!success)
     success = this->fetch_from_eve_cache();
 
-  /* If there is no portrait, get it online. */
-  if (!success)
-    success = this->fetch_from_eve_online();
-
-  /* Nothing worked. Fall back to default image. */
+  /* Nothing worked so far. Use default image and request online. */
   if (!success)
   {
-    std::cout << "Could not fetch protrait! Falling back." << std::endl;
-
     Glib::RefPtr<Gdk::Pixbuf> pixbuf = ImageStore::eveportrait;
     Glib::RefPtr<Gdk::Pixbuf> scaled = pixbuf->scale_simple
         (PORTRAIT_SIZE, PORTRAIT_SIZE, Gdk::INTERP_BILINEAR);
     this->Gtk::Image::set(scaled);
+    this->request_from_eve_online();
   }
 }
 
@@ -167,29 +148,31 @@ GtkPortrait::fetch_from_eve_cache (void)
 }
 
 /* ---------------------------------------------------------------- */
-/* Multiiple problems:
- *   * Dir creation for the temp JPG
- */
 
-bool
-GtkPortrait::fetch_from_eve_online (void)
+void
+GtkPortrait::request_from_eve_online (void)
 {
-  bool success = false;
-
   std::cout << "Requesting portrait: " << this->char_id
       << " ..." << std::endl;
 
-  /* Request the image over HTTP. */
-  HttpDataPtr portrait;
-  try
-  {
-    Http fetcher("img.eve.is", "/serv.asp?s=256&c=" + this->char_id);
-    portrait = fetcher.request();
-  }
-  catch (...)
+  AsyncHttp* http = new AsyncHttp;
+  http->fetcher.set_host("img.eve.is");
+  http->fetcher.set_path("/serv.asp?s=256&c=" + this->char_id);
+  http->fetcher.set_agent("GtkEveMon");
+  this->http_request = http->signal_done().connect(sigc::mem_fun
+      (*this, &GtkPortrait::set_from_eve_online));
+  http->async_request();
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GtkPortrait::set_from_eve_online (AsyncHttp* http)
+{
+  if (http->data.get() == 0)
   {
     std::cout << "Error fetching portrait from EVE Online!" << std::endl;
-    return false;
+    return;
   }
 
   /* Generate filenames to store the fetched JPG and the destination PNG. */
@@ -206,7 +189,7 @@ GtkPortrait::fetch_from_eve_online (void)
   try
   {
     std::ofstream out(jpg_name.str().c_str());
-    out.write(portrait->data, portrait->size);
+    out.write(http->data->data, http->data->size);
     out.close();
 
     Glib::RefPtr<Gdk::Pixbuf> image
@@ -214,21 +197,14 @@ GtkPortrait::fetch_from_eve_online (void)
         ->scale_simple(PORTRAIT_SIZE, PORTRAIT_SIZE, Gdk::INTERP_BILINEAR);
 
     this->cache_portrait(image);
-
     ::unlink(jpg_name.str().c_str());
+    this->fetch_from_gtkevemon_cache();
   }
   catch (...)
   {
     std::cout << "Error saving portrait from EVE Online" << std::endl;
-    return false;
+    return;
   }
-
-  success = this->fetch_from_gtkevemon_cache();
-
-  //if (success)
-  //  std::cout << "Fetched portrait from EVE Online!" << std::endl;
-
-  return success;
 }
 
 /* ---------------------------------------------------------------- */
