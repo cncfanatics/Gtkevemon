@@ -111,8 +111,11 @@ MainGui::MainGui (void)
 
   Gtk::VBox* server_info_box = Gtk::manage(new Gtk::VBox(false, 2));
   server_info_box->set_border_width(5);
-  server_info_box->pack_start(*server_box, false, false, 0);
-  server_info_box->pack_start(*MK_HSEP, false, false, 0);
+  if (ServerList::list.size() > 0)
+  {
+    server_info_box->pack_start(*server_box, false, false, 0);
+    server_info_box->pack_start(*MK_HSEP, false, false, 0);
+  }
   server_info_box->pack_start(*time_hbox, false, false, 0);
 
   Gtk::Frame* server_frame = MK_FRAME0;
