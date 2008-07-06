@@ -61,11 +61,11 @@ class Http
     Http (void);
     Http (std::string const& host, std::string const& path);
 
-    void set_data (HttpMethod method, std::string const& data);
     void set_host (std::string const& host);
     void set_path (std::string const& path);
     void set_port (uint16_t port);
     void set_agent (std::string const& path);
+    void set_data (HttpMethod method, std::string const& data);
     void add_header (std::string const& header);
     void set_proxy (std::string const& address, uint16_t port);
 

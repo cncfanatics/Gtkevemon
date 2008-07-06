@@ -17,6 +17,7 @@
 class Exception : public std::string
 {
   public:
+    Exception (void) { }
     Exception (const std::string& msg) : std::string(msg) { }
     virtual ~Exception (void) { }
 

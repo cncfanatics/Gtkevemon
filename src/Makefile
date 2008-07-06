@@ -6,7 +6,7 @@ SOURCES = maingui.cc guiuserdata.cc guiconfiguration.cc guiaboutdialog.cc \
           gtkevemon.cc gtkserver.cc gtkconfwidgets.cc gtkcharpage.cc \
 	  gtkportrait.cc imagestore.cc \
           server.cc serverlist.cc helpers.cc conf.cc config.cc \
-	  http.cc eveapi.cc xml.cc evetime.cc bgprocess.cc \
+	  http.cc asynchttp.cc eveapi.cc xml.cc evetime.cc bgprocess.cc \
           apibase.cc apicharlist.cc apicharsheet.cc apiintraining.cc \
 	  apiskilltree.cc
 

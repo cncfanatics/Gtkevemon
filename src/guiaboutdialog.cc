@@ -6,7 +6,9 @@
 #include <gtkmm/image.h>
 #include <gtkmm/stock.h>
 #include <gtkmm/frame.h>
+#include <gtkmm/table.h>
 
+#include "asynchttp.h"
 #include "defines.h"
 #include "gtkdefines.h"
 #include "imagestore.h"
@@ -19,12 +21,35 @@ GuiAboutDialog::GuiAboutDialog (void)
   logo_frame->add(*logo);
   logo_frame->set_shadow_type(Gtk::SHADOW_IN);
 
-  Gtk::Label* about_label = Gtk::manage(new Gtk::Label);
-  about_label->set_line_wrap(true);
-  about_label->set_justify(Gtk::JUSTIFY_LEFT);
-  about_label->set_text("<b>GtkEveMon - a skill monitor for Linux</b>\n"
-      GTKEVEMON_VERSION_STR "\n"
-      "\n"
+
+  Gtk::Label* local_label = MK_LABEL("Local version:");
+  Gtk::Label* current_label = MK_LABEL("Current version:");
+  Gtk::Label* local_label_val = MK_LABEL(GTKEVEMON_VERSION_STR);
+  this->version_label.set_text("Requesting version...");
+
+  local_label->property_xalign() = 0.0f;
+  current_label->property_xalign() = 0.0f;
+  local_label_val->property_xalign() = 0.0f;
+  this->version_label.property_xalign() = 0.0f;
+
+  Gtk::Table* version_table = Gtk::manage(new Gtk::Table(2, 2));
+  version_table->set_col_spacings(5);
+  version_table->attach(*local_label, 0, 1, 0, 1, Gtk::SHRINK|Gtk::FILL);
+  version_table->attach(*current_label, 0, 1, 1, 2, Gtk::SHRINK|Gtk::FILL);
+  version_table->attach(*local_label_val, 1, 2, 0, 1, Gtk::SHRINK|Gtk::FILL);
+  version_table->attach(this->version_label, 1, 2, 1, 2, Gtk::SHRINK|Gtk::FILL);
+
+  Gtk::Label* title_label = MK_LABEL0;
+  title_label->set_justify(Gtk::JUSTIFY_LEFT);
+  title_label->property_xalign() = 0.0f;
+  title_label->set_text("<b>GtkEveMon - a skill monitor for Linux</b>");
+  title_label->set_use_markup(true);
+
+  Gtk::Label* info_label = MK_LABEL0;
+  info_label->set_line_wrap(true);
+  info_label->set_justify(Gtk::JUSTIFY_LEFT);
+  info_label->property_xalign() = 0.0f;
+  info_label->set_text(
       "GtkEveMon is a skill monitoring standalone\n"
       "application for GNU/Linux systems. With GtkEveMon\n"
       "you can monitor your current skills and your\n"
@@ -35,16 +60,18 @@ GuiAboutDialog::GuiAboutDialog (void)
       "Forum: http://www.battleclinic.com/forum/index.php#43\n"
       "\n"
       "<i>Simon Fuhrmann &lt;SimonFuhrmann@gmx.de&gt;</i>");
-  about_label->set_use_markup(true);
+  info_label->set_use_markup(true);
 
   Gtk::Button* close_but = MK_BUT(Gtk::Stock::CLOSE);
   Gtk::HBox* button_box = MK_HBOX;
   button_box->pack_end(*close_but, false, false, 0);
 
   Gtk::VBox* about_label_box = MK_VBOX;
-  about_label_box->pack_start(*about_label, false, false, 0);
+  about_label_box->pack_start(*title_label, false, false, 0);
+  about_label_box->pack_start(*info_label, false, false, 0);
   about_label_box->pack_end(*button_box, false, false, 0);
   about_label_box->pack_end(*MK_HSEP, false, false, 0);
+  about_label_box->pack_end(*version_table, false, false, 0);
 
   Gtk::HBox* logo_text_box = MK_HBOX;
   logo_text_box->set_spacing(10);
@@ -62,5 +89,41 @@ GuiAboutDialog::GuiAboutDialog (void)
   this->set_title("About GtkEveMon");
   this->show_all();
 
-  about_label->set_selectable(true);
+  title_label->set_selectable(true);
+  this->version_label.set_selectable(true);
+  info_label->set_selectable(true);
+
+  this->request_version_label();
+}
+
+/* ---------------------------------------------------------------- */
+
+GuiAboutDialog::~GuiAboutDialog (void)
+{
+  this->request.disconnect();
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GuiAboutDialog::request_version_label (void)
+{
+  AsyncHttp* http = new AsyncHttp;
+  http->fetcher.set_host("gtkevemon.battleclinic.com");
+  http->fetcher.set_path("/svn_version.txt");
+  http->fetcher.set_agent("GtkEveMon");
+  this->request = http->signal_done().connect(sigc::mem_fun
+      (*this, &GuiAboutDialog::set_version_label));
+  http->async_request();
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GuiAboutDialog::set_version_label (AsyncHttp* http)
+{
+  if (http->data.get() == 0)
+    this->version_label.set_text("Error fetchting version!");
+  else
+    this->version_label.set_text(http->data->data);
 }
