@@ -9,8 +9,6 @@
 #include "config.h"
 #include "gtkportrait.h"
 
-/* ---------------------------------------------------------------- */
-
 GtkPortrait::GtkPortrait (void)
 {
 }

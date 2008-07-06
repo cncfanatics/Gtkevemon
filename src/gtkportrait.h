@@ -13,14 +13,7 @@
 class GtkPortrait : public Gtk::Image
 {
   private:
-    static sigc::signal<void> sig_update_portraits;
-
-  public:
-    static void emit_update_signal (void);
-
-  private:
     std::string char_id;
-    sigc::connection update_con;
     sigc::connection http_request;
 
     bool fetch_from_gtkevemon_cache (void);
