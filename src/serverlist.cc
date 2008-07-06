@@ -76,6 +76,12 @@ ServerList::add_server (std::string const& name,
 void
 ServerList::refresh (void)
 {
+  /* Prevents the creation of a thread if not neccessary. */
+  if (ServerList::list.size() == 0)
+    return;
+
+  std::cout << "Refreshing servers..." << std::endl;
+
   ServerChecker* checker = new ServerChecker;
   checker->create();
 }

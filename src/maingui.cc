@@ -186,7 +186,6 @@ MainGui::update_servers (void)
 bool
 MainGui::refresh_servers (void)
 {
-  std::cout << "Refreshing servers..." << std::endl;
   ServerList::refresh();
   return true;
 }
