@@ -25,15 +25,21 @@ char const* default_config =
     "  show_popup_dialog = true\n"
     "  show_tray_icon = true\n"
     "[servermonitor]\n"
-    "  0_Tranquility = 87.237.38.200\n"
-    "  1_Serenity = 210.5.28.28\n"
-    "  2_Singularity = 87.237.38.50\n"
     "[settings]\n"
     "  eve_cache = /\n"
     "  eve_command = eve\n"
     "  startup_servercheck = true\n"
     "  tray_usage = never\n"
     "  minimize_on_close = false\n";
+
+/* The initial configuration is loaded once if the configuration
+ * file is created for the first time. Thus it initializes the
+ * configuration but the values can be deleted from the config. */
+char const* initial_config =
+    "[servermonitor]\n"
+    "  0_Tranquility = 87.237.38.200\n"
+    "  1_Serenity = 210.5.28.28\n"
+    "  2_Singularity = 87.237.38.50\n";
 
 /* ---------------------------------------------------------------- */
 
@@ -111,6 +117,7 @@ Config::init_user_config (void)
   if (conf_exists < 0)
   {
     std::cout << "Creating initial config file: gtkevemon.conf" << std::endl;
+    Config::conf.add_from_string(initial_config);
     Config::conf.to_file(Config::filename);
   }
   else
