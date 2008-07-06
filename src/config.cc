@@ -38,7 +38,7 @@ char const* default_config =
 char const* initial_config =
     "[servermonitor]\n"
     "  0_Tranquility = 87.237.38.200\n"
-    "  1_Serenity = 210.5.28.28\n"
+    "  1_Serenity = 61.129.54.100\n"
     "  2_Singularity = 87.237.38.50\n";
 
 /* ---------------------------------------------------------------- */
