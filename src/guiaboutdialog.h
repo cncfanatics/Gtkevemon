@@ -11,6 +11,7 @@ class GuiAboutDialog : public WinBase
   private:
     Gtk::Label version_label;
     sigc::connection request;
+    Gtk::Image version_status_image;
 
   public:
     GuiAboutDialog (void);

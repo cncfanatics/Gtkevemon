@@ -21,6 +21,7 @@ GuiAboutDialog::GuiAboutDialog (void)
   logo_frame->add(*logo);
   logo_frame->set_shadow_type(Gtk::SHADOW_IN);
 
+  this->version_status_image.set(Gtk::Stock::REFRESH, Gtk::ICON_SIZE_BUTTON);
 
   Gtk::Label* local_label = MK_LABEL("Local version:");
   Gtk::Label* current_label = MK_LABEL("Current version:");
@@ -32,12 +33,14 @@ GuiAboutDialog::GuiAboutDialog (void)
   local_label_val->property_xalign() = 0.0f;
   this->version_label.property_xalign() = 0.0f;
 
-  Gtk::Table* version_table = Gtk::manage(new Gtk::Table(2, 2));
+  Gtk::Table* version_table = Gtk::manage(new Gtk::Table(2, 3));
   version_table->set_col_spacings(5);
-  version_table->attach(*local_label, 0, 1, 0, 1, Gtk::SHRINK|Gtk::FILL);
-  version_table->attach(*current_label, 0, 1, 1, 2, Gtk::SHRINK|Gtk::FILL);
-  version_table->attach(*local_label_val, 1, 2, 0, 1, Gtk::SHRINK|Gtk::FILL);
-  version_table->attach(this->version_label, 1, 2, 1, 2, Gtk::SHRINK|Gtk::FILL);
+  version_table->attach(this->version_status_image, 0, 1, 0, 2,
+      Gtk::SHRINK, Gtk::SHRINK, 5);
+  version_table->attach(*local_label, 1, 2, 0, 1, Gtk::SHRINK|Gtk::FILL);
+  version_table->attach(*current_label, 1, 2, 1, 2, Gtk::SHRINK|Gtk::FILL);
+  version_table->attach(*local_label_val, 2, 3, 0, 1, Gtk::SHRINK|Gtk::FILL);
+  version_table->attach(this->version_label, 2, 3, 1, 2, Gtk::SHRINK|Gtk::FILL);
 
   Gtk::Label* title_label = MK_LABEL0;
   title_label->set_justify(Gtk::JUSTIFY_LEFT);
@@ -123,7 +126,17 @@ void
 GuiAboutDialog::set_version_label (AsyncHttp* http)
 {
   if (http->data.get() == 0)
+  {
     this->version_label.set_text("Error fetchting version!");
+    this->version_status_image.set(Gtk::Stock::NO, Gtk::ICON_SIZE_BUTTON);
+    std::cout << "Could not fetch version: " << http->exception << std::endl;
+  }
   else
+  {
     this->version_label.set_text(http->data->data);
+    if (std::string(http->data->data) != GTKEVEMON_VERSION_STR)
+      this->version_status_image.set(Gtk::Stock::NO, Gtk::ICON_SIZE_BUTTON);
+    else
+      this->version_status_image.set(Gtk::Stock::YES, Gtk::ICON_SIZE_BUTTON);
+  }
 }
