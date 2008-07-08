@@ -18,7 +18,7 @@ class GuiAboutDialog : public WinBase
     ~GuiAboutDialog (void);
 
     void request_version_label (void);
-    void set_version_label (AsyncHttp* data);
+    void set_version_label (AsyncHttpData result);
 };
 
 #endif /* GUI_ABOUT_DIALOG_HEADER */

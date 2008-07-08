@@ -153,10 +153,10 @@ GtkPortrait::request_from_eve_online (void)
   std::cout << "Requesting portrait: " << this->char_id
       << " ..." << std::endl;
 
-  AsyncHttp* http = new AsyncHttp;
-  http->fetcher.set_host("img.eve.is");
-  http->fetcher.set_path("/serv.asp?s=256&c=" + this->char_id);
-  http->fetcher.set_agent("GtkEveMon");
+  AsyncHttp* http = AsyncHttp::create();;
+  http->set_host("img.eve.is");
+  http->set_path("/serv.asp?s=256&c=" + this->char_id);
+  http->set_agent("GtkEveMon");
   this->http_request = http->signal_done().connect(sigc::mem_fun
       (*this, &GtkPortrait::set_from_eve_online));
   http->async_request();
@@ -165,9 +165,9 @@ GtkPortrait::request_from_eve_online (void)
 /* ---------------------------------------------------------------- */
 
 void
-GtkPortrait::set_from_eve_online (AsyncHttp* http)
+GtkPortrait::set_from_eve_online (AsyncHttpData result)
 {
-  if (http->data.get() == 0)
+  if (result.data.get() == 0)
   {
     std::cout << "Error fetching portrait from EVE Online!" << std::endl;
     return;
@@ -187,7 +187,7 @@ GtkPortrait::set_from_eve_online (AsyncHttp* http)
   try
   {
     std::ofstream out(jpg_name.str().c_str());
-    out.write(http->data->data, http->data->size);
+    out.write(result.data->data, result.data->size);
     out.close();
 
     Glib::RefPtr<Gdk::Pixbuf> image

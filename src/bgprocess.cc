@@ -23,7 +23,7 @@ BGProcess::BGProcess (std::vector<std::string>& cmd, std::string const& chdir)
    * Create a thread there the new process will be created in.
    * waitpid() is then waiting for the termination of the process.
    */
-  this->create();
+  this->pt_create();
 }
 
 /* ---------------------------------------------------------------- */

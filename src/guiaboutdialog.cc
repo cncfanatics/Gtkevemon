@@ -111,10 +111,10 @@ GuiAboutDialog::~GuiAboutDialog (void)
 void
 GuiAboutDialog::request_version_label (void)
 {
-  AsyncHttp* http = new AsyncHttp;
-  http->fetcher.set_host("gtkevemon.battleclinic.com");
-  http->fetcher.set_path("/svn_version.txt");
-  http->fetcher.set_agent("GtkEveMon");
+  AsyncHttp* http = AsyncHttp::create();
+  http->set_host("gtkevemon.battleclinic.com");
+  http->set_path("/svn_version.txt");
+  http->set_agent("GtkEveMon");
   this->request = http->signal_done().connect(sigc::mem_fun
       (*this, &GuiAboutDialog::set_version_label));
   http->async_request();
@@ -123,18 +123,18 @@ GuiAboutDialog::request_version_label (void)
 /* ---------------------------------------------------------------- */
 
 void
-GuiAboutDialog::set_version_label (AsyncHttp* http)
+GuiAboutDialog::set_version_label (AsyncHttpData result)
 {
-  if (http->data.get() == 0)
+  if (result.data.get() == 0)
   {
     this->version_label.set_text("Error fetchting version!");
     this->version_status_image.set(Gtk::Stock::NO, Gtk::ICON_SIZE_BUTTON);
-    std::cout << "Could not fetch version: " << http->exception << std::endl;
+    std::cout << "Could not fetch version: " << result.exception << std::endl;
   }
   else
   {
-    this->version_label.set_text(http->data->data);
-    if (std::string(http->data->data) != GTKEVEMON_VERSION_STR)
+    this->version_label.set_text(result.data->data);
+    if (std::string(result.data->data) != GTKEVEMON_VERSION_STR)
       this->version_status_image.set(Gtk::Stock::NO, Gtk::ICON_SIZE_BUTTON);
     else
       this->version_status_image.set(Gtk::Stock::YES, Gtk::ICON_SIZE_BUTTON);

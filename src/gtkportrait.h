@@ -19,7 +19,7 @@ class GtkPortrait : public Gtk::Image
     bool fetch_from_gtkevemon_cache (void);
     bool fetch_from_eve_cache (void);
     void request_from_eve_online (void);
-    void set_from_eve_online (AsyncHttp* http);
+    void set_from_eve_online (AsyncHttpData result);
 
     void cache_portrait (Glib::RefPtr<Gdk::Pixbuf> portrait);
 

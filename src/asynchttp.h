@@ -7,51 +7,68 @@
 #include "thread.h"
 #include "exception.h"
 
-/* Class for asynchronous HTTP requests. Instructions:
- * - Create class on the heap (with new)
- * - Setup the HTTP fetcher member
- * - Connect to the done signal (disconnect if not interested anymore)
- * - Run async_request
- *   - data will be NULL and exception is filled on error
+/* This is delivered when the request ist done.
+ * The data member is NULL if there was an error.
+ * The exception member is the error description then.
  */
-class AsyncHttp : public Thread
+class AsyncHttpData
+{
+  public:
+    HttpDataPtr data;
+    Exception exception;
+};
+
+/* Class for asynchronous HTTP requests. Instructions:
+ * - Create class with create()
+ * - Setup the HTTP data (host, path, etc)
+ * - Connect to the done signal (disconnect if not interested anymore)
+ * - Run async_request()
+ * - Data will be delivered to all signal subscribers
+ * - No need to free, automatic deletion if all signals are processed
+ */
+class AsyncHttp : public Thread, public Http
 {
   private:
+    AsyncHttpData http_result;
     Glib::Dispatcher sig_dispatch;
-    sigc::signal<void, AsyncHttp*> sig_done;
+    sigc::signal<void, AsyncHttpData> sig_done;
 
   protected:
+    AsyncHttp (void);
+
     void* run (void);
     void dispatch (void);
 
   public:
-    Http fetcher;
-    HttpDataPtr data;
-    Exception exception;
-
-  public:
-    AsyncHttp (void);
+    static AsyncHttp* create (void);
     ~AsyncHttp (void);
+
     void async_request (void);
-    sigc::signal<void, AsyncHttp*>& signal_done (void);
+    sigc::signal<void, AsyncHttpData>& signal_done (void);
 };
 
 /* ---------------------------------------------------------------- */
 
+inline AsyncHttp*
+AsyncHttp::create (void)
+{
+  return new AsyncHttp;
+}
+
 inline void
 AsyncHttp::async_request (void)
 {
-  this->create();
+  this->pt_create();
 }
 
 inline void
 AsyncHttp::dispatch (void)
 {
-  this->sig_done.emit(this);
+  this->sig_done.emit(this->http_result);
   delete this;
 }
 
-inline sigc::signal<void, AsyncHttp*>&
+inline sigc::signal<void, AsyncHttpData>&
 AsyncHttp::signal_done (void)
 {
   return sig_done;

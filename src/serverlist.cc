@@ -83,5 +83,5 @@ ServerList::refresh (void)
   std::cout << "Refreshing servers..." << std::endl;
 
   ServerChecker* checker = new ServerChecker;
-  checker->create();
+  checker->pt_create();
 }

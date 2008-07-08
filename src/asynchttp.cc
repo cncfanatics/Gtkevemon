@@ -13,12 +13,12 @@ AsyncHttp::run (void)
 {
   try
   {
-    this->data = this->fetcher.request();
+    this->http_result.data = this->request();
   }
   catch (Exception& e)
   {
-    this->exception = e;
-    this->data.reset();
+    this->http_result.exception = e;
+    this->http_result.data.reset();
   }
 
   this->sig_dispatch.emit();
