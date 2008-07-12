@@ -128,7 +128,7 @@ class GtkCharPage : public Gtk::VBox
     void set_character (EveApiAuth const& character);
     EveApiAuth const& get_character (void);
     std::string get_char_name (void);
-    std::string get_tooltip_text (void);
+    std::string get_tooltip_text (bool detailed);
     std::string get_skill_in_training (void);
     double get_spph_in_training (void);
     std::string get_skill_remaining (bool slim = false);

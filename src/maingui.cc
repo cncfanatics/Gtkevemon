@@ -201,6 +201,9 @@ MainGui::update_tooltip (void)
   if (!this->notebook.get_show_tabs())
     return true;
 
+  bool detailed = Config::conf.get_value
+      ("settings.detailed_tray_tooltip")->get_bool();
+
   std::string tooltip;
   Glib::ListHandle<Gtk::Widget*> childs = this->notebook.get_children();
   for (Glib::ListHandle<Gtk::Widget*>::iterator iter = childs.begin();
@@ -209,7 +212,7 @@ MainGui::update_tooltip (void)
     if (iter != childs.begin())
       tooltip += "\n";
 
-    std::string char_tttext = ((GtkCharPage*)*iter)->get_tooltip_text();
+    std::string char_tttext = ((GtkCharPage*)*iter)->get_tooltip_text(detailed);
     if (!char_tttext.empty())
       tooltip += char_tttext;
   }

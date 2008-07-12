@@ -26,11 +26,12 @@ char const* default_config =
     "  show_tray_icon = true\n"
     "[servermonitor]\n"
     "[settings]\n"
+    "  detailed_tray_tooltip = true\n"
     "  eve_cache = /\n"
     "  eve_command = eve\n"
+    "  minimize_on_close = false\n"
     "  startup_servercheck = true\n"
-    "  tray_usage = never\n"
-    "  minimize_on_close = false\n";
+    "  tray_usage = never\n";
 
 /* The initial configuration is loaded once if the configuration
  * file is created for the first time. Thus it initializes the

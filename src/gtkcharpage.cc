@@ -883,18 +883,27 @@ GtkCharPage::get_char_name (void)
 /* ---------------------------------------------------------------- */
 
 std::string
-GtkCharPage::get_tooltip_text (void)
+GtkCharPage::get_tooltip_text (bool detailed)
 {
+  if (this->sheet.get() == 0)
+    return "";
+
   std::string ret;
-  if (this->sheet.get() != 0)
+
+  ret += this->sheet->name;
+  ret += " - ";
+
+  if (this->training.get() != 0 && this->training->in_training)
   {
-    ret += this->sheet->name;
-    ret += " - ";
-    if (this->training.get() != 0 && this->training->in_training)
-      ret += this->get_skill_remaining(true);
-    else
-      ret += "Not training!";
+    ret += this->get_skill_remaining(true);
+    if (detailed)
+    {
+      ret += " - ";
+      ret += this->get_skill_in_training();
+    }
   }
+  else
+    ret += "Not training!";
 
   return ret;
 }
@@ -997,6 +1006,7 @@ GtkCharPage::get_skill_remaining (bool slim)
     return "No training information!";
 
   int slim_count = 2;
+  bool ss_empty = true;
 
   time_t evetime = EveTime::get_eve_time();
   time_t finish = this->training->end_time_t;
@@ -1013,22 +1023,30 @@ GtkCharPage::get_skill_remaining (bool slim)
   std::stringstream ss;
   if (days > 0)
   {
-    ss << (int)days << "d ";
+    ss << (int)days << "d";
     slim_count -= 1;
+    ss_empty = false;
   }
   if (days > 0 || hours > 0)
   {
-    ss << (int)hours << "h ";
+    if (!ss_empty) ss << " ";
+    ss << (int)hours << "h";
     slim_count -= 1;
+    ss_empty = false;
   }
   if ((!slim || slim_count > 0) && ((days > 0 && hours > 0) || minutes > 0))
   {
-    ss << (int)minutes << "m ";
+    if (!ss_empty) ss << " ";
+    ss << (int)minutes << "m";
     slim_count -= 1;
+    ss_empty = false;
   }
 
   if (!slim || slim_count > 0)
+  {
+    if (!ss_empty) ss << " ";
     ss << (int)seconds << "s";
+  }
 
   return ss.str();
 }
