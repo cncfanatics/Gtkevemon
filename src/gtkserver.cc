@@ -5,7 +5,47 @@
 #include "exception.h"
 #include "serverlist.h"
 #include "helpers.h"
+#include "thread.h"
 #include "gtkserver.h"
+
+class GtkServerChecker : public Thread
+{
+  private:
+    Server* server;
+
+  protected:
+    void* run (void);
+
+  public:
+    GtkServerChecker (Server* server);
+};
+
+/* ---------------------------------------------------------------- */
+
+GtkServerChecker::GtkServerChecker (Server* server)
+{
+  this->server = server;
+}
+
+/* ---------------------------------------------------------------- */
+
+void*
+GtkServerChecker::run (void)
+{
+  try
+  {
+    this->server->refresh();
+  }
+  catch (Exception& e)
+  {
+    std::cout << "Error refeshing server: " << e << std::endl;
+  }
+
+  delete this;
+  return 0;
+}
+
+/* ================================================================ */
 
 GtkServer::GtkServer (Server& server)
   : Gtk::Table(4, 3, false)
@@ -80,16 +120,9 @@ GtkServer::update (void)
 void
 GtkServer::force_refresh (void)
 {
-  try
-  {
-    this->server->refresh();
-  }
-  catch (Exception& e)
-  {
-    std::cout << "Error refeshing server: " << e << std::endl;
-  }
-
-  this->update();
+  GtkServerChecker* sc = new GtkServerChecker(this->server);
+  sc->pt_create();
+  this->set_status_icon(Gtk::Stock::REFRESH);
 }
 
 /* ---------------------------------------------------------------- */
