@@ -1,15 +1,15 @@
 /*
- * conf.h -- Part of the SimFM filemanager
- * Copyright (c) 2004 by Simon Fuhrmann
+ * This file is part of GtkEveMon.
  *
- * Refer to `COPYING´ for license information.
+ * GtkEveMon is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * Description:
- * This is a collection of classes to handle ini-styled config files.
- * Unlike regular ini-styled config files, it is possible to put values
- * _and_ sections to sections, so one can define a tree with sections as
- * inner nodes and values as leafs.
+ * You should have received a copy of the GNU General Public License
+ * along with GtkEveMon. If not, see <http://www.gnu.org/licenses/>.
  */
+
 #ifndef CONF_HEADER
 #define CONF_HEADER
 

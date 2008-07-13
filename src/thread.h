@@ -1,3 +1,15 @@
+/*
+ * This file is part of GtkEveMon.
+ *
+ * GtkEveMon is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GtkEveMon. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef THREAD_HEADER
 #define THREAD_HEADER
 
@@ -18,12 +30,15 @@ class Thread
   public:
     virtual ~Thread (void) { }
 
+    /* Creates a new thread and runs the run() method. */
     void pt_create (const pthread_attr_t* p = 0)
     { pthread_create(&handle, p, Thread::stub, (void*)this); }
 
+    /* Sends a cancelation request to the thread. */
     void pt_cancel (void)
     { pthread_cancel(handle); }
 
+    /* Blocks and waits for termination of the thread. */
     void pt_join (void)
     { pthread_join(handle, 0); }
 };

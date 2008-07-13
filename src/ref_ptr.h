@@ -11,11 +11,8 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  On Debian GNU/Linux systems, the complete text of the GNU General
- *  Public License can be found in `/usr/share/common-licenses/GPL'.
- *
- *  A copy of the GNU General Public License is also available at
- *  <URL:http://www.gnu.org/copyleft/gpl.html>.
+ *  You should have received a copy of the GNU General Public License
+ *  along with the application. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef REF_PTR_HEADER

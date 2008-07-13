@@ -13,7 +13,3 @@ install:
 uninstall:
 	rm -f ${INSTALL_BIN}/gtkevemon
 	rmdir --ignore-fail-on-non-empty ${INSTALL_BIN}
-
-userinstall:
-	mkdir -p ~/.gtkevemon
-	cp xml/SkillTree.xml ~/.gtkevemon

@@ -1,16 +1,18 @@
 /*
- * exception.h -- Part of the SimFM filemanager
- * Copyright (c) 2004 by Simon Fuhrmann
+ * This file is part of GtkEveMon.
  *
- * Refer to `COPYING´ for license information.
+ * GtkEveMon is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * Description:
- * A simple class for storing and printing an exception string.
+ * You should have received a copy of the GNU General Public License
+ * along with GtkEveMon. If not, see <http://www.gnu.org/licenses/>.
  */
+
 #ifndef EXCEPTION_HEADER
 #define EXCEPTION_HEADER
 
-#include <iostream>
 #include <string>
 
 /* Universal simple exception class. */
@@ -20,16 +22,6 @@ class Exception : public std::string
     Exception (void) { }
     Exception (const std::string& msg) : std::string(msg) { }
     virtual ~Exception (void) { }
-
-    void print (void);
 };
-
-/* ---------------------------------------------------------------- */
-
-inline void
-Exception::print (void)
-{
-  std::cout << "Exception: " << *this << std::endl;
-}
 
 #endif /* EXCEPTION_HEADER */

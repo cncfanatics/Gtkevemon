@@ -1,3 +1,15 @@
+/*
+ * This file is part of GtkEveMon.
+ *
+ * GtkEveMon is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GtkEveMon. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef EVE_TIME_HEADER
 #define EVE_TIME_HEADER
 
@@ -8,7 +20,7 @@
 class EveTime
 {
   private:
-    /* Difference between the eve time and the local time. */
+    /* Difference between the EVE time and the local time. */
     static time_t timediff;
     static bool initialized;
 
@@ -20,7 +32,7 @@ class EveTime
     /* Stores the time difference to config file. */
     static void store_to_config (void);
 
-    /* Returns the current eve time as string. */
+    /* Returns the current EVE time as string. */
     static std::string get_eve_time_string (void);
     /* Returns the current local time as string. */
     static std::string get_local_time_string (void);
