@@ -27,6 +27,7 @@ class Config
   public:
     static void init_defaults (void);
     static void init_user_config (void);
+    static void save_to_file (void);
     static void unload (void);
 
     static std::string const& get_conf_dir (void);
@@ -36,9 +37,15 @@ class Config
 /* ---------------------------------------------------------------- */
 
 inline void
-Config::unload (void)
+Config::save_to_file (void)
 {
   Config::conf.to_file(Config::filename);
+}
+
+inline void
+Config::unload (void)
+{
+  Config::save_to_file();
 }
 
 inline std::string const&

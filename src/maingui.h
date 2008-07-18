@@ -20,7 +20,6 @@
 #include <gtkmm/notebook.h>
 #include <gtkmm/statusicon.h>
 
-#include "winbase.h"
 #include "gtkserver.h"
 #include "eveapi.h"
 
@@ -33,7 +32,7 @@
 /* Update the tooltip for the tray icon this milli seconds. */
 #define MAINGUI_TOOLTIP_UPDATE 30000
 
-class MainGui : public WinBase
+class MainGui : public Gtk::Window
 {
   private:
     std::vector<GtkServer*> gtkserver;
@@ -45,7 +44,6 @@ class MainGui : public WinBase
     Gtk::Label localtime_label;
 
     void init_from_config (void);
-    void store_to_config (void);
     bool update_servers (void);
     bool refresh_servers (void);
     bool update_time (void);
@@ -66,6 +64,8 @@ class MainGui : public WinBase
     void create_tray_icon (void);
     void destroy_tray_icon (void);
     void create_skillplan (void);
+    bool internal_add_character (EveApiAuth const& auth);
+    bool internal_remove_character (EveApiAuth const& auth);
 
   public:
     MainGui (void);

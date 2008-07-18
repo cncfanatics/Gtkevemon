@@ -28,6 +28,7 @@ class GuiConfiguration : public WinBase
     Gtk::Label valid_label;
 
     void check_new_path (void);
+    void close (void);
 
   public:
     GuiConfiguration (void);

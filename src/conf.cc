@@ -424,6 +424,8 @@ Conf::add_from_string (const std::string& conf_string)
 void
 Conf::to_file (const std::string& filename)
 {
+  //std::cout << "Saving configuration..." << std::endl;
+
   std::ofstream file(filename.c_str());
   if (file.fail())
   {

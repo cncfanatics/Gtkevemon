@@ -167,7 +167,6 @@ MainGui::MainGui (void)
 
 MainGui::~MainGui (void)
 {
-  this->store_to_config();
 }
 
 /* ---------------------------------------------------------------- */
@@ -257,7 +256,6 @@ MainGui::about_dialog (void)
 void
 MainGui::close (void)
 {
-  delete this;
   Gtk::Main::quit();
 }
 
@@ -290,40 +288,15 @@ MainGui::init_from_config (void)
     StringVector chars = Helpers::split_string(char_ids, ',');
     for (unsigned int i = 0; i < chars.size(); ++i)
     {
+      if (chars[i].empty())
+        continue;
+
       auth.char_id = chars[i];
-      this->add_character(auth);
+      this->internal_add_character(auth);
     }
   }
 
   this->check_if_no_pages();
-}
-
-/* ---------------------------------------------------------------- */
-
-void
-MainGui::store_to_config (void)
-{
-  ConfSectionPtr char_sect = Config::conf.get_section("characters");
-  char_sect->clear_values();
-
-  if (this->notebook.get_show_tabs())
-  {
-    Glib::ListHandle<Gtk::Widget*> childs = this->notebook.get_children();
-    for (Glib::ListHandle<Gtk::Widget*>::iterator iter = childs.begin();
-        iter != childs.end(); iter++)
-    {
-      EveApiAuth const& auth = ((GtkCharPage*)*iter)->get_character();
-      try
-      {
-        ConfValuePtr value = char_sect->get_value(auth.user_id);
-        value->set(**value + "," + auth.char_id);
-      }
-      catch (...)
-      {
-        char_sect->add(auth.user_id, ConfValue::create(auth.char_id));
-      }
-    }
-  }
 }
 
 /* ---------------------------------------------------------------- */
@@ -447,13 +420,14 @@ MainGui::on_window_state_event (GdkEventWindowState* event)
 bool
 MainGui::on_delete_event (GdkEventAny* event)
 {
+  event = 0;
+
   if (Config::conf.get_value("settings.minimize_on_close")->get_bool())
-  {
     this->iconify();
-    return true;
-  }
   else
-    return this->WinBase::on_delete_event(event);
+    this->close();
+
+  return true;
 }
 
 /* ---------------------------------------------------------------- */
@@ -486,8 +460,8 @@ MainGui::on_pages_changed (Gtk::Widget* widget, guint pnum)
 
 /* ---------------------------------------------------------------- */
 
-void
-MainGui::add_character (EveApiAuth const& auth)
+bool
+MainGui::internal_add_character (EveApiAuth const& auth)
 {
   /* If tabs are not shown, the welcome page is visible. */
   if (this->notebook.get_show_tabs() == false)
@@ -511,7 +485,7 @@ MainGui::add_character (EveApiAuth const& auth)
   }
 
   if (found)
-    return;
+    return false;
 
   /* Create the new character page for the notebook. */
   GtkCharPage* page = Gtk::manage(new GtkCharPage);
@@ -528,13 +502,17 @@ MainGui::add_character (EveApiAuth const& auth)
       (*this, &MainGui::remove_character));
   page->signal_sheet_updated().connect(sigc::mem_fun
       (*this, &MainGui::update_char_page));
+
+  return true;
 }
 
 /* ---------------------------------------------------------------- */
 
-void
-MainGui::remove_character (EveApiAuth const& auth)
+bool
+MainGui::internal_remove_character (EveApiAuth const& auth)
 {
+  bool removed = false;
+
   Glib::ListHandle<Gtk::Widget*> childs = this->notebook.get_children();
   for (Glib::ListHandle<Gtk::Widget*>::iterator iter = childs.begin();
       iter != childs.end(); iter++)
@@ -543,12 +521,79 @@ MainGui::remove_character (EveApiAuth const& auth)
     if (tmp_auth.user_id == auth.user_id && tmp_auth.char_id == auth.char_id)
     {
       this->notebook.remove_page(**iter);
+      removed = true;
       break;
     }
   }
 
   this->check_if_no_pages();
   this->update_tooltip();
+
+  return removed;
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+MainGui::add_character (EveApiAuth const& auth)
+{
+  bool inserted = this->internal_add_character(auth);
+
+  if (!inserted)
+    return;
+
+  /* Add the character to the configuration. */
+  ConfSectionPtr char_sect = Config::conf.get_section("characters");
+  try
+  {
+    ConfValuePtr value = char_sect->get_value(auth.user_id);
+    value->set(**value + "," + auth.char_id);
+  }
+  catch (...)
+  {
+    char_sect->add(auth.user_id, ConfValue::create(auth.char_id));
+  }
+
+  /* Save the configuration. */
+  Config::save_to_file();
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+MainGui::remove_character (EveApiAuth const& auth)
+{
+  bool removed = this->internal_remove_character(auth);
+
+  if (!removed)
+    return;
+
+  /* Remove the character from the configuration
+   * (actually recreate the whole list). */
+  ConfSectionPtr char_sect = Config::conf.get_section("characters");
+  char_sect->clear_values();
+
+  if (this->notebook.get_show_tabs())
+  {
+    Glib::ListHandle<Gtk::Widget*> childs = this->notebook.get_children();
+    for (Glib::ListHandle<Gtk::Widget*>::iterator iter = childs.begin();
+        iter != childs.end(); iter++)
+    {
+      EveApiAuth const& pageauth = ((GtkCharPage*)*iter)->get_character();
+      try
+      {
+        ConfValuePtr value = char_sect->get_value(pageauth.user_id);
+        value->set(**value + "," + pageauth.char_id);
+      }
+      catch (...)
+      {
+        char_sect->add(pageauth.user_id, ConfValue::create(pageauth.char_id));
+      }
+    }
+  }
+
+  /* Save the configuration. */
+  Config::save_to_file();
 }
 
 /* ---------------------------------------------------------------- */

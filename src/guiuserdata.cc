@@ -216,6 +216,7 @@ GuiUserData::on_charlist_available (AsyncHttpData data)
       ("accounts." + this->userid_entry.get_text());
   sect->add("apikey", ConfValue::create(this->apikey_entry.get_text()));
   sect->add("chars", ConfValue::create(char_string));
+  Config::save_to_file();
 }
 
 /* ---------------------------------------------------------------- */

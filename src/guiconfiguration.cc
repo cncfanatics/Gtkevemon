@@ -164,7 +164,8 @@ GuiConfiguration::GuiConfiguration (void)
 
   this->check_new_path();
 
-  close_but->signal_clicked().connect(sigc::mem_fun(*this, &WinBase::close));
+  close_but->signal_clicked().connect(sigc::mem_fun
+      (*this, &GuiConfiguration::close));
   this->eve_cache.signal_selection_changed().connect(sigc::mem_fun
       (*this, &GuiConfiguration::check_new_path));
 }
@@ -191,4 +192,13 @@ GuiConfiguration::check_new_path (void)
     this->valid_label.set_text("The path seems to be VALID!");
     this->valid_icon.set(Gtk::Stock::YES, Gtk::ICON_SIZE_BUTTON);
   }
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GuiConfiguration::close (void)
+{
+  Config::save_to_file();
+  this->WinBase::close();
 }
