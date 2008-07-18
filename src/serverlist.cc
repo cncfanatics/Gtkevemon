@@ -80,7 +80,7 @@ ServerList::refresh (void)
   if (ServerList::list.size() == 0)
     return;
 
-  std::cout << "Refreshing servers..." << std::endl;
+  //std::cout << "Refreshing servers..." << std::endl;
 
   ServerChecker* checker = new ServerChecker;
   checker->pt_create();

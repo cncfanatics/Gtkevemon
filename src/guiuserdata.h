@@ -48,8 +48,13 @@ class GuiUserDataComboColRecord : public Gtk::TreeModel::ColumnRecord
 class GuiUserData : public WinBase
 {
   private:
+
+  private:
+    EveApiFetcher charlist_fetcher;
+
     Gtk::Entry userid_entry;
     Gtk::Entry apikey_entry;
+    Gtk::Button apply_button;
 
     GuiUserDataComboColRecord combo_cols;
     Glib::RefPtr<Gtk::ListStore> combo_store;
@@ -65,6 +70,8 @@ class GuiUserData : public WinBase
     void on_add_clicked (void);
     void on_apply_clicked (void);
     void on_history_selected (void);
+    void on_charlist_available (AsyncHttpData data);
+    void print_error (std::string const& error);
 
   public:
     GuiUserData (void);

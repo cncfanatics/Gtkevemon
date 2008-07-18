@@ -25,8 +25,15 @@
 #include "gtkcharpage.h"
 
 GtkCharPage::GtkCharPage (void)
-  : Gtk::VBox(false, 5), patience_box(false, 5)
+  : Gtk::VBox(false, 5)
 {
+  /* Setup the API HTTP fetchers and API data. */
+  this->sheet_fetcher.set_doctype(EVE_API_DOCTYPE_CHARSHEET);
+  this->training_fetcher.set_doctype(EVE_API_DOCTYPE_INTRAINING);
+  this->sheet = ApiCharSheet::create();
+  this->training = ApiInTraining::create();
+
+  /* GUI stuff. */
   Gtk::TreeViewColumn* name_column = Gtk::manage(new Gtk::TreeViewColumn);
   name_column->set_title("Skill name (rank)");
   name_column->pack_start(this->skill_cols.icon, false);
@@ -73,22 +80,11 @@ GtkCharPage::GtkCharPage (void)
   this->spph_label.property_xalign() = 1.0f;
   this->live_sp_label.property_xalign() = 1.0f;
 
-  this->patience_box.set_border_width(5);
-  Gtk::Image* patience_image = Gtk::manage(new Gtk::Image
-      (Gtk::Stock::DIALOG_INFO, Gtk::ICON_SIZE_DIALOG));
-  Gtk::Label* patience_label = MK_LABEL
-      ("The data is received from the API server.\n"
-      "Please be patient. This may take a while.");
-  patience_image->property_xalign() = 1.0f;
-  patience_label->property_xalign() = 0.0f;
-  this->patience_box.pack_start(*patience_image, true, true, 0);
-  this->patience_box.pack_start(*patience_label, true, true, 0);
-  this->patience_box.show_all();
-
-  this->scwin.set_shadow_type(Gtk::SHADOW_ETCHED_IN);
-  this->scwin.set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_ALWAYS);
-  this->scwin.add(this->skill_view);
-  this->scwin.show_all();
+  Gtk::ScrolledWindow* scwin = Gtk::manage(new Gtk::ScrolledWindow);
+  scwin->set_shadow_type(Gtk::SHADOW_ETCHED_IN);
+  scwin->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_ALWAYS);
+  scwin->add(this->skill_view);
+  scwin->show_all();
 
   Gtk::Table* info_table = Gtk::manage(new Gtk::Table(5, 7));
   info_table->set_col_spacings(10);
@@ -145,8 +141,6 @@ GtkCharPage::GtkCharPage (void)
   info_table->attach(*close_but_box, 6, 7, 0, 2,
       Gtk::FILL | Gtk::EXPAND, Gtk::SHRINK);
 
-  this->set_patience_info();
-
   Gtk::Table* train_table = Gtk::manage(new Gtk::Table(4, 3));
   train_table->set_col_spacings(10);
   Gtk::Label* train_desc = MK_LABEL("<b>Training:</b>");
@@ -173,17 +167,29 @@ GtkCharPage::GtkCharPage (void)
   train_table->attach(this->spph_label, 2, 3, 2, 3, Gtk::FILL, Gtk::SHRINK);
   train_table->attach(this->live_sp_label, 2, 3, 3, 4, Gtk::FILL, Gtk::SHRINK);
 
+  this->set_border_width(5);
+  this->pack_start(*info_table, false, false, 0);
+  this->pack_start(*scwin, true, true, 0);
+  this->pack_start(*train_table, false, false, 0);
+  this->pack_start(this->info_display, false, false, 0);
+
+  /* Signals. */
   close_but->signal_clicked().connect(sigc::mem_fun
       (*this, &GtkCharPage::on_close_clicked));
   this->refresh_but.signal_clicked().connect(sigc::mem_fun
-      (*this, &GtkCharPage::refresh_data));
+      (*this, &GtkCharPage::request_documents));
   this->info_but.signal_clicked().connect(sigc::mem_fun
-      (*this, &GtkCharPage::info_clicked));
+      (*this, &GtkCharPage::on_info_clicked));
   this->skill_view.signal_row_activated().connect(sigc::mem_fun
       (*this, &GtkCharPage::on_skill_activated));
   this->skill_view.set_has_tooltip(true);
   this->skill_view.signal_query_tooltip().connect(sigc::mem_fun
       (*this, &GtkCharPage::on_query_skillview_tooltip));
+
+  this->sheet_fetcher.signal_done().connect(sigc::mem_fun
+      (*this, &GtkCharPage::on_charsheet_available));
+  this->training_fetcher.signal_done().connect(sigc::mem_fun
+      (*this, &GtkCharPage::on_intraining_available));
 
   Glib::signal_timeout().connect(sigc::mem_fun(*this,
       &GtkCharPage::update_remaining), CHARPAGE_REMAINING_UPDATE);
@@ -192,14 +198,11 @@ GtkCharPage::GtkCharPage (void)
   Glib::signal_timeout().connect(sigc::mem_fun(*this,
       &GtkCharPage::on_live_sp_image_update), CHARPAGE_LIVE_SP_IMAGE_UPDATE);
 
-  this->set_border_width(5);
-  this->pack_start(*info_table, false, false, 0);
-  this->pack_start(this->skill_frame, true, true, 0);
-  this->pack_start(*train_table, false, false, 0);
-
-  this->api_info_changed();
+  this->update_charsheet_details();
+  this->update_training_details();
 
   this->show_all();
+  this->info_display.hide();
 }
 
 /* ---------------------------------------------------------------- */
@@ -208,33 +211,22 @@ void
 GtkCharPage::set_character (EveApiAuth const& character)
 {
   this->character = character;
+  this->sheet_fetcher.set_auth(character);
+  this->training_fetcher.set_auth(character);
   this->char_image.set(this->character.char_id);
-
-  this->set_patience_info();
-
-  try
-  { this->sheet = ApiCharSheet::create(this->character); }
-  catch (Exception& e)
-  { this->popup_charsheet_error(e); }
-
-  try
-  { this->training = ApiInTraining::create(this->character); }
-  catch (Exception& e)
-  { this->popup_intraining_error(e); }
-
-  this->api_info_changed();
-  this->set_skill_list();
+  this->update_charsheet_details();
+  this->request_documents();
 }
 
 /* ---------------------------------------------------------------- */
 
 void
-GtkCharPage::update_gui (void)
+GtkCharPage::update_charsheet_details (void)
 {
   /* Set character information. */
-  if (this->sheet.get() == 0)
+  if (!this->sheet->valid)
   {
-    this->char_name_label.set_text("<b>---</b>");
+    this->char_name_label.set_text("<b>" + this->character.char_id + "</b>");
     this->char_name_label.set_use_markup(true);
     this->char_info_label.set_text("---");
     this->corp_label.set_text("---");
@@ -277,9 +269,15 @@ GtkCharPage::update_gui (void)
   }
 
   this->update_skill_list();
+}
 
+/* ---------------------------------------------------------------- */
+
+void
+GtkCharPage::update_training_details (void)
+{
   /* Set training information. */
-  if (this->training.get() == 0)
+  if (!this->training->valid)
   {
     this->training_label.set_text("---");
     this->remaining_label.set_text("---");
@@ -296,12 +294,6 @@ GtkCharPage::update_gui (void)
       this->finish_eve_label.set_text(this->training->end_time);
       this->finish_local_label.set_text(EveTime::get_local_time_string
           (EveTime::adjust_local_time(this->training->end_time_t)));
-
-      if (this->sheet.get() != 0)
-        this->spph_label.set_text(Helpers::get_string_from_uint
-            ((unsigned int)this->get_spph_in_training()) + " SP per hour");
-      else
-        this->spph_label.set_text("---");
 
       this->on_live_sp_value_update();
       this->on_live_sp_image_update();
@@ -321,119 +313,11 @@ GtkCharPage::update_gui (void)
 /* ---------------------------------------------------------------- */
 
 void
-GtkCharPage::refresh_data (void)
-{
-  if (this->sheet.get() == 0 || this->training.get() == 0)
-  {
-    this->set_character(this->character);
-    return;
-  }
-
-  std::string evetime = EveTime::get_eve_time_string();
-  std::string char_cached = this->sheet->get_cached_until();
-  std::string train_cached = this->training->get_cached_until();
-
-  bool update_char = true;
-  bool update_training = true;
-
-  if (evetime < char_cached)
-    update_char = false;
-
-  if (evetime < train_cached)
-    update_training = false;
-
-  if (!update_char && !update_training)
-  {
-    Gtk::MessageDialog md("Data is already up-to-date. Continue anyway?",
-        false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
-    md.set_secondary_text("The data you are about to refresh is already "
-        "up-to-date.\n\n"
-        "Character sheet expires at " + char_cached + "\n"
-        "Training sheet expires at " + train_cached + "\n\n"
-        "You can continue and rerequest the data, but it will most "
-        "likely don't change a thing.");
-    md.set_title("Cache Status - GtkEveMon");
-    md.set_transient_for(*this->parent_window);
-    int result = md.run();
-    switch (result)
-    {
-      case Gtk::RESPONSE_DELETE_EVENT:
-      case Gtk::RESPONSE_NO:
-        return;
-      case Gtk::RESPONSE_YES:
-        update_char = true;
-        update_training = true;
-        break;
-      default:
-        return;
-    };
-  }
-
-  this->set_patience_info();
-
-  try
-  {
-    if (update_char)
-      this->sheet->refresh();
-  }
-  catch (Exception& e)
-  { this->popup_charsheet_error(e); }
-
-  try
-  {
-    if (update_training)
-      this->training->refresh();
-  }
-  catch (Exception& e)
-  { this->popup_intraining_error(e); }
-
-  this->api_info_changed();
-  this->set_skill_list();
-}
-
-/* ---------------------------------------------------------------- */
-
-void
-GtkCharPage::api_info_changed (void)
-{
-  /* Update the cache for the skill in training. */
-  if (this->training.get() != 0 && this->training->in_training
-      && this->sheet.get() != 0)
-  {
-    this->skill_info.char_skill = this->sheet->get_skill_for_id
-        (this->training->skill);
-    this->skill_info.sp_per_hour = this->get_spph_in_training();
-  }
-
-  if (this->sheet.get() != 0)
-  {
-    this->skill_info.total_sp = 0;
-    this->skill_info.skills_at_five = 0;
-
-    for (unsigned int i = 0; i < this->sheet->skills.size(); ++i)
-    {
-      ApiCharSheetSkill& skill = this->sheet->skills[i];
-      this->skill_info.total_sp += skill.points;
-      this->skill_info.skills_at_five += (skill.level == 5 ? 1 : 0);
-    }
-
-    //std::cout << "Total SP are: " << this->skill_info.total_sp
-    //    << " Skill: " << this->skill_info.char_skill->points
-    //    << " Dest: " << this->skill_info.char_skill->points_dest << std::endl;
-  }
-
-  /* Refresh the GUI with the new information. */
-  this->update_gui();
-}
-
-/* ---------------------------------------------------------------- */
-
-void
 GtkCharPage::update_skill_list (void)
 {
   this->skill_store->clear();
 
-  if (this->sheet.get() == 0)
+  if (!this->sheet->valid)
     return;
 
   std::vector<ApiCharSheetSkill>& skills = this->sheet->skills;
@@ -445,7 +329,7 @@ GtkCharPage::update_skill_list (void)
   }
   catch (Exception& e)
   {
-    this->popup_skilltree_error(e);
+    this->on_skilltree_error(e);
     return;
   }
 
@@ -453,7 +337,7 @@ GtkCharPage::update_skill_list (void)
   ApiSkill skill_training;
   skill_training.id = -1;
   skill_training.group = -1;
-  if (this->training.get() != 0 && this->training->in_training)
+  if (this->training->valid && this->training->in_training)
     skill_training = tree->get_skill_from_id(this->training->skill);
 
   /* Append all groups to the store. Save their iterators for the children.
@@ -549,10 +433,177 @@ GtkCharPage::update_skill_list (void)
 
 /* ---------------------------------------------------------------- */
 
+void
+GtkCharPage::request_documents (void)
+{
+  bool update_char = true;
+  bool update_training = true;
+
+  std::string evetime = EveTime::get_eve_time_string();
+  std::string char_cached("unknown");
+  std::string train_cached("<unknown>");
+
+  /* Check which docs to re-request. */
+  if (this->sheet->valid)
+  {
+    char_cached = this->sheet->get_cached_until();
+    if (evetime < char_cached)
+      update_char = false;
+  }
+
+  if (this->training->valid)
+  {
+    train_cached = this->training->get_cached_until();
+    if (evetime < train_cached)
+      update_training = false;
+  }
+
+  /* Message user if both docs are up-to-date. */
+  if (!update_char && !update_training)
+  {
+    Gtk::MessageDialog md("Data is already up-to-date. Continue anyway?",
+        false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
+    md.set_secondary_text("The data you are about to refresh is already "
+        "up-to-date.\n\n"
+        "Character sheet expires at " + char_cached + "\n"
+        "Training sheet expires at " + train_cached + "\n\n"
+        "You can continue and rerequest the data, but it will most "
+        "likely don't change a thing.");
+    md.set_title("Cache Status - GtkEveMon");
+    md.set_transient_for(*this->parent_window);
+    int result = md.run();
+
+    switch (result)
+    {
+      case Gtk::RESPONSE_DELETE_EVENT:
+      case Gtk::RESPONSE_NO:
+        return;
+      case Gtk::RESPONSE_YES:
+        update_char = true;
+        update_training = true;
+        break;
+      default:
+        return;
+    };
+  }
+
+  /* Request the documents. */
+  if (update_char && !this->sheet_fetcher.is_busy())
+  {
+    this->sheet_fetcher.async_request();
+  }
+
+  if (update_training && !this->training_fetcher.is_busy())
+  {
+    this->training_label.set_text("Requesting...");
+    this->training_fetcher.async_request();
+  }
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GtkCharPage::on_charsheet_available (AsyncHttpData data)
+{
+  if (data.data.get() == 0)
+  {
+    this->on_charsheet_error(data.exception);
+    return;
+  }
+
+  try
+  {
+    this->sheet->set_from_xml(data.data);
+  }
+  catch (Exception& e)
+  {
+    this->on_charsheet_error(e);
+    return;
+  }
+
+  /* Update the GUI. */
+  this->api_info_changed();
+  this->update_charsheet_details();
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GtkCharPage::on_intraining_available (AsyncHttpData data)
+{
+  if (data.data.get() == 0)
+  {
+    this->on_intraining_error(data.exception);
+    return;
+  }
+
+  try
+  {
+    this->training->set_from_xml(data.data);
+  }
+  catch (Exception& e)
+  {
+    this->on_intraining_error(e);
+    return;
+  }
+
+  /* Update the GUI. */
+  this->api_info_changed();
+  this->update_charsheet_details();
+  this->update_training_details();
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GtkCharPage::api_info_changed (void)
+{
+  if (this->sheet->valid)
+  {
+    /* Update worked-up information. */
+    this->skill_info.total_sp = 0;
+    this->skill_info.skills_at_five = 0;
+
+    for (unsigned int i = 0; i < this->sheet->skills.size(); ++i)
+    {
+      ApiCharSheetSkill& skill = this->sheet->skills[i];
+      this->skill_info.total_sp += skill.points;
+      this->skill_info.skills_at_five += (skill.level == 5 ? 1 : 0);
+    }
+
+    this->sig_sheet_updated.emit(this->character);
+  }
+
+  /* Update worked-up information. */
+  if (this->sheet->valid
+    && this->training->valid
+    && this->training->in_training)
+  {
+    this->skill_info.char_skill = this->sheet->get_skill_for_id
+        (this->training->skill);
+    this->skill_info.sp_per_hour = this->get_spph_in_training();
+
+    this->spph_label.set_text(Helpers::get_string_from_uint
+        ((unsigned int)this->skill_info.sp_per_hour) + " SP per hour");
+  }
+  else
+  {
+    this->skill_info.char_skill = 0;
+    this->skill_info.sp_per_hour = 0;
+    this->spph_label.set_text("---");
+  }
+
+  //std::cout << "Total SP are: " << this->skill_info.total_sp
+  //    << " Skill: " << this->skill_info.char_skill->points
+  //    << " Dest: " << this->skill_info.char_skill->points_dest << std::endl;
+}
+
+/* ---------------------------------------------------------------- */
+
 bool
 GtkCharPage::update_remaining (void)
 {
-  if (this->training.get() != 0 && this->training->in_training)
+  if (this->training->valid && this->training->in_training)
   {
     time_t evetime = EveTime::get_eve_time();
     time_t finish = this->training->end_time_t;
@@ -606,9 +657,15 @@ GtkCharPage::on_skill_completed (void)
       ("notifications.show_popup_dialog");
   ConfValuePtr show_tray = Config::conf.get_value
       ("notifications.show_tray_icon");
+  ConfValuePtr show_info = Config::conf.get_value
+      ("notifications.show_info_bar");
 
   if (show_tray->get_bool())
     this->create_tray_notify();
+
+  if (show_info->get_bool())
+    this->info_display.append(INFO_NOTIFICATION, "Skill training for <b>"
+        + this->training_label.get_text() + "</b> completed!");
 
   if (show_popup->get_bool())
   {
@@ -677,7 +734,6 @@ GtkCharPage::on_query_skillview_tooltip (int x, int y, bool key,
   return false;
 }
 
-
 /* ---------------------------------------------------------------- */
 
 void
@@ -703,7 +759,6 @@ GtkCharPage::on_skill_activated (Gtk::TreeModel::Path const& path,
     else
       this->skill_view.expand_row(path, true);
   }
-
 }
 
 /* ---------------------------------------------------------------- */
@@ -711,12 +766,18 @@ GtkCharPage::on_skill_activated (Gtk::TreeModel::Path const& path,
 bool
 GtkCharPage::on_live_sp_value_update (void)
 {
-  if (this->training.get() == 0
+  if (!this->training->valid
       || !this->training->in_training
-      || this->sheet.get() == 0)
+      || !this->sheet->valid)
     return true;
 
   ApiCharSheetSkill* skill = this->skill_info.char_skill;
+
+  if (skill == 0)
+  {
+    std::cout << "Error: Cannot resolve skill in training!" << std::endl;
+    return true;
+  }
 
   time_t evetime = EveTime::get_eve_time();
   time_t finish = this->training->end_time_t;
@@ -751,12 +812,18 @@ GtkCharPage::on_live_sp_value_update (void)
 bool
 GtkCharPage::on_live_sp_image_update (void)
 {
-  if (this->training.get() == 0
+  if (!this->training->valid
       || !this->training->in_training
-      || this->sheet.get() == 0)
+      || !this->sheet->valid)
     return true;
 
   ApiCharSheetSkill* skill = this->skill_info.char_skill;
+
+  if (skill == 0)
+  {
+    std::cout << "Error: Cannot resolve skill in training!" << std::endl;
+    return true;
+  }
 
   time_t evetime = EveTime::get_eve_time();
   time_t finish = this->training->end_time_t;
@@ -777,87 +844,99 @@ GtkCharPage::on_live_sp_image_update (void)
 /* ---------------------------------------------------------------- */
 
 void
-GtkCharPage::set_patience_info (void)
+GtkCharPage::on_skilltree_error (std::string const& e)
 {
-  this->skill_frame.remove();
-  this->skill_frame.add(this->patience_box);
-  this->skill_frame.set_shadow_type(Gtk::SHADOW_ETCHED_IN);
+  std::cout << "Error requesting skill tree: " << e << std::endl;
 
-  while (Gtk::Main::events_pending())
-    Gtk::Main::iteration();
-}
+  this->info_display.append(INFO_ERROR,
+      "Error requesting skill tree!",
+      "There was an error while parsing the skill tree. "
+      "Reasons might be: The file was not found, the file "
+      "is currupted, the file uses a new syntax unknown "
+      "to GtkEveMon. The error message is:\n\n" + e);
 
-/* ---------------------------------------------------------------- */
-
-void
-GtkCharPage::set_skill_list (void)
-{
-  this->skill_frame.remove();
-  this->skill_frame.add(this->scwin);
-  this->skill_frame.set_shadow_type(Gtk::SHADOW_NONE);
-}
-
-/* ---------------------------------------------------------------- */
-
-void
-GtkCharPage::popup_skilltree_error (Exception const& e)
-{
+  #if 0
   Gtk::MessageDialog md("Error parsing skill tree!",
       false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
   md.set_secondary_text("There was an error while parsing the "
       "skill tree. Reasons might be: The file was not found, "
       "the file is currupted, the file was updated and uses "
       "a new syntax unknown to GtkEveMon. "
-      "The error message is:\n\n" + e);
+      "The error message is:\n\n" + Glib::locale_to_utf8(e));
   md.set_title("Error - GtkEveMon");
   md.set_transient_for(*this->parent_window);
   md.run();
+  #endif
 }
 
 /* ---------------------------------------------------------------- */
 
 void
-GtkCharPage::popup_charsheet_error (Exception const& e)
+GtkCharPage::on_charsheet_error (std::string const& e)
 {
+  std::cout << "Error requesting char sheet: " << e << std::endl;
+
+  this->info_display.append(INFO_ERROR,
+      "Error requesting character sheet!",
+      "There was an error while requesting the character "
+      "sheet from the EVE API. The EVE API is either offline, or the "
+      "requested document is not understood by GtkEveMon. "
+      "The error message is:\n\n" + e);
+
+  #if 0
   Gtk::MessageDialog md("Error retrieving character sheet!",
       false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
   md.set_secondary_text("There was an error while requesting the character "
       "sheet from the EVE API. The EVE API is either offline, or the "
       "requested document is not understood by GtkEveMon. "
-      "The error message is:\n\n" + e);
+      "The error message is:\n\n" + Glib::locale_to_utf8(e));
   md.set_title("Error - GtkEveMon");
   md.set_transient_for(*this->parent_window);
   md.run();
+  #endif
 }
 
 /* ---------------------------------------------------------------- */
 
 void
-GtkCharPage::popup_intraining_error (Exception const& e)
+GtkCharPage::on_intraining_error (std::string const& e)
 {
+  this->training_label.set_text("Error requesting!");
+
+  std::cout << "Error requesting training sheet: " << e << std::endl;
+
+  this->info_display.append(INFO_ERROR,
+      "Error requesting training sheet!",
+      "There was an error while requesting the training "
+      "sheet from the EVE API. The EVE API is either offline, or the "
+      "requested document is not understood by GtkEveMon. "
+      "The error message is:\n\n" + e);
+
+  #if 0
   Gtk::MessageDialog md("Error retrieving training sheet!",
       false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
   md.set_secondary_text("There was an error while requesting the training "
       "sheet from the EVE API. The EVE API is either offline, or the "
       "requested document is not understood by GtkEveMon. "
-      "The error message is:\n\n" + e);
+      "The error message is:\n\n" + Glib::locale_to_utf8(e));
   md.set_title("Error - GtkEveMon");
   md.set_transient_for(*this->parent_window);
   md.run();
+  #endif
 }
 
 /* ---------------------------------------------------------------- */
 
 void
-GtkCharPage::info_clicked (void)
+GtkCharPage::on_info_clicked (void)
 {
   std::string char_cached("<unknown>");
   std::string train_cached("<unknown>");
 
-  if (this->sheet.get() != 0)
+  if (this->sheet->valid)
     char_cached = this->sheet->get_cached_until();
 
-  if (this->training.get() != 0)
+  if (this->training->valid)
     train_cached = this->training->get_cached_until();
 
   Gtk::MessageDialog md("Information about cached sheets",
@@ -875,7 +954,7 @@ GtkCharPage::info_clicked (void)
 std::string
 GtkCharPage::get_char_name (void)
 {
-  if (this->sheet.get() != 0)
+  if (this->sheet->valid)
     return this->sheet->name;
   else
     return this->character.char_id;
@@ -886,7 +965,7 @@ GtkCharPage::get_char_name (void)
 std::string
 GtkCharPage::get_tooltip_text (bool detailed)
 {
-  if (this->sheet.get() == 0)
+  if (!this->sheet->valid)
     return "";
 
   std::string ret;
@@ -894,7 +973,7 @@ GtkCharPage::get_tooltip_text (bool detailed)
   ret += this->sheet->name;
   ret += " - ";
 
-  if (this->training.get() != 0 && this->training->in_training)
+  if (this->training->valid && this->training->in_training)
   {
     ret += this->get_skill_remaining(true);
     if (detailed)
@@ -914,7 +993,7 @@ GtkCharPage::get_tooltip_text (bool detailed)
 std::string
 GtkCharPage::get_skill_in_training (void)
 {
-  if (this->training.get() != 0 && this->training->in_training)
+  if (this->training->valid && this->training->in_training)
   {
     int skill_id = this->training->skill;
     int to_level = this->training->to_level;
@@ -945,10 +1024,9 @@ GtkCharPage::get_skill_in_training (void)
 double
 GtkCharPage::get_spph_in_training (void)
 {
-  if (this->training.get() == 0 || !this->training->in_training)
-    return 0;
-
-  if (this->sheet.get() == 0)
+  if (!this->training->valid
+      || !this->training->in_training
+      || !this->sheet->valid)
     return 0;
 
   /* Receive primary and secondary attribs. */
@@ -1003,7 +1081,7 @@ GtkCharPage::get_spph_in_training (void)
 std::string
 GtkCharPage::get_skill_remaining (bool slim)
 {
-  if (this->training.get() == 0 || !this->training->in_training)
+  if (!this->training->valid || !this->training->in_training)
     return "No training information!";
 
   int slim_count = 2;
@@ -1050,20 +1128,4 @@ GtkCharPage::get_skill_remaining (bool slim)
   }
 
   return ss.str();
-}
-
-/* ---------------------------------------------------------------- */
-
-EveApiAuth const&
-GtkCharPage::get_character (void)
-{
-  return this->character;
-}
-
-/* ---------------------------------------------------------------- */
-
-sigc::signal<void, EveApiAuth>&
-GtkCharPage::signal_close_request (void)
-{
-  return this->sig_close_request;
 }

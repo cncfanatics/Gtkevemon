@@ -519,7 +519,6 @@ MainGui::add_character (EveApiAuth const& auth)
   this->notebook.append_page(*page, auth.char_id, false);
   this->notebook.set_current_page(-1);
   page->set_character(auth);
-  this->notebook.set_tab_label_text(*page, page->get_char_name());
 
   /* Update tray icon tooltips. */
   this->update_tooltip();
@@ -527,6 +526,8 @@ MainGui::add_character (EveApiAuth const& auth)
   /* Register close signal for the character page. */
   page->signal_close_request().connect(sigc::mem_fun
       (*this, &MainGui::remove_character));
+  page->signal_sheet_updated().connect(sigc::mem_fun
+      (*this, &MainGui::update_char_page));
 }
 
 /* ---------------------------------------------------------------- */
@@ -548,6 +549,24 @@ MainGui::remove_character (EveApiAuth const& auth)
 
   this->check_if_no_pages();
   this->update_tooltip();
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+MainGui::update_char_page (EveApiAuth const& auth)
+{
+  Glib::ListHandle<Gtk::Widget*> childs = this->notebook.get_children();
+  for (Glib::ListHandle<Gtk::Widget*>::iterator iter = childs.begin();
+      iter != childs.end(); iter++)
+  {
+    EveApiAuth const& tmp_auth = ((GtkCharPage*)*iter)->get_character();
+    if (tmp_auth.user_id == auth.user_id && tmp_auth.char_id == auth.char_id)
+    {
+      GtkCharPage* page = (GtkCharPage*)*iter;
+      this->notebook.set_tab_label_text(*page, page->get_char_name());
+    }
+  }
 }
 
 /* ---------------------------------------------------------------- */

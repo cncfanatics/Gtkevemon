@@ -4,31 +4,14 @@
 
 #include "xml.h"
 #include "evetime.h"
-#include "eveapi.h"
 #include "apiintraining.h"
 
-ApiInTraining::ApiInTraining (EveApiAuth const& auth)
-{
-  this->auth = auth;
-}
-
-/* ---------------------------------------------------------------- */
-
-ApiInTrainingPtr
-ApiInTraining::create (EveApiAuth const& auth)
-{
-  ApiInTrainingPtr obj(new ApiInTraining(auth));
-  obj->refresh();
-  return obj;
-}
-
-/* ---------------------------------------------------------------- */
-
 void
-ApiInTraining::refresh (void)
+ApiInTraining::set_from_xml (HttpDataPtr xmldata)
 {
-  HttpDataPtr doc = EveApi::request_in_training(this->auth);
-  this->parse_xml(doc);
+  this->valid = false;
+
+  this->parse_xml(xmldata);
 
   /* Do some checking if end time is expired. */
   if (this->in_training && this->end_time_t < EveTime::get_eve_time())
@@ -36,6 +19,8 @@ ApiInTraining::refresh (void)
 
   // This is to test notifications! NEVER PUT THIS IN A REVISION
   //this->end_time_t = ::time(0);
+
+  this->valid = true;
 }
 
 /* ---------------------------------------------------------------- */

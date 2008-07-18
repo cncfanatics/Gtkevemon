@@ -1,7 +1,6 @@
 #include <iostream>
 #include <gtkmm/main.h>
 
-#include "eveapi.h"
 #include "evetime.h"
 #include "config.h"
 #include "serverlist.h"

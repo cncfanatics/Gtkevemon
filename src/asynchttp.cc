@@ -7,7 +7,6 @@ AsyncHttp::AsyncHttp (void)
 
 /* ---------------------------------------------------------------- */
 
-
 void*
 AsyncHttp::run (void)
 {

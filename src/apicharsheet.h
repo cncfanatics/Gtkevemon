@@ -19,7 +19,6 @@
 
 #include "ref_ptr.h"
 #include "http.h"
-#include "eveapi.h"
 #include "apibase.h"
 
 class ApiCharSheetSkill
@@ -41,9 +40,18 @@ typedef ref_ptr<ApiCharSheet> ApiCharSheetPtr;
 
 class ApiCharSheet : public ApiBase
 {
-  public:
-    EveApiAuth auth;
+  /* Some internal stuff. */
+  protected:
+    ApiCharSheet (void);
+    void parse_xml (HttpDataPtr doc);
+    void parse_recursive (xmlNodePtr node);
+    void find_implant_bonus (xmlNodePtr node, char const* name, int& var);
 
+  /* Publicly available collection of gathered data. */
+  public:
+    bool valid;
+
+    /* Basic char information. */
     std::string name;
     std::string race;
     std::string bloodline;
@@ -82,17 +90,26 @@ class ApiCharSheet : public ApiBase
     /* The vector of all known skills. */
     std::vector<ApiCharSheetSkill> skills;
 
-  protected:
-    ApiCharSheet (EveApiAuth const& auth);
-    void parse_xml (HttpDataPtr doc);
-    void parse_recursive (xmlNodePtr node);
-    void find_implant_bonus (xmlNodePtr node, char const* name, int& var);
-
   public:
-    static ApiCharSheetPtr create (EveApiAuth const& auth);
-    void refresh (void);
+    static ApiCharSheetPtr create (void);
+    void set_from_xml (HttpDataPtr xmldata);
+
     int get_level_for_skill (int id);
     ApiCharSheetSkill* get_skill_for_id (int id);
 };
+
+/* ---------------------------------------------------------------- */
+
+inline
+ApiCharSheet::ApiCharSheet (void) : valid(false)
+{
+}
+
+inline ApiCharSheetPtr
+ApiCharSheet::create (void)
+{
+  ApiCharSheetPtr obj(new ApiCharSheet);
+  return obj;
+}
 
 #endif /* API_CHAR_SHEET_HEADER */

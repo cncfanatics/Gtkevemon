@@ -4,16 +4,17 @@ COMPILER = g++
 SOURCES = maingui.cc guiuserdata.cc guiconfiguration.cc guiaboutdialog.cc \
           guiskill.cc \
           gtkevemon.cc gtkserver.cc gtkconfwidgets.cc gtkcharpage.cc \
-	  gtkportrait.cc imagestore.cc \
+	  gtkportrait.cc gtkinfodisplay.cc imagestore.cc \
           server.cc serverlist.cc helpers.cc conf.cc config.cc \
-	  http.cc asynchttp.cc eveapi.cc xml.cc evetime.cc bgprocess.cc \
+	  xml.cc evetime.cc bgprocess.cc \
+	  http.cc asynchttp.cc eveapi.cc \
           apibase.cc apicharlist.cc apicharsheet.cc apiintraining.cc \
 	  apiskilltree.cc
 
 OBJECTS = $(foreach file,$(SOURCES),$(subst .cc,.o,$(file)))
 BINARY = gtkevemon
 
-GCC_FLAGS = -Wall -W -ansi -pedantic -Wcast-align -Wcast-qual -Wpointer-arith -Wundef -Wconversion
+GCC_FLAGS = -Wall -W -ansi -pedantic -Wcast-align -Wcast-qual -Wpointer-arith -Wundef -Wconversion -g
 GTK_FLAGS = $(shell pkg-config --cflags gtkmm-2.4)
 GTK_LIBS = $(shell pkg-config --libs gtkmm-2.4)
 PTH_LIBS = -lpthread

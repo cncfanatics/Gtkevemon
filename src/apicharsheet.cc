@@ -6,39 +6,24 @@
 #include "exception.h"
 #include "helpers.h"
 #include "xml.h"
-#include "eveapi.h"
 #include "apibase.h"
 #include "apiskilltree.h"
 #include "apicharsheet.h"
 
-ApiCharSheet::ApiCharSheet (EveApiAuth const& auth)
-{
-  this->auth = auth;
-}
-
-/* ---------------------------------------------------------------- */
-
-ApiCharSheetPtr
-ApiCharSheet::create (EveApiAuth const& auth)
-{
-  ApiCharSheetPtr obj(new ApiCharSheet(auth));
-  obj->refresh();
-  return obj;
-}
-
-/* ---------------------------------------------------------------- */
-
 void
-ApiCharSheet::refresh (void)
+ApiCharSheet::set_from_xml (HttpDataPtr xmldata)
 {
+  this->valid = false;
+
+  /* Reset values. */
   this->implant_int = 0;
   this->implant_mem = 0;
   this->implant_cha = 0;
   this->implant_per = 0;
   this->implant_wil = 0;
 
-  HttpDataPtr doc = EveApi::request_charsheet(this->auth);
-  this->parse_xml(doc);
+  /* Parse the data. */
+  this->parse_xml(xmldata);
 
   /* Find bonus attributes for skills. */
 
@@ -111,6 +96,8 @@ ApiCharSheet::refresh (void)
     skills[i].completed = (double)(skills[i].points - skills[i].points_start)
         / (double)(skills[i].points_dest - skills[i].points_start);
   }
+
+  this->valid = true;
 }
 
 /* ---------------------------------------------------------------- */

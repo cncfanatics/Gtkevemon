@@ -12,13 +12,18 @@
 
 #include "gtkdefines.h"
 #include "exception.h"
-#include "eveapi.h"
 #include "apicharlist.h"
 #include "config.h"
 #include "guiuserdata.h"
 
 GuiUserData::GuiUserData (void)
+  : apply_button(Gtk::Stock::APPLY)
 {
+  /* Setup the EVE API fetcher. */
+  this->charlist_fetcher.set_doctype(EVE_API_DOCTYPE_CHARLIST);
+  this->charlist_fetcher.signal_done().connect(sigc::mem_fun
+      (*this, &GuiUserData::on_charlist_available));
+
   /* Create the store for the tree view. */
   this->char_store = Gtk::ListStore::create(this->char_cols);
   this->char_list.set_model(this->char_store);
@@ -71,11 +76,9 @@ GuiUserData::GuiUserData (void)
   data_table->attach(this->apikey_entry, 1, 2, 1, 2,
       Gtk::FILL|Gtk::EXPAND, Gtk::FILL);
 
-  Gtk::Button* but_apply = MK_BUT(Gtk::Stock::APPLY);
-
   Gtk::HBox* apply_separator = MK_HBOX;
   apply_separator->pack_start(*MK_HSEP, true, true, 0);
-  apply_separator->pack_start(*but_apply, false, false, 0);
+  apply_separator->pack_start(this->apply_button, false, false, 0);
 
   Gtk::HBox* info2_hbox = Gtk::manage(new Gtk::HBox(false, 10));
   info2_hbox->pack_start(*Gtk::manage(new Gtk::Image
@@ -127,7 +130,7 @@ GuiUserData::GuiUserData (void)
 
   this->init_from_config();
 
-  but_apply->signal_clicked().connect(sigc::mem_fun
+  this->apply_button.signal_clicked().connect(sigc::mem_fun
       (*this, &GuiUserData::on_apply_clicked));
   but_close->signal_clicked().connect(sigc::mem_fun(*this, &WinBase::close));
   but_add->signal_clicked().connect(sigc::mem_fun
@@ -161,51 +164,51 @@ GuiUserData::init_from_config (void)
 
 /* ---------------------------------------------------------------- */
 
-void GuiUserData::on_apply_clicked (void)
+void
+GuiUserData::on_charlist_available (AsyncHttpData data)
 {
-  EveApiAuth auth(this->userid_entry.get_text(), this->apikey_entry.get_text());
+  this->apply_button.set_sensitive(true);
 
-  //HttpDocPtr buf = EveApi::request_charlist();
-  //std::cout << "Aquired doc: " << *buf << std::endl;
+  if (data.data.get() == 0)
+  {
+    this->print_error(data.exception);
+    return;
+  }
 
   ApiCharacterListPtr clist;
   try
   {
-    clist = ApiCharacterList::create(auth);
+    clist = ApiCharacterList::create();
+    clist->set_from_xml(data.data);
   }
   catch (Exception& e)
   {
-    Gtk::MessageDialog md(*this, "Error retrieving character list!",
-        false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
-    md.set_secondary_text("There was an error while requesting the character "
-        "list from the EVE API. The EVE API is either offline, or the "
-        "requested document is not understood by GtkEveMon. "
-        "The error message is:\n\n" + e);
-    md.set_title("Error - GtkEveMon");
-    md.run();
+    this->print_error(e);
     return;
   }
 
   /* Successfully requested character list. */
-  ApiCharList& vec = clist->get_list();
-  std::cout << "Character list has " << vec.size() << " entries:" << std::endl;
-
+  ApiCharList& chars = clist->chars;
   this->char_store->clear();
   std::string char_string;
-  for (unsigned int i = 0; i < vec.size(); ++i)
+
+  //std::cout << "Character list has " << chars.size()
+  //    << " entries:" << std::endl;
+  for (unsigned int i = 0; i < chars.size(); ++i)
   {
-    std::cout << i << ". Character: " << vec[i].name << " ["
-        << vec[i].char_id << "]" << ", Corp: " << vec[i].corp << std::endl;
+    //std::cout << i << ". Character: " << chars[i].name << " ["
+    //    << chars[i].char_id << "]" << ", Corp: "
+    //    << chars[i].corp << std::endl;
 
     Gtk::TreeModel::Row row = *this->char_store->append();
     row[this->char_cols.selected] = false;
-    row[this->char_cols.name] = vec[i].name;
-    row[this->char_cols.charid] = vec[i].char_id;
-    row[this->char_cols.corp] = vec[i].corp;
+    row[this->char_cols.name] = chars[i].name;
+    row[this->char_cols.charid] = chars[i].char_id;
+    row[this->char_cols.corp] = chars[i].corp;
 
     if (!char_string.empty())
       char_string += ", ";
-    char_string += vec[i].name;
+    char_string += chars[i].name;
   }
 
   /* Insert the data to the history and the combo box. */
@@ -213,6 +216,32 @@ void GuiUserData::on_apply_clicked (void)
       ("accounts." + this->userid_entry.get_text());
   sect->add("apikey", ConfValue::create(this->apikey_entry.get_text()));
   sect->add("chars", ConfValue::create(char_string));
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GuiUserData::on_apply_clicked (void)
+{
+  EveApiAuth auth(this->userid_entry.get_text(), this->apikey_entry.get_text());
+  this->charlist_fetcher.set_auth(auth);
+  this->charlist_fetcher.async_request();
+  this->apply_button.set_sensitive(false);
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GuiUserData::print_error (std::string const& error)
+{
+  Gtk::MessageDialog md(*this, "Error retrieving character list!",
+      false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+  md.set_secondary_text("There was an error while requesting the character "
+      "list from the EVE API. The EVE API is either offline, or the "
+      "requested document is not understood by GtkEveMon. "
+      "The error message is:\n\n" + Glib::locale_to_utf8(error));
+  md.set_title("Error - GtkEveMon");
+  md.run();
 }
 
 /* ---------------------------------------------------------------- */

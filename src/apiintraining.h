@@ -18,7 +18,6 @@
 
 #include "ref_ptr.h"
 #include "http.h"
-#include "eveapi.h"
 #include "apibase.h"
 
 class ApiInTraining;
@@ -26,10 +25,17 @@ typedef ref_ptr<ApiInTraining> ApiInTrainingPtr;
 
 class ApiInTraining : public ApiBase
 {
-  private:
-    EveApiAuth auth;
+  /* Some internal stuff. */
+  protected:
+    ApiInTraining (void);
+    void parse_xml (HttpDataPtr doc);
+    void parse_recursive (xmlNodePtr node);
 
+  /* Publicly available collection of gathered data. */
   public:
+    bool valid;
+    bool in_training;
+
     std::string start_time;
     std::string end_time;
     time_t start_time_t;
@@ -40,16 +46,25 @@ class ApiInTraining : public ApiBase
     int dest_sp;
     int to_level;
 
-    bool in_training;
-
-  protected:
-    ApiInTraining (EveApiAuth const& auth);
-    void parse_xml (HttpDataPtr doc);
-    void parse_recursive (xmlNodePtr node);
-
   public:
-    static ApiInTrainingPtr create (EveApiAuth const& auth);
-    void refresh (void);
+    static ApiInTrainingPtr create (void);
+    void set_from_xml (HttpDataPtr xmldata);
 };
+
+/* ---------------------------------------------------------------- */
+
+inline
+ApiInTraining::ApiInTraining (void) : valid(false)
+{
+}
+
+/* ---------------------------------------------------------------- */
+
+inline ApiInTrainingPtr
+ApiInTraining::create (void)
+{
+  ApiInTrainingPtr obj(new ApiInTraining);
+  return obj;
+}
 
 #endif /* API_TRAINING_HEADER */

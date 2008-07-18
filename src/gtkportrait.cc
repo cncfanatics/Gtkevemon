@@ -157,8 +157,11 @@ GtkPortrait::request_from_eve_online (void)
   http->set_host("img.eve.is");
   http->set_path("/serv.asp?s=256&c=" + this->char_id);
   http->set_agent("GtkEveMon");
+
+  this->http_request.disconnect();
   this->http_request = http->signal_done().connect(sigc::mem_fun
       (*this, &GtkPortrait::set_from_eve_online));
+
   http->async_request();
 }
 

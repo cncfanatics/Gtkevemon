@@ -93,12 +93,16 @@ GuiConfiguration::GuiConfiguration (void)
   GtkConfCheckButton* notify_with_tray = Gtk::manage
       (new GtkConfCheckButton("Show tray icon", false,
       "notifications.show_tray_icon"));
+  GtkConfCheckButton* notify_with_info_bar = Gtk::manage
+      (new GtkConfCheckButton("Show information bar", false,
+      "notifications.show_info_bar"));
 
   Gtk::VBox* page_notifications = MK_VBOX;
   page_notifications->set_border_width(5);
   page_notifications->pack_start(*notify_info_label, false, false, 0);
   page_notifications->pack_start(*notify_with_popup, false, false, 0);
   page_notifications->pack_start(*notify_with_tray, false, false, 0);
+  page_notifications->pack_start(*notify_with_info_bar, false, false, 0);
 
   /* The DIRECTORIES notebook tab. */
   this->valid_label.property_xalign() = 0.0f;

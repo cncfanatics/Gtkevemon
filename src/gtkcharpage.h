@@ -21,15 +21,14 @@
 #include <gtkmm/image.h>
 #include <gtkmm/tooltips.h>
 #include <gtkmm/frame.h>
-#include <gtkmm/scrolledwindow.h>
 #include <gtkmm/treestore.h>
 #include <gtkmm/statusicon.h>
 
-#include "exception.h"
-#include "gtkportrait.h"
 #include "eveapi.h"
 #include "apiintraining.h"
 #include "apicharsheet.h"
+#include "gtkportrait.h"
+#include "gtkinfodisplay.h"
 
 /* Update remaining time every this milli seconds. */
 #define CHARPAGE_REMAINING_UPDATE 1000
@@ -71,12 +70,18 @@ struct SkillInTrainingInfo
 class GtkCharPage : public Gtk::VBox
 {
   private:
+    /* Auth information. */
     EveApiAuth character;
-
+    /* HTTP requester objects. */
+    EveApiFetcher sheet_fetcher;
+    EveApiFetcher training_fetcher;
+    /* API data cache. */
     ApiCharSheetPtr sheet;
     ApiInTrainingPtr training;
+    /* Cached worked up information. */
     SkillInTrainingInfo skill_info;
 
+    /* GUI stuff. */
     Gtk::Window* parent_window;
     Gtk::Label char_name_label;
     Gtk::Label char_info_label;
@@ -99,25 +104,39 @@ class GtkCharPage : public Gtk::VBox
     Gtk::Button info_but;
     GtkPortrait char_image;
 
-    Gtk::Frame skill_frame;
-    Gtk::ScrolledWindow scwin;
-    Gtk::HBox patience_box;
     GtkCharSkillsCols skill_cols;
     Glib::RefPtr<Gtk::TreeStore> skill_store;
     Gtk::TreeView skill_view;
     Glib::RefPtr<Gtk::StatusIcon> tray_notify;
 
-    sigc::signal<void, EveApiAuth> sig_close_request;
+    GtkInfoDisplay info_display;
 
-    void update_gui (void);
+    sigc::signal<void, EveApiAuth> sig_close_request;
+    sigc::signal<void, EveApiAuth> sig_sheet_updated;
+
+    /* Helpers, signal handlers, etc. */
+    void update_charsheet_details (void);
+    void update_training_details (void);
     void update_skill_list (void);
+
+    /* Request and process EVE API documents. */
+    void request_documents (void);
+    void on_charsheet_available (AsyncHttpData data);
+    void on_intraining_available (AsyncHttpData data);
+
+    /* Error dialogs. */
+    void on_skilltree_error (std::string const& e);
+    void on_charsheet_error (std::string const& e);
+    void on_intraining_error (std::string const& e);
+
+    /* Misc GUI stuff. */
     bool update_remaining (void);
-    void refresh_data (void);
     void api_info_changed (void);
     void remove_tray_notify (void);
     void create_tray_notify (void);
     void on_skill_completed (void);
     void on_close_clicked (void);
+    void on_info_clicked (void);
     bool on_query_skillview_tooltip (int x, int y, bool key,
         Glib::RefPtr<Gtk::Tooltip> const& tooltip);
     void on_skill_activated (Gtk::TreeModel::Path const& path,
@@ -126,19 +145,19 @@ class GtkCharPage : public Gtk::VBox
     bool on_live_sp_value_update (void);
     bool on_live_sp_image_update (void);
 
-    void set_patience_info (void);
+    /* Functions to toggle between a paitence information and
+     * the real skill list (active during HTTP requests). */
+    void set_skilllist_info (Gtk::Widget& widget);
     void set_skill_list (void);
-
-    void popup_skilltree_error (Exception const& e);
-    void popup_charsheet_error (Exception const& e);
-    void popup_intraining_error (Exception const& e);
-    void info_clicked (void);
 
   public:
     GtkCharPage (void);
 
+    /* Sets the character. */
     void set_character (EveApiAuth const& character);
     EveApiAuth const& get_character (void);
+
+    /* Worked up information. */
     std::string get_char_name (void);
     std::string get_tooltip_text (bool detailed);
     std::string get_skill_in_training (void);
@@ -146,7 +165,9 @@ class GtkCharPage : public Gtk::VBox
     std::string get_skill_remaining (bool slim = false);
     void set_parent_window (Gtk::Window* parent);
 
+    /* Pass close requests to the outside. */
     sigc::signal<void, EveApiAuth>& signal_close_request (void);
+    sigc::signal<void, EveApiAuth>& signal_sheet_updated (void);
 };
 
 /* ---------------------------------------------------------------- */
@@ -174,6 +195,24 @@ inline void
 GtkCharPage::set_parent_window (Gtk::Window* parent)
 {
   this->parent_window = parent;
+}
+
+inline EveApiAuth const&
+GtkCharPage::get_character (void)
+{
+  return this->character;
+}
+
+inline sigc::signal<void, EveApiAuth>&
+GtkCharPage::signal_close_request (void)
+{
+  return this->sig_close_request;
+}
+
+inline sigc::signal<void, EveApiAuth>&
+GtkCharPage::signal_sheet_updated (void)
+{
+  return this->sig_sheet_updated;
 }
 
 #endif /* GTK_CHAR_PAGE_HEADER */

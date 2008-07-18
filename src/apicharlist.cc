@@ -2,36 +2,9 @@
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
 
-#include "exception.h"
 #include "xml.h"
-#include "eveapi.h"
-#include "apibase.h"
+#include "exception.h"
 #include "apicharlist.h"
-
-ApiCharacterList::ApiCharacterList (EveApiAuth const& auth)
-{
-  this->auth = auth;
-}
-
-/* ---------------------------------------------------------------- */
-
-ApiCharacterListPtr
-ApiCharacterList::create (EveApiAuth const& auth)
-{
-  ApiCharacterListPtr obj(new ApiCharacterList(auth));
-  obj->refresh();
-  return obj;
-}
-
-/* ---------------------------------------------------------------- */
-
-void
-ApiCharacterList::refresh (void)
-{
-  HttpDataPtr doc = EveApi::request_charlist(auth);
-  this->parse_xml(doc);
-}
-/* ---------------------------------------------------------------- */
 
 void
 ApiCharacterList::parse_xml (HttpDataPtr doc)

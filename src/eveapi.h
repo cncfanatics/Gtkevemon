@@ -15,7 +15,7 @@
 
 #include <string>
 
-#include "http.h"
+#include "asynchttp.h"
 
 /*
  * A class that contains authentication information for the API.
@@ -34,20 +34,51 @@ class EveApiAuth
         std::string const& cid);
 };
 
+/* ---------------------------------------------------------------- */
+
 /*
- * Returns the XML documents from the EVE API.
- * All these functions may throw if there are networking issues.
+ * Possible documents that can be requested from the EVE API.
  */
-class EveApi
+enum EveApiDocType
+{
+  EVE_API_DOCTYPE_CHARLIST,
+  EVE_API_DOCTYPE_CHARSHEET,
+  EVE_API_DOCTYPE_INTRAINING
+};
+
+/* ---------------------------------------------------------------- */
+
+/*
+ * Class that fetches EVE API documents synchronously or
+ * asynchronously with a simplified and comfortable interface.
+ */
+class EveApiFetcher
 {
   private:
-    static std::string get_post_data (EveApiAuth const& auth);
-    static void set_proxy_server (Http& request);
+    bool busy;
+    EveApiAuth auth;
+    EveApiDocType type;
+    sigc::signal<void, AsyncHttpData> sig_done;
+    sigc::connection conn_sigdone;
+
+  protected:
+    AsyncHttp* setup_fetcher (void);
+    void async_reply (AsyncHttpData data);
 
   public:
-    static HttpDataPtr request_charlist (EveApiAuth const& auth);
-    static HttpDataPtr request_charsheet (EveApiAuth const& auth);
-    static HttpDataPtr request_in_training (EveApiAuth const& auth);
+    EveApiFetcher (void);
+    EveApiFetcher (EveApiAuth const& auth, EveApiDocType type);
+    ~EveApiFetcher (void);
+
+    void set_auth (EveApiAuth const& auth);
+    void set_doctype (EveApiDocType type);
+
+    void request (void);
+    void async_request (void);
+
+    sigc::signal<void, AsyncHttpData>& signal_done (void);
+    bool is_busy (void);
+
 };
 
 /* ---------------------------------------------------------------- */
@@ -68,6 +99,41 @@ EveApiAuth::EveApiAuth (std::string const& uid, std::string const& apikey,
     std::string const& cid)
   : user_id(uid), api_key(apikey), char_id(cid)
 {
+}
+
+inline
+EveApiFetcher::EveApiFetcher (void) : busy(false)
+{
+}
+
+inline
+EveApiFetcher::EveApiFetcher (EveApiAuth const& auth, EveApiDocType type)
+  : busy(false), auth(auth), type(type)
+{
+}
+
+inline void
+EveApiFetcher::set_auth (EveApiAuth const& auth)
+{
+  this->auth = auth;
+}
+
+inline void
+EveApiFetcher::set_doctype (EveApiDocType type)
+{
+  this->type = type;
+}
+
+inline sigc::signal<void, AsyncHttpData>&
+EveApiFetcher::signal_done (void)
+{
+  return this->sig_done;
+}
+
+inline bool
+EveApiFetcher::is_busy (void)
+{
+  return this->busy;
 }
 
 #endif /* EVE_API_HEADER */

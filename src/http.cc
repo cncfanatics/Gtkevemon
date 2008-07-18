@@ -3,12 +3,67 @@
 #include <cmath>
 #include <cerrno>
 #include <cstring>
+#include <cstdlib>
 #include <iostream>
 #include <sstream>
 #include <string>
 
 #include "exception.h"
 #include "http.h"
+
+/* Holds a struct hostent with magical dynamically allocated data.
+ * This is thread safe in contrast to the gethostbyname() function.
+ */
+class GetHostByName
+{
+  public:
+    struct hostent result;
+    char* strange_data;
+
+  public:
+    GetHostByName (char const* host);
+    ~GetHostByName (void);
+};
+
+/* Some comment about this function I found on the internet:
+ *
+ *   "Oh boy, this interface sucks so badly, there are no words for it.
+ *   Not one, not two, but _three_ error signalling methods!  (*h_errnop
+ *   nonzero?  return value nonzero?  *RESULT zero?)  The glibc goons
+ *   really outdid themselves with this one."
+ */
+GetHostByName::GetHostByName (char const* host)
+{
+  this->strange_data = 0;
+
+  struct hostent* hp;
+  int res;
+  int herr;
+
+  /* Define initial buffer length and alloc space. */
+  size_t buffer_len = 1024;
+  this->strange_data = (char*)::malloc(buffer_len);
+
+  while ((res = ::gethostbyname_r(host, &this->result,
+      this->strange_data, buffer_len, &hp, &herr)) == ERANGE)
+  {
+    /* Enlarge the buffer.  */
+    buffer_len *= 2;
+    this->strange_data = (char*)::realloc(this->strange_data, buffer_len);
+  }
+
+  /*  Check for errors.  */
+  if (res || hp == 0)
+    throw Exception("gethostbyname_r() failed: "
+        + std::string(::strerror(errno)));
+}
+
+GetHostByName::~GetHostByName (void)
+{
+  ::free(this->strange_data);
+}
+
+/* ---------------------------------------------------------------- */
 
 Http::Http (void)
 {
@@ -53,26 +108,28 @@ Http::request (void)
   if (this->proxy.empty())
   {
     /* The no-proxy-case. Get IP adress for the host. */
-    struct hostent* target = gethostbyname(this->host.c_str());
-    if (!target)
+    try
+    {
+      GetHostByName hn(this->host.c_str());
+
+      //char address[INET_ADDRSTRLEN];
+      //if(!::inet_ntop(AF_INET, hn.result.h_addr, address, INET_ADDRSTRLEN))
+      //{
+      //  ::close(sock);
+      //  throw Exception(std::string("inet_ntop() failed: ")
+      //      + ::strerror(errno));
+      //}
+      //std::cout << "Resolved " << this->host << ": " << address << std::endl;
+
+      remote.sin_family = AF_INET;
+      remote.sin_port = ::htons(this->port);
+      remote.sin_addr.s_addr = *(unsigned long*)hn.result.h_addr;
+    }
+    catch (Exception& e)
     {
       ::close(sock);
-      throw Exception(std::string("gethostbyname() falied: ")
-          + ::strerror(errno));
+      throw e;
     }
-
-    char address[INET_ADDRSTRLEN];
-    if(::inet_ntop(AF_INET, target->h_addr, address, INET_ADDRSTRLEN) == 0)
-    {
-      ::close(sock);
-      throw Exception(std::string("inet_ntop() failed: ") + ::strerror(errno));
-    }
-
-    //std::cout << "Resolved " << this->host << " to " << address << std::endl;
-
-    remote.sin_family = AF_INET;
-    remote.sin_port = ::htons(this->port);
-    remote.sin_addr.s_addr = *(unsigned long*)target->h_addr;
   }
   else
   {

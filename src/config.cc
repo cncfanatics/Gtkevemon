@@ -24,6 +24,7 @@ char const* default_config =
     "[notifications]\n"
     "  show_popup_dialog = true\n"
     "  show_tray_icon = true\n"
+    "  show_info_bar = true\n"
     "[servermonitor]\n"
     "[settings]\n"
     "  detailed_tray_tooltip = true\n"

@@ -40,28 +40,39 @@ typedef ref_ptr<ApiCharacterList> ApiCharacterListPtr;
 
 class ApiCharacterList : public ApiBase
 {
-  private:
-    EveApiAuth auth;
-    ApiCharList chars;
-
+  /* Some internal stuff. */
   protected:
-    ApiCharacterList (EveApiAuth const& auth);
+    ApiCharacterList (void);
     void parse_xml (HttpDataPtr doc);
     void parse_recursive (xmlNodePtr node);
 
+  /* Publicly available collection of gathered data. */
   public:
-    static ApiCharacterListPtr create (EveApiAuth const& auth);
-    void refresh (void);
+    ApiCharList chars;
 
-    ApiCharList& get_list (void);
+  public:
+    static ApiCharacterListPtr create (void);
+    void set_from_xml (HttpDataPtr xmldata);
 };
 
 /* ---------------------------------------------------------------- */
 
-inline ApiCharList&
-ApiCharacterList::get_list (void)
+inline
+ApiCharacterList::ApiCharacterList (void)
 {
-  return this->chars;
+}
+
+inline ApiCharacterListPtr
+ApiCharacterList::create (void)
+{
+  ApiCharacterListPtr obj(new ApiCharacterList);
+  return obj;
+}
+
+inline void
+ApiCharacterList::set_from_xml (HttpDataPtr xmldata)
+{
+  this->parse_xml(xmldata);
 }
 
 #endif /* API_CHAR_LIST_HEADER */

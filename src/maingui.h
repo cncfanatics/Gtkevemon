@@ -22,6 +22,7 @@
 
 #include "winbase.h"
 #include "gtkserver.h"
+#include "eveapi.h"
 
 /* Refresh the list of servers every this milli seconds. */
 #define MAINGUI_SERVER_REFRESH 300000
@@ -49,6 +50,7 @@ class MainGui : public WinBase
     bool refresh_servers (void);
     bool update_time (void);
     bool update_tooltip (void);
+    void update_char_page (EveApiAuth const& auth);
     void setup_profile (void);
     void configuration (void);
     void about_dialog (void);

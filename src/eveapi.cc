@@ -1,93 +1,117 @@
-#include <cerrno>
-#include <cstring>
 #include <iostream>
 
 #include "config.h"
-#include "exception.h"
-#include "http.h"
 #include "eveapi.h"
 
-std::string
-EveApi::get_post_data (EveApiAuth const& auth)
+EveApiFetcher::~EveApiFetcher (void)
 {
-  std::string ret;
-  ret += "userid=";
-  ret += auth.user_id;
-  ret += "&apiKey=";
-  ret += auth.api_key;
+  this->conn_sigdone.disconnect();
+}
 
+/* ---------------------------------------------------------------- */
+
+AsyncHttp*
+EveApiFetcher::setup_fetcher (void)
+{
+  /* Setup HTTP fetcher. */
+  AsyncHttp* fetcher = AsyncHttp::create();
+  fetcher->set_host("api.eve-online.com");
+  fetcher->set_agent("GtkEveMon");
+
+  /* Setup HTTP post data. */
+  std::string post_data;
+  post_data += "userid=";
+  post_data += this->auth.user_id;
+  post_data += "&apiKey=";
+  post_data += this->auth.api_key;
   if (!auth.char_id.empty())
   {
-    ret += "&characterID=";
-    ret += auth.char_id;
+    post_data += "&characterID=";
+    post_data += this->auth.char_id;
+  }
+  fetcher->set_data(HTTP_METHOD_POST, post_data);
+
+  /* Setup proxy if set. */
+  ConfSectionPtr section = Config::conf.get_section("network");
+  if (section->get_value("use_proxy")->get_bool())
+  {
+    fetcher->set_proxy(section->get_value("proxy_address")->get_string(),
+        (uint16_t)section->get_value("proxy_port")->get_int());
   }
 
-  return ret;
+  switch (this->type)
+  {
+    case EVE_API_DOCTYPE_CHARLIST:
+      fetcher->set_path("/account/Characters.xml.aspx");
+      break;
+    case EVE_API_DOCTYPE_CHARSHEET:
+      fetcher->set_path("/char/CharacterSheet.xml.aspx");
+      break;
+    case EVE_API_DOCTYPE_INTRAINING:
+      fetcher->set_path("/char/SkillInTraining.xml.aspx");
+      break;
+    default:
+      delete fetcher;
+      std::cout << "Bug: Invalid API document type" << std::endl;
+      return 0;
+  }
+
+  return fetcher;
 }
 
 /* ---------------------------------------------------------------- */
 
 void
-EveApi::set_proxy_server (Http& request)
+EveApiFetcher::request (void)
 {
-  ConfSectionPtr section = Config::conf.get_section("network");
-  if (section->get_value("use_proxy")->get_bool())
+  AsyncHttp* fetcher = this->setup_fetcher();
+  if (fetcher == 0)
+    return;
+
+  AsyncHttpData ret;
+
+  this->busy = true;
+
+  try
   {
-    request.set_proxy(section->get_value("proxy_address")->get_string(),
-        (uint16_t)section->get_value("proxy_port")->get_int());
+    HttpDataPtr data = fetcher->request();
+    ret.data = data;
   }
+  catch (Exception& e)
+  {
+    ret.data.reset();
+    ret.exception = e;
+    this->sig_done.emit(ret);
+  }
+
+  delete fetcher;
+
+  this->busy = false;
+
+  this->sig_done.emit(ret);
 }
 
 /* ---------------------------------------------------------------- */
 
-HttpDataPtr
-EveApi::request_charlist (EveApiAuth const& auth)
+void
+EveApiFetcher::async_request (void)
 {
-  std::cout << "Requesting XML: Characters.xml ..." << std::endl;
+  AsyncHttp* fetcher = this->setup_fetcher();
+  if (fetcher == 0)
+    return;
 
-  Http req("api.eve-online.com", "/account/Characters.xml.aspx");
-  EveApi::set_proxy_server(req);
-  req.set_data(HTTP_METHOD_POST, EveApi::get_post_data(auth));
-  req.set_agent("GtkEveMon");
-  HttpDataPtr doc = req.request();
+  this->busy = true;
 
-  //std::cout << "Successfully retrieved character list" << std::endl;
-
-  return doc;
+  this->conn_sigdone = fetcher->signal_done().connect(sigc::mem_fun
+      (*this, &EveApiFetcher::async_reply));
+  fetcher->async_request();
 }
 
 /* ---------------------------------------------------------------- */
 
-HttpDataPtr
-EveApi::request_charsheet (EveApiAuth const& auth)
+void
+EveApiFetcher::async_reply (AsyncHttpData data)
 {
-  std::cout << "Requesting XML: CharacterSheet.xml ..." << std::endl;
-
-  Http req("api.eve-online.com", "/char/CharacterSheet.xml.aspx");
-  EveApi::set_proxy_server(req);
-  req.set_data(HTTP_METHOD_POST, EveApi::get_post_data(auth));
-  req.set_agent("GtkEveMon");
-  HttpDataPtr doc = req.request();
-
-  //std::cout << "Successfully retrieved character sheet" << std::endl;
-
-  return doc;
-}
-
-/* ---------------------------------------------------------------- */
-
-HttpDataPtr
-EveApi::request_in_training (EveApiAuth const& auth)
-{
-  std::cout << "Requesting XML: SkillInTraining.xml ..." << std::endl;
-
-  Http req("api.eve-online.com", "/char/SkillInTraining.xml.aspx");
-  EveApi::set_proxy_server(req);
-  req.set_data(HTTP_METHOD_POST, EveApi::get_post_data(auth));
-  req.set_agent("GtkEveMon");
-  HttpDataPtr doc = req.request();
-
-  //std::cout << "Successfully retrieved skill in training" << std::endl;
-
-  return doc;
+  this->busy = false;
+  this->sig_done.emit(data);
 }
