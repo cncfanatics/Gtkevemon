@@ -27,6 +27,7 @@ char const* default_config =
     "  show_info_bar = true\n"
     "[servermonitor]\n"
     "[settings]\n"
+    "  auto_update_sheets = true\n"
     "  detailed_tray_tooltip = true\n"
     "  eve_cache = /\n"
     "  eve_command = eve\n"

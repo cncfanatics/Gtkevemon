@@ -83,16 +83,12 @@ ApiCharSheet::set_from_xml (HttpDataPtr xmldata)
   for (unsigned int i = 0; i < this->skills.size(); ++i)
   {
     ApiSkill const& skill = tree->get_skill_from_id(skills[i].id);
+    skills[i].details = &skill;
 
-    if (skills[i].level == 0)
-      skills[i].points_start = 0;
-    else
-      skills[i].points_start = (int)::ceil(250.0 * skill.rank
-          * ::pow(32.0, (skills[i].level - 1) / 2.0));
-
-    skills[i].points_dest = (int)::ceil(250.0 * skill.rank
-        * ::pow(32.0, (skills[i].level) / 2.0));
-
+    skills[i].points_start = ApiCharSheet::calc_start_sp
+        (skills[i].level, skill.rank);
+    skills[i].points_dest = ApiCharSheet::calc_dest_sp
+        (skills[i].level, skill.rank);
     skills[i].completed = (double)(skills[i].points - skills[i].points_start)
         / (double)(skills[i].points_dest - skills[i].points_start);
   }
@@ -230,4 +226,23 @@ ApiCharSheet::get_skill_for_id (int id)
   }
 
   return 0;
+}
+
+/* ---------------------------------------------------------------- */
+
+int
+ApiCharSheet::calc_start_sp (int level, int rank)
+{
+  if (level == 0)
+    return 0;
+
+  return ApiCharSheet::calc_dest_sp(level - 1, rank);
+}
+
+/* ---------------------------------------------------------------- */
+
+int
+ApiCharSheet::calc_dest_sp (int level, int rank)
+{
+  return (int)::ceil(250.0 * rank * ::pow(32.0, level / 2.0));
 }

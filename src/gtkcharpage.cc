@@ -197,6 +197,8 @@ GtkCharPage::GtkCharPage (void)
       &GtkCharPage::on_live_sp_value_update), CHARPAGE_LIVE_SP_LABEL_UPDATE);
   Glib::signal_timeout().connect(sigc::mem_fun(*this,
       &GtkCharPage::on_live_sp_image_update), CHARPAGE_LIVE_SP_IMAGE_UPDATE);
+  Glib::signal_timeout().connect(sigc::mem_fun(*this,
+      &GtkCharPage::check_expired_sheets), CHARPAGE_CHECK_EXPIRED_SHEETS);
 
   this->update_charsheet_details();
   this->update_training_details();
@@ -294,9 +296,6 @@ GtkCharPage::update_training_details (void)
       this->finish_eve_label.set_text(this->training->end_time);
       this->finish_local_label.set_text(EveTime::get_local_time_string
           (EveTime::adjust_local_time(this->training->end_time_t)));
-
-      this->on_live_sp_value_update();
-      this->on_live_sp_image_update();
     }
     else
     {
@@ -320,7 +319,6 @@ GtkCharPage::update_skill_list (void)
   if (!this->sheet->valid)
     return;
 
-  std::vector<ApiCharSheetSkill>& skills = this->sheet->skills;
   ApiSkillTreePtr tree;
 
   try
@@ -338,10 +336,10 @@ GtkCharPage::update_skill_list (void)
   skill_training.id = -1;
   skill_training.group = -1;
   if (this->training->valid && this->training->in_training)
-    skill_training = tree->get_skill_from_id(this->training->skill);
+    skill_training = *this->skill_info.char_skill->details;
 
   /* Append all groups to the store. Save their iterators for the children.
-   * Format is <group_id, <model iter>, <group sp> >. */
+   * Format is <group_id, <model iter, group sp> >. */
   typedef std::map<int, std::pair<Gtk::TreeModel::iterator, int> > IterMapType;
   IterMapType iter_map;
   for (ApiSkillGroupMap::iterator iter = tree->groups.begin();
@@ -359,10 +357,11 @@ GtkCharPage::update_skill_list (void)
   }
 
   /* Append all skills to the skill groups. */
+  std::vector<ApiCharSheetSkill>& skills = this->sheet->skills;
   for (unsigned int i = 0; i < skills.size(); ++i)
   {
     /* Get skill object. */
-    ApiSkill const& skill = tree->get_skill_from_id(skills[i].id);
+    ApiSkill const& skill = *skills[i].details;
 
     /* Lookup skill group. */
     IterMapType::iterator iiter = iter_map.find(skill.group);
@@ -424,10 +423,7 @@ GtkCharPage::update_skill_list (void)
 
     /* Update of the SkillInTrainingInfo. */
     if (iter->first == skill_training.group)
-    {
-      this->skill_info.skill_group_sp = iter->second.second;
       this->skill_info.tree_group_iter = iter->second.first;
-    }
   }
 }
 
@@ -440,7 +436,7 @@ GtkCharPage::request_documents (void)
   bool update_training = true;
 
   std::string evetime = EveTime::get_eve_time_string();
-  std::string char_cached("unknown");
+  std::string char_cached("<unknown>");
   std::string train_cached("<unknown>");
 
   /* Check which docs to re-request. */
@@ -475,6 +471,7 @@ GtkCharPage::request_documents (void)
 
     switch (result)
     {
+      default:
       case Gtk::RESPONSE_DELETE_EVENT:
       case Gtk::RESPONSE_NO:
         return;
@@ -482,8 +479,6 @@ GtkCharPage::request_documents (void)
         update_char = true;
         update_training = true;
         break;
-      default:
-        return;
     };
   }
 
@@ -498,6 +493,27 @@ GtkCharPage::request_documents (void)
     this->training_label.set_text("Requesting...");
     this->training_fetcher.async_request();
   }
+}
+
+/* ---------------------------------------------------------------- */
+
+bool
+GtkCharPage::check_expired_sheets (void)
+{
+  ConfValuePtr value = Config::conf.get_value("settings.auto_update_sheets");
+  if (!value->get_bool())
+    return true;
+
+  //std::cout << "Checking for expired sheets..." << std::endl;
+
+  time_t evetime = EveTime::get_eve_time();
+
+  /* Check which docs to re-request. */
+  if (!this->training->valid || evetime >= this->training->get_cached_until_t()
+      || !this->sheet->valid || evetime >= this->sheet->get_cached_until_t())
+    this->request_documents();
+
+  return true;
 }
 
 /* ---------------------------------------------------------------- */
@@ -524,6 +540,9 @@ GtkCharPage::on_charsheet_available (AsyncHttpData data)
   /* Update the GUI. */
   this->api_info_changed();
   this->update_charsheet_details();
+
+  this->on_live_sp_value_update();
+  this->on_live_sp_image_update();
 }
 
 /* ---------------------------------------------------------------- */
@@ -551,6 +570,10 @@ GtkCharPage::on_intraining_available (AsyncHttpData data)
   this->api_info_changed();
   this->update_charsheet_details();
   this->update_training_details();
+
+  this->on_live_sp_value_update();
+  this->on_live_sp_image_update();
+  this->update_remaining();
 }
 
 /* ---------------------------------------------------------------- */
@@ -579,17 +602,53 @@ GtkCharPage::api_info_changed (void)
     && this->training->valid
     && this->training->in_training)
   {
+    /* Cache current skill in training and the SP/h. */
     this->skill_info.char_skill = this->sheet->get_skill_for_id
         (this->training->skill);
     this->skill_info.sp_per_hour = this->get_spph_in_training();
-
     this->spph_label.set_text(Helpers::get_string_from_uint
         ((unsigned int)this->skill_info.sp_per_hour) + " SP per hour");
+
+    /* Update the skill level, start and dest SP if the character
+     * skill information is outdated outdated or the character
+     * sheet is still cached and has old info. */
+    if (this->skill_info.char_skill->level != this->training->to_level - 1)
+    {
+      ApiCharSheetSkill* skill = this->skill_info.char_skill;
+      skill->level = this->training->to_level - 1;
+      skill->points_start = ApiCharSheet::calc_start_sp
+          (skill->level, skill->details->rank);
+      skill->points_dest = ApiCharSheet::calc_dest_sp
+          (skill->level, skill->details->rank);
+    }
+
+    /* Cache the total skill points for the skill in training. */
+    ApiCharSheetSkill* training_skill = this->sheet->get_skill_for_id
+        (this->training->skill);
+    int training_skill_group = training_skill->details->group;
+    this->skill_info.skill_group_sp = 0;
+    for (unsigned int i = 0; i < this->sheet->skills.size(); ++i)
+    {
+      ApiCharSheetSkill& skill = this->sheet->skills[i];
+      if (skill.details->group == training_skill_group)
+        this->skill_info.skill_group_sp += skill.points;
+    }
+
+    /* Since there is a skill in training, remove the points
+     * for partial training processes for easier GUI updates
+     * for the live SP counting. */
+    if (training_skill->points > training_skill->points_start)
+    {
+      int diff = training_skill->points - training_skill->points_start;
+      this->skill_info.total_sp -= diff;
+      this->skill_info.skill_group_sp -= diff;
+    }
   }
   else
   {
     this->skill_info.char_skill = 0;
     this->skill_info.sp_per_hour = 0;
+    this->skill_info.skill_group_sp = 0;
     this->spph_label.set_text("---");
   }
 
@@ -766,43 +825,24 @@ GtkCharPage::on_skill_activated (Gtk::TreeModel::Path const& path,
 bool
 GtkCharPage::on_live_sp_value_update (void)
 {
-  if (!this->training->valid
-      || !this->training->in_training
-      || !this->sheet->valid)
+  double level_sp, total_sp, fraction;
+  bool success = this->calc_live_values(level_sp, total_sp, fraction);
+  if (!success)
     return true;
-
-  ApiCharSheetSkill* skill = this->skill_info.char_skill;
-
-  if (skill == 0)
-  {
-    std::cout << "Error: Cannot resolve skill in training!" << std::endl;
-    return true;
-  }
-
-  time_t evetime = EveTime::get_eve_time();
-  time_t finish = this->training->end_time_t;
-  time_t diff = finish - evetime;
-
-  double spps = this->skill_info.sp_per_hour / 3600.0;
-  double sp = skill->points_dest - diff * spps - skill->points_start;
-  double fraction = sp / (skill->points_dest - skill->points_start);
-
-  unsigned int sp_total = skill->points_dest - (unsigned int)(diff * spps);
 
   this->live_sp_label.set_text(Helpers::get_dotted_str_from_uint
-      ((unsigned int)sp) + /*" / " + Helpers::get_dotted_str_from_uint
-      (skill->points_dest - skill->points_start) +*/ " SP ("
+      ((unsigned int)level_sp) + " SP ("
       + Helpers::get_string_from_double(fraction * 100.0, 1) + "%)");
 
   this->skill_points_label.set_text(Helpers::get_dotted_str_from_uint
-      (this->skill_info.total_sp - skill->points + sp_total));
+      (this->skill_info.total_sp + (unsigned int)level_sp));
 
   (*this->skill_info.tree_skill_iter)[this->skill_cols.points]
-      = Helpers::get_dotted_str_from_uint(sp_total);
+      = Helpers::get_dotted_str_from_uint((unsigned int)total_sp);
 
   (*this->skill_info.tree_group_iter)[this->skill_cols.points]
       = Helpers::get_dotted_str_from_uint
-      (this->skill_info.skill_group_sp - skill->points + sp_total);
+      (this->skill_info.skill_group_sp + (unsigned int)level_sp);
 
   return true;
 }
@@ -812,31 +852,42 @@ GtkCharPage::on_live_sp_value_update (void)
 bool
 GtkCharPage::on_live_sp_image_update (void)
 {
+  double level_sp, total_sp, fraction;
+  bool success = this->calc_live_values(level_sp, total_sp, fraction);
+  if (!success)
+    return true;
+
+  Glib::RefPtr<Gdk::Pixbuf> new_icon = ImageStore::skill_progress
+      (this->skill_info.char_skill->level, fraction);
+
+  (*this->skill_info.tree_skill_iter)[this->skill_cols.level] = new_icon;
+
+  return true;
+}
+
+/* ---------------------------------------------------------------- */
+
+bool
+GtkCharPage::calc_live_values (double& level_sp, double& total_sp, double& frac)
+{
   if (!this->training->valid
       || !this->training->in_training
-      || !this->sheet->valid)
-    return true;
+      || !this->sheet->valid
+      || this->skill_info.char_skill == 0)
+    return false;
 
   ApiCharSheetSkill* skill = this->skill_info.char_skill;
-
-  if (skill == 0)
-  {
-    std::cout << "Error: Cannot resolve skill in training!" << std::endl;
-    return true;
-  }
 
   time_t evetime = EveTime::get_eve_time();
   time_t finish = this->training->end_time_t;
   time_t diff = finish - evetime;
 
   double spps = this->skill_info.sp_per_hour / 3600.0;
-  double sp = skill->points_dest - diff * spps - skill->points_start;
-  double fraction = sp / (skill->points_dest - skill->points_start);
 
-  Glib::RefPtr<Gdk::Pixbuf> new_icon = ImageStore::skill_progress
-      (this->skill_info.char_skill->level, fraction);
-
-  (*this->skill_info.tree_skill_iter)[this->skill_cols.level] = new_icon;
+  /* Assign values. */
+  total_sp = skill->points_dest - diff * spps;
+  level_sp = total_sp - skill->points_start;
+  frac = level_sp / (skill->points_dest - skill->points_start);
 
   return true;
 }

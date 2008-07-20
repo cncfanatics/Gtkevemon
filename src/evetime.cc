@@ -14,7 +14,7 @@ void
 EveTime::init_from_eveapi_string (std::string const& evetime)
 {
   time_t eve = EveTime::get_time_for_string(evetime);
-  time_t local = ::time(0);
+  time_t local = EveTime::get_local_time();
 
   EveTime::timediff = eve - local;
   EveTime::initialized = true;
@@ -62,7 +62,7 @@ EveTime::get_eve_time_string (void)
 std::string
 EveTime::get_local_time_string (void)
 {
-  time_t local = ::time(0);
+  time_t local = EveTime::get_local_time();
   return EveTime::get_local_time_string(local);
 }
 
@@ -107,7 +107,15 @@ EveTime::adjust_eve_time (time_t time)
 time_t
 EveTime::get_eve_time (void)
 {
-  return ::time(0) + EveTime::timediff;
+  return EveTime::get_local_time() + EveTime::timediff;
+}
+
+/* ---------------------------------------------------------------- */
+
+time_t
+EveTime::get_local_time (void)
+{
+  return ::time(0);
 }
 
 /* ---------------------------------------------------------------- */
@@ -120,7 +128,7 @@ EveTime::get_time_for_string (std::string const& timestr)
   char* tmp = ::strptime(timestr.c_str(), EVE_TIME_FORMAT, &tm);
   if (tmp == 0)
   {
-    std::cout << "Unable to parse time string!" << std::endl;
+    std::cout << "Warning: Unable to parse time string!" << std::endl;
     return (time_t)0;
   }
   time_t ret = ::timegm(&tm);

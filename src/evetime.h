@@ -46,8 +46,10 @@ class EveTime
     /* Adjusts the given EVE time to be in local time. */
     static time_t adjust_eve_time (time_t time);
 
-    /* Returns EVE simple time. */
+    /* Returns current EVE simple time. */
     static time_t get_eve_time (void);
+    /* Returns the current local simple time. */
+    static time_t get_local_time (void);
 
     /* Returns a local simple time for a given time string. */
     static time_t get_time_for_string (std::string const& timestr);

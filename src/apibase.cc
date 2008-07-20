@@ -18,6 +18,7 @@ ApiBase::check_node (xmlNodePtr node)
   if (!xmlStrcmp(node->name, (xmlChar const*)"cachedUntil"))
   {
     this->cached_until = this->get_node_text(node);
+    this->cached_until_t = EveTime::get_time_for_string(this->cached_until);
   }
 
   if (!xmlStrcmp(node->name, (xmlChar const*)"error"))

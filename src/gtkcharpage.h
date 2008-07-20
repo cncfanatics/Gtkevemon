@@ -34,8 +34,10 @@
 #define CHARPAGE_REMAINING_UPDATE 1000
 /* Update the live SP label every this milli seconds. */
 #define CHARPAGE_LIVE_SP_LABEL_UPDATE 1000
-/* Update the live SP image every this milli secons. */
+/* Update the live SP image every this milli seconds. */
 #define CHARPAGE_LIVE_SP_IMAGE_UPDATE 60000
+/* Check for expired sheets every this milli seconds. */
+#define CHARPAGE_CHECK_EXPIRED_SHEETS 300000
 
 class GtkCharSkillsCols : public Gtk::TreeModel::ColumnRecord
 {
@@ -121,6 +123,7 @@ class GtkCharPage : public Gtk::VBox
 
     /* Request and process EVE API documents. */
     void request_documents (void);
+    bool check_expired_sheets (void);
     void on_charsheet_available (AsyncHttpData data);
     void on_intraining_available (AsyncHttpData data);
 
@@ -144,6 +147,7 @@ class GtkCharPage : public Gtk::VBox
 
     bool on_live_sp_value_update (void);
     bool on_live_sp_image_update (void);
+    bool calc_live_values (double& level_sp, double& total_sp, double& frac);
 
     /* Functions to toggle between a paitence information and
      * the real skill list (active during HTTP requests). */

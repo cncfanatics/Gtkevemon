@@ -20,6 +20,7 @@ class ApiBase
 {
   protected:
     std::string cached_until;
+    time_t cached_until_t;
 
     /* Extracts some common information like errors,
      * the EVE time and the cache time. */
@@ -38,6 +39,7 @@ class ApiBase
 
   public:
     std::string const& get_cached_until (void) const;
+    time_t get_cached_until_t (void) const;
 };
 
 /* ---------------------------------------------------------------- */
@@ -46,6 +48,12 @@ inline std::string const&
 ApiBase::get_cached_until (void) const
 {
   return this->cached_until;
+}
+
+inline time_t
+ApiBase::get_cached_until_t (void) const
+{
+  return this->cached_until_t;
 }
 
 #endif /* API_BASE_HEADER */
