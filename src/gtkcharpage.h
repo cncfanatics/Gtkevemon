@@ -168,6 +168,7 @@ class GtkCharPage : public Gtk::VBox
     double get_spph_in_training (void);
     std::string get_skill_remaining (bool slim = false);
     void set_parent_window (Gtk::Window* parent);
+    void open_skill_planner (void);
 
     /* Pass close requests to the outside. */
     sigc::signal<void, EveApiAuth>& signal_close_request (void);

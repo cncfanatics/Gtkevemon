@@ -63,8 +63,7 @@ Helpers::get_roman_from_int (int value)
   switch (value)
   {
     case 0:
-    default:
-      return "?";
+      return "";
     case 1:
       return "I";
     case 2:
@@ -75,6 +74,8 @@ Helpers::get_roman_from_int (int value)
       return "IV";
     case 5:
       return "V";
+    default:
+      return "?";
   }
 }
 

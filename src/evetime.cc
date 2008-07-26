@@ -1,3 +1,4 @@
+#include <sstream>
 #include <iostream>
 #include <cstring>
 #include <ctime>
@@ -133,6 +134,53 @@ EveTime::get_time_for_string (std::string const& timestr)
   }
   time_t ret = ::timegm(&tm);
   return ret;
+}
+
+/* ---------------------------------------------------------------- */
+
+std::string
+EveTime::get_string_for_timediff (time_t diff, bool slim)
+{
+  int slim_count = 2;
+  bool ss_empty = true;
+
+  time_t seconds = diff % 60;
+  diff /= 60;
+  time_t minutes = diff % 60;
+  diff /= 60;
+  time_t hours = diff % 24;
+  diff /= 24;
+  time_t days = diff;
+
+  std::stringstream ss;
+  if (days > 0)
+  {
+    ss << (int)days << "d";
+    slim_count -= 1;
+    ss_empty = false;
+  }
+  if (days > 0 || hours > 0)
+  {
+    if (!ss_empty) ss << " ";
+    ss << (int)hours << "h";
+    slim_count -= 1;
+    ss_empty = false;
+  }
+  if ((!slim || slim_count > 0) && ((days > 0 && hours > 0) || minutes > 0))
+  {
+    if (!ss_empty) ss << " ";
+    ss << (int)minutes << "m";
+    slim_count -= 1;
+    ss_empty = false;
+  }
+
+  if (!slim || slim_count > 0)
+  {
+    if (!ss_empty) ss << " ";
+    ss << (int)seconds << "s";
+  }
+
+  return ss.str();
 }
 
 /* ---------------------------------------------------------------- */

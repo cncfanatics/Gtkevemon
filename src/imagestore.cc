@@ -1,9 +1,11 @@
 #include "images/skill.h"
+#include "images/skillstatus.h"
+#include "images/skillicons.h"
+#include "images/skillprogress.h"
+#include "images/skilldeps.h"
 #include "images/eveportrait.h"
 #include "images/applogo.h"
 #include "images/aboutlogo.h"
-#include "images/skillicons.h"
-#include "images/skill_progress.h"
 
 #include "imagestore.h"
 
@@ -12,6 +14,8 @@ Glib::RefPtr<Gdk::Pixbuf> ImageStore::applogo;
 Glib::RefPtr<Gdk::Pixbuf> ImageStore::aboutlogo;
 Glib::RefPtr<Gdk::Pixbuf> ImageStore::eveportrait;
 Glib::RefPtr<Gdk::Pixbuf> ImageStore::skillicons[5];
+Glib::RefPtr<Gdk::Pixbuf> ImageStore::skillstatus[8];
+Glib::RefPtr<Gdk::Pixbuf> ImageStore::skilldeps[3];
 
 /* ---------------------------------------------------------------- */
 
@@ -32,6 +36,22 @@ ImageStore::init (void)
       (skillicons_done_xpm)->scale_simple(20, 20, Gdk::INTERP_BILINEAR);
   ImageStore::skillicons[4] = Gdk::Pixbuf::create_from_xpm_data
       (skillicons_part_xpm)->scale_simple(20, 20, Gdk::INTERP_BILINEAR);
+  ImageStore::skillstatus[0] = Gdk::Pixbuf::create_from_xpm_data
+      (skill_nopre_xpm);
+  ImageStore::skillstatus[1] = Gdk::Pixbuf::create_from_xpm_data
+      (skill_havepre_xpm);
+  ImageStore::skillstatus[2] = Gdk::Pixbuf::create_from_xpm_data(skill_at0_xpm);
+  ImageStore::skillstatus[3] = Gdk::Pixbuf::create_from_xpm_data(skill_at1_xpm);
+  ImageStore::skillstatus[4] = Gdk::Pixbuf::create_from_xpm_data(skill_at2_xpm);
+  ImageStore::skillstatus[5] = Gdk::Pixbuf::create_from_xpm_data(skill_at3_xpm);
+  ImageStore::skillstatus[6] = Gdk::Pixbuf::create_from_xpm_data(skill_at4_xpm);
+  ImageStore::skillstatus[7] = Gdk::Pixbuf::create_from_xpm_data(skill_at5_xpm);
+  ImageStore::skilldeps[0] = Gdk::Pixbuf::create_from_xpm_data
+      (skill_deps_none_xpm)->scale_simple(18, 18, Gdk::INTERP_BILINEAR);
+  ImageStore::skilldeps[1] = Gdk::Pixbuf::create_from_xpm_data
+      (skill_deps_partial_xpm)->scale_simple(18, 18, Gdk::INTERP_BILINEAR);
+  ImageStore::skilldeps[2] = Gdk::Pixbuf::create_from_xpm_data
+      (skill_deps_have_xpm)->scale_simple(18, 18, Gdk::INTERP_BILINEAR);
 }
 
 /* ---------------------------------------------------------------- */

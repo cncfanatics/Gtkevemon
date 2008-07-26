@@ -46,8 +46,8 @@ MainGui::MainGui (void)
 
   this->actions->add(Gtk::Action::create("MenuCharacter",
       Gtk::Stock::JUSTIFY_FILL, "Character"));
-  this->actions->add(Gtk::Action::create("TestItem",
-      Gtk::Stock::JUSTIFY_FILL, "Test Item"),
+  this->actions->add(Gtk::Action::create("MenuCharPlanning",
+      Gtk::Stock::EDIT, "Skill browser..."),
       sigc::mem_fun(*this, &MainGui::create_skillplan));
 
   this->actions->add(Gtk::Action::create("MenuHelp",
@@ -70,9 +70,9 @@ MainGui::MainGui (void)
       "      <separator/>"
       "      <menuitem action='QuitEveMon'/>"
       "    </menu>"
-      //"    <menu name='MenuCharacter' action='MenuCharacter'>"
-      //"      <menuitem action='Create training plan...'/>"
-      //"    </menu>"
+      "    <menu name='MenuCharacter' action='MenuCharacter'>"
+      "      <menuitem action='MenuCharPlanning'/>"
+      "    </menu>"
       "    <menu name='MenuHelp' action='MenuHelp'>"
       "      <menuitem action='AboutDialog' />"
       "    </menu>"
@@ -678,5 +678,10 @@ MainGui::destroy_tray_icon (void)
 void
 MainGui::create_skillplan (void)
 {
-  // TODO
+  int current = this->notebook.get_current_page();
+  if (current < 0)
+    return;
+
+  GtkCharPage* page = (GtkCharPage*)this->notebook.pages()[current].get_child();
+  page->open_skill_planner();
 }

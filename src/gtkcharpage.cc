@@ -22,6 +22,7 @@
 #include "imagestore.h"
 #include "gtkdefines.h"
 #include "guiskill.h"
+#include "guiskillplanner.h"
 #include "gtkcharpage.h"
 
 GtkCharPage::GtkCharPage (void)
@@ -107,7 +108,7 @@ GtkCharPage::GtkCharPage (void)
   attr_memory_desc->property_xalign() = 0.0f;
   attr_willpower_desc->property_xalign() = 0.0f;
 
-  Gtk::Button* close_but = Gtk::manage(new Gtk::Button);
+  Gtk::Button* close_but = MK_BUT0;
   close_but->set_relief(Gtk::RELIEF_NONE);
   close_but->set_image(*Gtk::manage(new Gtk::Image
       (Gtk::Stock::CLOSE, Gtk::ICON_SIZE_BUTTON)));
@@ -1135,48 +1136,25 @@ GtkCharPage::get_skill_remaining (bool slim)
   if (!this->training->valid || !this->training->in_training)
     return "No training information!";
 
-  int slim_count = 2;
-  bool ss_empty = true;
-
   time_t evetime = EveTime::get_eve_time();
   time_t finish = this->training->end_time_t;
   time_t diff = finish - evetime;
 
-  time_t seconds = diff % 60;
-  diff /= 60;
-  time_t minutes = diff % 60;
-  diff /= 60;
-  time_t hours = diff % 24;
-  diff /= 24;
-  time_t days = diff;
+  return EveTime::get_string_for_timediff(diff, slim);
+}
 
-  std::stringstream ss;
-  if (days > 0)
+/* ---------------------------------------------------------------- */
+
+void
+GtkCharPage::open_skill_planner (void)
+{
+  if (!this->sheet->valid)
   {
-    ss << (int)days << "d";
-    slim_count -= 1;
-    ss_empty = false;
-  }
-  if (days > 0 || hours > 0)
-  {
-    if (!ss_empty) ss << " ";
-    ss << (int)hours << "h";
-    slim_count -= 1;
-    ss_empty = false;
-  }
-  if ((!slim || slim_count > 0) && ((days > 0 && hours > 0) || minutes > 0))
-  {
-    if (!ss_empty) ss << " ";
-    ss << (int)minutes << "m";
-    slim_count -= 1;
-    ss_empty = false;
+    this->info_display.append(INFO_WARNING, "Cannot open the skill "
+        "planner without a valid character sheet!");
+    return;
   }
 
-  if (!slim || slim_count > 0)
-  {
-    if (!ss_empty) ss << " ";
-    ss << (int)seconds << "s";
-  }
-
-  return ss.str();
+  GuiSkillPlanner* planner = new GuiSkillPlanner();
+  planner->set_character(this->sheet);
 }

@@ -23,6 +23,8 @@ class ImageStore
     static Glib::RefPtr<Gdk::Pixbuf> aboutlogo;
     static Glib::RefPtr<Gdk::Pixbuf> eveportrait;
     static Glib::RefPtr<Gdk::Pixbuf> skillicons[5];
+    static Glib::RefPtr<Gdk::Pixbuf> skillstatus[8];
+    static Glib::RefPtr<Gdk::Pixbuf> skilldeps[3];
 
     static Glib::RefPtr<Gdk::Pixbuf> skill_progress
         (unsigned int level, double percent);

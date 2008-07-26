@@ -26,5 +26,10 @@
 #define MK_BUT(ctor) Gtk::manage(new Gtk::Button(ctor))
 #define MK_BUT0 Gtk::manage(new Gtk::Button)
 #define MK_SCWIN Gtk::manage(new Gtk::ScrolledWindow)
+#define MK_HPANED Gtk::manage(new Gtk::HPaned)
+#define MK_VPANED Gtk::manage(new Gtk::VPaned)
+#define MK_NOTEBOOK Gtk::manage(new Gtk::Notebook)
+#define MK_ENTRY Gtk::manage(new Gtk::Entry);
+#define MK_IMG(id,size) Gtk::manage(new Gtk::Image(id, size))
 
 #endif /* GTK_DEFINES_HEADER */
