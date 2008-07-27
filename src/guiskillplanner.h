@@ -72,6 +72,7 @@ class GuiSkillPlanner : public WinBase
     void skill_row_activated (Gtk::TreeModel::Path const& path,
         Gtk::TreeViewColumn* col);
     double get_spps_for_skill (ApiSkill const* skill);
+    bool have_prerequisites_for_skill (ApiSkill const* skill);
 
   public:
     GuiSkillPlanner (void);

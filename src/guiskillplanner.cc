@@ -243,7 +243,13 @@ GuiSkillPlanner::fill_skill_store (void)
     Glib::RefPtr<Gdk::Pixbuf> skill_icon;
 
     if (cskill == 0)
-      skill_icon = ImageStore::skillstatus[1];
+    {
+      if (this->have_prerequisites_for_skill(&skill))
+        skill_icon = ImageStore::skillstatus[1];
+      else
+        skill_icon = ImageStore::skillstatus[0];
+
+    }
     else
     {
       switch (cskill->level)
@@ -423,4 +429,23 @@ GuiSkillPlanner::get_spps_for_skill (ApiSkill const* skill)
   }
 
   return (pri + sec / 2.0) / 60.0;
+}
+
+/* ---------------------------------------------------------------- */
+
+bool
+GuiSkillPlanner::have_prerequisites_for_skill (ApiSkill const* skill)
+{
+  ApiSkillTreePtr tree = ApiSkillTree::request();
+  for (unsigned int i = 0; i < skill->deps.size(); ++i)
+  {
+    int depskill_id = skill->deps[i].first;
+    int depskill_level = skill->deps[i].second;
+
+    ApiCharSheetSkill* cskill = this->charsheet->get_skill_for_id(depskill_id);
+    if (cskill == 0 || cskill->level < depskill_level)
+      return false;
+  }
+
+  return true;
 }
