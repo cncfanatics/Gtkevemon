@@ -62,6 +62,10 @@ VersionChecker::handle_result (AsyncHttpData result)
   if (svn_version == **last_seen)
     return;
 
+  /* Mark current version as seen. Inform user about the new version. */
+  last_seen->set(svn_version);
+  Config::save_to_file();
+
   Gtk::MessageDialog md("There is an update available!",
       false, Gtk::MESSAGE_INFO, Gtk::BUTTONS_OK);
   md.set_secondary_text("A new version of GtkEveMon is available "
@@ -74,7 +78,4 @@ VersionChecker::handle_result (AsyncHttpData result)
   if (this->parent_win != 0)
     md.set_transient_for(*this->parent_win);
   md.run();
-
-  last_seen->set(svn_version);
-  Config::save_to_file();
 }
