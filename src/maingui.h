@@ -20,6 +20,7 @@
 #include <gtkmm/notebook.h>
 #include <gtkmm/statusicon.h>
 
+#include "versionchecker.h"
 #include "gtkserver.h"
 #include "eveapi.h"
 
@@ -35,6 +36,7 @@
 class MainGui : public Gtk::Window
 {
   private:
+    VersionChecker versionchecker;
     std::vector<GtkServer*> gtkserver;
     Glib::RefPtr<Gtk::ActionGroup> actions;
     Glib::RefPtr<Gtk::UIManager> uiman;

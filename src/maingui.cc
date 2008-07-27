@@ -18,6 +18,7 @@
 #include "gtkdefines.h"
 #include "gtkserver.h"
 #include "gtkcharpage.h"
+#include "versionchecker.h"
 #include "config.h"
 #include "guiuserdata.h"
 #include "guiconfiguration.h"
@@ -26,6 +27,8 @@
 
 MainGui::MainGui (void)
 {
+  this->versionchecker.set_parent_window(this);
+
   /* Create the actions, menus and toolbars. */
   this->actions = Gtk::ActionGroup::create();
   this->uiman = Gtk::UIManager::create();
@@ -161,6 +164,7 @@ MainGui::MainGui (void)
 
   this->update_time();
   this->init_from_config();
+  this->versionchecker.request_version();
 }
 
 /* ---------------------------------------------------------------- */

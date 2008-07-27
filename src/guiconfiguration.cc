@@ -44,6 +44,9 @@ GuiConfiguration::GuiConfiguration (void)
   GtkConfCheckButton* misc_autoupdate_sheets_cb = Gtk::manage
       (new GtkConfCheckButton("Automatically update character status",
       false, "settings.auto_update_sheets"));
+  GtkConfCheckButton* misc_versionchecking_cb = Gtk::manage
+      (new GtkConfCheckButton("Online version checking",
+      false, "versionchecker.enabled"));
 
   Gtk::VBox* page_misc = MK_VBOX;
   page_misc->set_border_width(5);
@@ -51,6 +54,7 @@ GuiConfiguration::GuiConfiguration (void)
   page_misc->pack_start(*misc_min_on_close_cb, false, false, 0);
   page_misc->pack_start(*misc_detailed_tray_tt_cb, false, false, 0);
   page_misc->pack_start(*misc_autoupdate_sheets_cb, false, false, 0);
+  page_misc->pack_start(*misc_versionchecking_cb, false, false, 0);
   page_misc->pack_start(*eve_cmd_box, false, false, 0);
 
   /* The NETWORK notebook tab. */
