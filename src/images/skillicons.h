@@ -1,10 +1,11 @@
 #ifndef SKILL_ICONS_IMAGE
 #define SKILL_ICONS_IMAGE
 
-#include "skillicons_skill.xpm"
-#include "skillicons_group.xpm"
-#include "skillicons_train.xpm"
-#include "skillicons_done.xpm"
-#include "skillicons_part.xpm"
+#include <glib.h>
+#include "img_skillicons_skill.h"
+#include "img_skillicons_group.h"
+#include "img_skillicons_train.h"
+#include "img_skillicons_done.h"
+#include "img_skillicons_part.h"
 
 #endif /* SKILL_ICONS_IMAGE */

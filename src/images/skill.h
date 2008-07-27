@@ -1,6 +1,7 @@
 #ifndef SKILL_IMAGE
 #define SKILL_IMAGE
 
-#include "skill.xpm"
+#include <glib.h>
+#include "img_skill.h"
 
 #endif /* SKILL_IMAGE */

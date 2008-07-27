@@ -1,8 +1,8 @@
 /* XPM */
-static char const* skill_at0_xpm[] = {
+static char const* img_skillstatus_nopre_xpm[] = {
 "18 18 4 1",
 " 	c None",
-".	c #000000",
+".	c #FF0000",
 "+	c #FFFFFF",
 "@	c #CCCCCC",
 "..................",

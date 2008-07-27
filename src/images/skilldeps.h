@@ -1,8 +1,9 @@
 #ifndef SKILL_DEPS_IMAGE
 #define SKILL_DEPS_IMAGE
 
-#include "skill_deps_none.xpm"
-#include "skill_deps_partial.xpm"
-#include "skill_deps_have.xpm"
+#include <glib.h>
+#include "img_skilldeps_none.h"
+#include "img_skilldeps_partial.h"
+#include "img_skilldeps_have.h"
 
 #endif /* SKILL_DEPS_IMAGE */

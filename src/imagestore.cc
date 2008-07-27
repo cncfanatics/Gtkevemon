@@ -22,36 +22,45 @@ Glib::RefPtr<Gdk::Pixbuf> ImageStore::skilldeps[3];
 void
 ImageStore::init (void)
 {
-  ImageStore::skill = Gdk::Pixbuf::create_from_xpm_data(skill_xpm);
+  ImageStore::skill = Gdk::Pixbuf::create_from_inline(-1, img_skill, false);
   ImageStore::applogo = Gdk::Pixbuf::create_from_xpm_data(applogo_xpm);
   ImageStore::aboutlogo = Gdk::Pixbuf::create_from_xpm_data(aboutlogo_xpm);
   ImageStore::eveportrait = Gdk::Pixbuf::create_from_xpm_data(eveportrait_xpm);
-  ImageStore::skillicons[0] = Gdk::Pixbuf::create_from_xpm_data
-      (skillicons_group_xpm)->scale_simple(20, 20, Gdk::INTERP_BILINEAR);
-  ImageStore::skillicons[1] = Gdk::Pixbuf::create_from_xpm_data
-      (skillicons_skill_xpm)->scale_simple(20, 20, Gdk::INTERP_BILINEAR);
-  ImageStore::skillicons[2] = Gdk::Pixbuf::create_from_xpm_data
-      (skillicons_train_xpm)->scale_simple(20, 20, Gdk::INTERP_BILINEAR);
-  ImageStore::skillicons[3] = Gdk::Pixbuf::create_from_xpm_data
-      (skillicons_done_xpm)->scale_simple(20, 20, Gdk::INTERP_BILINEAR);
-  ImageStore::skillicons[4] = Gdk::Pixbuf::create_from_xpm_data
-      (skillicons_part_xpm)->scale_simple(20, 20, Gdk::INTERP_BILINEAR);
+
+  ImageStore::skillicons[0] = Gdk::Pixbuf::create_from_inline
+      (-1, img_skillicons_group, false);
+  ImageStore::skillicons[1] = Gdk::Pixbuf::create_from_inline
+      (-1, img_skillicons_skill, false);
+  ImageStore::skillicons[2] = Gdk::Pixbuf::create_from_inline
+      (-1, img_skillicons_train, false);
+  ImageStore::skillicons[3] = Gdk::Pixbuf::create_from_inline
+      (-1, img_skillicons_done, false);
+  ImageStore::skillicons[4] = Gdk::Pixbuf::create_from_inline
+      (-1, img_skillicons_part, false);
+
   ImageStore::skillstatus[0] = Gdk::Pixbuf::create_from_xpm_data
-      (skill_nopre_xpm);
+      (img_skillstatus_nopre_xpm);
   ImageStore::skillstatus[1] = Gdk::Pixbuf::create_from_xpm_data
-      (skill_havepre_xpm);
-  ImageStore::skillstatus[2] = Gdk::Pixbuf::create_from_xpm_data(skill_at0_xpm);
-  ImageStore::skillstatus[3] = Gdk::Pixbuf::create_from_xpm_data(skill_at1_xpm);
-  ImageStore::skillstatus[4] = Gdk::Pixbuf::create_from_xpm_data(skill_at2_xpm);
-  ImageStore::skillstatus[5] = Gdk::Pixbuf::create_from_xpm_data(skill_at3_xpm);
-  ImageStore::skillstatus[6] = Gdk::Pixbuf::create_from_xpm_data(skill_at4_xpm);
-  ImageStore::skillstatus[7] = Gdk::Pixbuf::create_from_xpm_data(skill_at5_xpm);
-  ImageStore::skilldeps[0] = Gdk::Pixbuf::create_from_xpm_data
-      (skill_deps_none_xpm)->scale_simple(18, 18, Gdk::INTERP_BILINEAR);
-  ImageStore::skilldeps[1] = Gdk::Pixbuf::create_from_xpm_data
-      (skill_deps_partial_xpm)->scale_simple(18, 18, Gdk::INTERP_BILINEAR);
-  ImageStore::skilldeps[2] = Gdk::Pixbuf::create_from_xpm_data
-      (skill_deps_have_xpm)->scale_simple(18, 18, Gdk::INTERP_BILINEAR);
+      (img_skillstatus_havepre_xpm);
+  ImageStore::skillstatus[2] = Gdk::Pixbuf::create_from_xpm_data
+      (img_skillstatus_at0_xpm);
+  ImageStore::skillstatus[3] = Gdk::Pixbuf::create_from_xpm_data
+      (img_skillstatus_at1_xpm);
+  ImageStore::skillstatus[4] = Gdk::Pixbuf::create_from_xpm_data
+      (img_skillstatus_at2_xpm);
+  ImageStore::skillstatus[5] = Gdk::Pixbuf::create_from_xpm_data
+      (img_skillstatus_at3_xpm);
+  ImageStore::skillstatus[6] = Gdk::Pixbuf::create_from_xpm_data
+      (img_skillstatus_at4_xpm);
+  ImageStore::skillstatus[7] = Gdk::Pixbuf::create_from_xpm_data
+      (img_skillstatus_at5_xpm);
+
+  ImageStore::skilldeps[0] = Gdk::Pixbuf::create_from_inline
+      (-1, img_skilldeps_none, false);
+  ImageStore::skilldeps[1] = Gdk::Pixbuf::create_from_inline
+      (-1, img_skilldeps_partial, false);
+  ImageStore::skilldeps[2] = Gdk::Pixbuf::create_from_inline
+      (-1, img_skilldeps_have, false);
 }
 
 /* ---------------------------------------------------------------- */
