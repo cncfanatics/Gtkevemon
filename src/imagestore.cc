@@ -22,10 +22,14 @@ Glib::RefPtr<Gdk::Pixbuf> ImageStore::skilldeps[3];
 void
 ImageStore::init (void)
 {
-  ImageStore::skill = Gdk::Pixbuf::create_from_inline(-1, img_skill, false);
-  ImageStore::applogo = Gdk::Pixbuf::create_from_xpm_data(applogo_xpm);
-  ImageStore::aboutlogo = Gdk::Pixbuf::create_from_xpm_data(aboutlogo_xpm);
-  ImageStore::eveportrait = Gdk::Pixbuf::create_from_xpm_data(eveportrait_xpm);
+  ImageStore::skill = Gdk::Pixbuf::create_from_inline
+      (-1, img_skill, false);
+  ImageStore::applogo = Gdk::Pixbuf::create_from_xpm_data
+      (img_applogo_xpm);
+  ImageStore::aboutlogo = Gdk::Pixbuf::create_from_xpm_data
+      (img_aboutlogo_xpm);
+  ImageStore::eveportrait = Gdk::Pixbuf::create_from_xpm_data
+      (img_eveportrait_xpm);
 
   ImageStore::skillicons[0] = Gdk::Pixbuf::create_from_inline
       (-1, img_skillicons_group, false);
@@ -69,7 +73,7 @@ Glib::RefPtr<Gdk::Pixbuf>
 ImageStore::skill_progress (unsigned int level, double completed)
 {
   Glib::RefPtr<Gdk::Pixbuf> ret(Gdk::Pixbuf::create_from_xpm_data
-      (skill_progress_xpm));
+      (img_skillprogress_xpm));
 
   /* Some safety checks. */
   if (level > 5) level = 5;

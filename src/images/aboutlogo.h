@@ -1,6 +1,6 @@
 #ifndef ABOUTLOGO_IMAGE
 #define ABOUTLOGO_IMAGE
 
-#include "aboutlogo.xpm"
+#include "img_aboutlogo.xpm"
 
 #endif /* ABOUTLOGO_IMAGE */

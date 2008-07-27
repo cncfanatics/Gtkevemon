@@ -1,5 +1,5 @@
 /* XPM */
-static char const* applogo_xpm[] = {
+static char const* img_applogo_xpm[] = {
 "64 64 3 1",
 " 	c None",
 ".	c #666666",

@@ -1,5 +1,5 @@
 /* XPM */
-static char const* skill_progress_xpm[] = {
+static char const* img_skillprogress_xpm[] = {
 "38 17 4 1",
 " 	c None",
 ".	c #000000",

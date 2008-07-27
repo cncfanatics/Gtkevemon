@@ -1,6 +1,6 @@
 #ifndef SKILL_PROGRESS_IMAGE
 #define SKILL_PROGRESS_IMAGE
 
-#include "skill_progress.xpm"
+#include "img_skillprogress.xpm"
 
 #endif /* SKILL_PROGRESS_IMAGE */

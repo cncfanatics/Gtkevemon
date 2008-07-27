@@ -1,5 +1,5 @@
 /* XPM */
-static char const* eveportrait_xpm[] = {
+static char const* img_eveportrait_xpm[] = {
 "128 128 175 2",
 "  	c #010101",
 ". 	c #000000",
