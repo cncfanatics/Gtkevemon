@@ -18,8 +18,6 @@ signal_received (int signum)
 
 /* ---------------------------------------------------------------- */
 
-#include "guiskillplanner.h"
-
 int
 main (int argc, char* argv[])
 {
