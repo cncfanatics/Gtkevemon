@@ -168,6 +168,7 @@ GuiSkillPlanner::GuiSkillPlanner (void)
 
   this->add(*main_vbox);
   this->set_title("Skill browser - GtkEveMon");
+  this->set_icon(ImageStore::applogo);
   this->set_default_size(800, 550);
   this->show_all();
 }

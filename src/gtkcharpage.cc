@@ -294,7 +294,8 @@ GtkCharPage::update_training_details (void)
     if (this->training->in_training)
     {
       this->training_label.set_text(this->get_skill_in_training());
-      this->finish_eve_label.set_text(this->training->end_time);
+      this->finish_eve_label.set_text
+          (EveTime::get_gm_time_string(this->training->end_time_t));
       this->finish_local_label.set_text(EveTime::get_local_time_string
           (EveTime::adjust_local_time(this->training->end_time_t)));
     }

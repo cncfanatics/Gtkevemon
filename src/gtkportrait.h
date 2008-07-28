@@ -29,7 +29,6 @@ class GtkPortrait : public Gtk::Image
     sigc::connection http_request;
 
     bool fetch_from_gtkevemon_cache (void);
-    bool fetch_from_eve_cache (void);
     void request_from_eve_online (void);
     void set_from_eve_online (AsyncHttpData result);
 

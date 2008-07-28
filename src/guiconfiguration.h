@@ -22,13 +22,11 @@
 class GuiConfiguration : public WinBase
 {
   private:
-    GtkConfFileChooser eve_cache;
     GtkConfComboBox tray_usage;
-    Gtk::Image valid_icon;
-    Gtk::Label valid_label;
+    Gtk::Label time_example;
 
-    void check_new_path (void);
     void close (void);
+    void update_time_example (void);
 
   public:
     GuiConfiguration (void);

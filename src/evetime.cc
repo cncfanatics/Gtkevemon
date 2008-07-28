@@ -72,8 +72,9 @@ EveTime::get_local_time_string (void)
 std::string
 EveTime::get_local_time_string (time_t time)
 {
-  char buffer[20];
-  strftime(buffer, 20, EVE_TIME_FORMAT, ::localtime(&time));
+  static ConfValuePtr format = Config::conf.get_value("evetime.time_format");
+  char buffer[128];
+  strftime(buffer, 128, format->get_string().c_str(), ::localtime(&time));
   return std::string(buffer);
 }
 
@@ -82,8 +83,9 @@ EveTime::get_local_time_string (time_t time)
 std::string
 EveTime::get_gm_time_string (time_t time)
 {
-  char buffer[20];
-  strftime(buffer, 20, EVE_TIME_FORMAT, ::gmtime(&time));
+  static ConfValuePtr format = Config::conf.get_value("evetime.time_format");
+  char buffer[128];
+  strftime(buffer, 128, format->get_string().c_str(), ::gmtime(&time));
   return std::string(buffer);
 }
 

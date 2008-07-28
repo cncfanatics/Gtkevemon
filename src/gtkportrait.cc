@@ -37,14 +37,9 @@ GtkPortrait::set (std::string const& charid)
   bool success = false;
 
   /* Try to get the portrait from our own cache. */
-  if (!success)
-    success = this->fetch_from_gtkevemon_cache();
+  success = this->fetch_from_gtkevemon_cache();
 
-  /* Then try to get it from the EVE cache. */
-  if (!success)
-    success = this->fetch_from_eve_cache();
-
-  /* Nothing worked so far. Use default image and request online. */
+  /* Use default image and request online. */
   if (!success)
   {
     Glib::RefPtr<Gdk::Pixbuf> pixbuf = ImageStore::eveportrait;
@@ -88,59 +83,6 @@ GtkPortrait::fetch_from_gtkevemon_cache (void)
 
   //if (success)
   //  std::cout << "Using protrait from GtkEveMon cache!" << std::endl;
-
-  return success;
-}
-
-/* ---------------------------------------------------------------- */
-
-bool
-GtkPortrait::fetch_from_eve_cache (void)
-{
-  bool success = false;
-
-  /* Search for these image sizes. */
-  std::vector<std::string> sizes;
-  sizes.push_back("_256.png");
-  sizes.push_back("_128.png");
-
-  std::string basepath = **Config::conf.get_value("settings.eve_cache");
-  basepath += "/Pictures/Portraits/";
-
-  for (unsigned int i = 0; i < sizes.size(); ++i)
-  {
-    std::string filename = this->char_id + sizes[i];
-    try
-    {
-      std::string path = basepath + filename;
-      Glib::RefPtr<Gdk::Pixbuf> pixbuf = Gdk::Pixbuf::create_from_file(path);
-      Glib::RefPtr<Gdk::Pixbuf> scaled = pixbuf->scale_simple
-         (PORTRAIT_SIZE, PORTRAIT_SIZE, Gdk::INTERP_BILINEAR);
-      this->Gtk::Image::set(scaled);
-      this->cache_portrait(scaled);
-      success = true;
-      break;
-    }
-    catch (Glib::FileError& e)
-    {
-      /* This exception is fired when the desired file is not available. */
-    }
-    catch (Gdk::PixbufError& e)
-    {
-      /* Error loading an image file. Strange things happened. */
-      std::cout << "Error creating portrait from " << filename
-          << ": Code " << e.code() << std::endl;
-    }
-    catch (...)
-    {
-      /* Some other unknown error occurred. */
-      std::cout << "Unknown error creating portrait from "
-          << filename << std::endl;
-    }
-  }
-
-  //if (success)
-  //  std::cout << "Fetched portrait from the EVE cache!" << std::endl;
 
   return success;
 }
