@@ -20,6 +20,7 @@ class Thread
 {
   private:
     pthread_t handle;
+    bool cleanup;
 
     static void* stub (void* arg)
     { return ((Thread*)arg)->run(); }
@@ -28,19 +29,29 @@ class Thread
     virtual void* run (void) = 0;
 
   public:
-    virtual ~Thread (void) { }
+    Thread (void)
+    { this->cleanup = false; }
+
+    virtual ~Thread (void)
+    { if (this->cleanup) pthread_detach(this->handle); }
 
     /* Creates a new thread and runs the run() method. */
     void pt_create (const pthread_attr_t* p = 0)
-    { pthread_create(&handle, p, Thread::stub, (void*)this); }
+    {
+      this->cleanup = true;
+      pthread_create(&this->handle, p, Thread::stub, (void*)this);
+    }
 
     /* Sends a cancelation request to the thread. */
     void pt_cancel (void)
-    { pthread_cancel(handle); }
+    { pthread_cancel(this->handle); }
 
     /* Blocks and waits for termination of the thread. */
     void pt_join (void)
-    { pthread_join(handle, 0); }
+    {
+      this->cleanup = false;
+      pthread_join(this->handle, 0);
+    }
 };
 
 /* ---------------------------------------------------------------- */
