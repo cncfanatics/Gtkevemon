@@ -188,6 +188,7 @@ GuiSkillPlanner::set_character (ApiCharSheetPtr sheet)
   this->fill_skill_store();
   this->skill_selected();
   this->character_label.set_text(this->charsheet->name);
+  this->set_title(this->charsheet->name + " - GtkEveMon");
 }
 
 /* ---------------------------------------------------------------- */

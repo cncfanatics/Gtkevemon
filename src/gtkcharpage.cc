@@ -437,22 +437,24 @@ GtkCharPage::request_documents (void)
   bool update_char = true;
   bool update_training = true;
 
-  std::string evetime = EveTime::get_eve_time_string();
+  time_t evetime = EveTime::get_eve_time();
   std::string char_cached("<unknown>");
   std::string train_cached("<unknown>");
 
   /* Check which docs to re-request. */
   if (this->sheet->valid)
   {
-    char_cached = this->sheet->get_cached_until();
-    if (evetime < char_cached)
+    time_t char_cached_t = this->sheet->get_cached_until_t();
+    char_cached = EveTime::get_gm_time_string(char_cached_t);
+    if (evetime < char_cached_t)
       update_char = false;
   }
 
   if (this->training->valid)
   {
-    train_cached = this->training->get_cached_until();
-    if (evetime < train_cached)
+    time_t train_cached_t = this->training->get_cached_until_t();
+    train_cached = EveTime::get_gm_time_string(train_cached_t);
+    if (evetime < train_cached_t)
       update_training = false;
   }
 
@@ -987,10 +989,12 @@ GtkCharPage::on_info_clicked (void)
   std::string train_cached("<unknown>");
 
   if (this->sheet->valid)
-    char_cached = this->sheet->get_cached_until();
+    char_cached = EveTime::get_gm_time_string
+        (this->sheet->get_cached_until_t());
 
   if (this->training->valid)
-    train_cached = this->training->get_cached_until();
+    train_cached = EveTime::get_gm_time_string
+        (this->training->get_cached_until_t());
 
   Gtk::MessageDialog md("Information about cached sheets",
       false, Gtk::MESSAGE_INFO, Gtk::BUTTONS_OK);
