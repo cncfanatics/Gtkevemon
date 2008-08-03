@@ -26,8 +26,10 @@
 #include "maingui.h"
 
 MainGui::MainGui (void)
+  : info_display(INFO_STYLE_FRAMED)
 {
-  this->versionchecker.set_parent_window(this);
+  //this->versionchecker.set_parent_window(this);
+  this->versionchecker.set_info_display(&this->info_display);
 
   /* Create the actions, menus and toolbars. */
   this->actions = Gtk::ActionGroup::create();
@@ -50,8 +52,11 @@ MainGui::MainGui (void)
   this->actions->add(Gtk::Action::create("MenuCharacter",
       Gtk::Stock::JUSTIFY_FILL, "Character"));
   this->actions->add(Gtk::Action::create("MenuCharPlanning",
-      Gtk::Stock::EDIT, "Skill browser..."),
+      Gtk::Stock::OK, "Skill browser..."),
       sigc::mem_fun(*this, &MainGui::create_skillplan));
+  this->actions->add(Gtk::Action::create("MenuCharXMLSource",
+      Gtk::Stock::OK, "View XML source..."),
+      sigc::mem_fun(*this, &MainGui::view_xml_source));
 
   this->actions->add(Gtk::Action::create("MenuHelp",
       Gtk::Stock::HELP, "_Help"));
@@ -75,6 +80,7 @@ MainGui::MainGui (void)
       "    </menu>"
       "    <menu name='MenuCharacter' action='MenuCharacter'>"
       "      <menuitem action='MenuCharPlanning'/>"
+      "      <menuitem action='MenuCharXMLSource'/>"
       "    </menu>"
       "    <menu name='MenuHelp' action='MenuHelp'>"
       "      <menuitem action='AboutDialog' />"
@@ -87,10 +93,21 @@ MainGui::MainGui (void)
   Gtk::Widget* menu_bar = this->uiman->get_widget("/MenuBar");
 
   /* Set icon for the EveMon menu. */
-  Gtk::ImageMenuItem* evemon_menu = (Gtk::ImageMenuItem*)
+  Gtk::ImageMenuItem* tmp_item = (Gtk::ImageMenuItem*)
       this->uiman->get_widget("/MenuBar/MenuEveMon");
-  evemon_menu->set_image(*Gtk::manage(new Gtk::Image
+  tmp_item->set_image(*Gtk::manage(new Gtk::Image
       (ImageStore::applogo->scale_simple(16, 16, Gdk::INTERP_BILINEAR))));
+
+  tmp_item = (Gtk::ImageMenuItem*)this->uiman->get_widget
+      ("/MenuBar/MenuCharacter/MenuCharPlanning");
+  tmp_item->set_image(*Gtk::manage(new Gtk::Image
+      (ImageStore::skill->scale_simple(16, 16, Gdk::INTERP_BILINEAR))));
+
+  tmp_item = (Gtk::ImageMenuItem*)this->uiman->get_widget
+      ("/MenuBar/MenuCharacter/MenuCharXMLSource");
+  tmp_item->set_image(*Gtk::manage(new Gtk::Image
+      (Gtk::Stock::FIND, Gtk::ICON_SIZE_MENU)));
+
 
   /* Right-justify the help menu. */
   Gtk::MenuItem* help_menu = (Gtk::MenuItem*)this->uiman->get_widget
@@ -134,6 +151,7 @@ MainGui::MainGui (void)
   /* Pack window contents together. */
   Gtk::VBox* main_vbox = MK_VBOX0;
   main_vbox->pack_start(*menu_bar, false, false, 0);
+  main_vbox->pack_start(this->info_display, false, false, 0);
   main_vbox->pack_start(*content_vbox, true, true, 0);
   //main_vbox->pack_start(STATUSBAR, false, false, 0);
 
@@ -143,6 +161,7 @@ MainGui::MainGui (void)
   this->set_default_size(480, 640);
   this->add(*main_vbox);
   this->show_all();
+  this->info_display.hide();
 
   /* Connect signals. */
   this->signal_window_state_event().connect(sigc::mem_fun
@@ -688,4 +707,17 @@ MainGui::create_skillplan (void)
 
   GtkCharPage* page = (GtkCharPage*)this->notebook.pages()[current].get_child();
   page->open_skill_planner();
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+MainGui::view_xml_source (void)
+{
+  int current = this->notebook.get_current_page();
+  if (current < 0)
+    return;
+
+  GtkCharPage* page = (GtkCharPage*)this->notebook.pages()[current].get_child();
+  page->open_source_viewer();
 }

@@ -16,9 +16,12 @@
 #include <string>
 #include <libxml/parser.h>
 
+#include "http.h"
+
 class ApiBase
 {
   protected:
+    HttpDataPtr http_data;
     std::string cached_until;
     time_t cached_until_t;
 
@@ -40,6 +43,7 @@ class ApiBase
   public:
     std::string const& get_cached_until (void) const;
     time_t get_cached_until_t (void) const;
+    HttpDataPtr get_http_data (void) const;
 };
 
 /* ---------------------------------------------------------------- */
@@ -54,6 +58,12 @@ inline time_t
 ApiBase::get_cached_until_t (void) const
 {
   return this->cached_until_t;
+}
+
+inline HttpDataPtr
+ApiBase::get_http_data (void) const
+{
+  return this->http_data;
 }
 
 #endif /* API_BASE_HEADER */

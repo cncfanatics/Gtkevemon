@@ -2,11 +2,12 @@
 #include <gtkmm/button.h>
 #include <gtkmm/separator.h>
 #include <gtkmm/stock.h>
+#include <gtkmm/frame.h>
 
 #include "gtkdefines.h"
 #include "gtkinfodisplay.h"
 
-GtkInfoDisplay::GtkInfoDisplay (void)
+GtkInfoDisplay::GtkInfoDisplay (InfoDisplayStyle style)
   : Gtk::VBox(false, 0)
 {
   this->text.property_xalign() = 0.0f;
@@ -28,8 +29,26 @@ GtkInfoDisplay::GtkInfoDisplay (void)
   item_box->pack_start(this->text, true, true, 0);
   item_box->pack_start(*button_box, false, false, 0);
 
-  this->pack_start(*MK_HSEP, false, false, 0);
-  this->pack_start(*item_box, false, false, 0);
+  switch (style)
+  {
+    default:
+    case INFO_STYLE_NONE:
+      this->pack_start(*item_box, false, false, 0);
+      break;
+    case INFO_STYLE_TOP_HSEP:
+      this->pack_start(*MK_HSEP, false, false, 0);
+      this->pack_start(*item_box, false, false, 0);
+      break;
+    case INFO_STYLE_FRAMED:
+      Gtk::Frame* frame = MK_FRAME0;
+      frame->set_shadow_type(Gtk::SHADOW_OUT);
+      frame->add(*item_box);
+      this->pack_start(*frame, false, false, 0);
+      break;
+  }
+
+  this->tooltips.set_tip(*close_but, "Hide message box");
+  this->tooltips.set_tip(this->info_but, "Detailed information");
 
   close_but->signal_clicked().connect(sigc::mem_fun
       (*this, &Gtk::Widget::hide));
@@ -97,14 +116,17 @@ GtkInfoDisplayLog::GtkInfoDisplayLog (InfoItem const& item)
   scwin->add(this->text_view);
   scwin->set_shadow_type(Gtk::SHADOW_ETCHED_IN);
 
+  this->message.property_xalign() = 0.0f;
   this->text_view.set_editable(false);
   this->text_view.set_wrap_mode(Gtk::WRAP_WORD);
 
-  this->text_buffer->set_text(Glib::locale_to_utf8(item.message)
-      + "\n\n" + Glib::locale_to_utf8(item.details));
+  this->message.set_text("<b>" + Glib::locale_to_utf8(item.message) + "</b>");
+  this->message.set_use_markup(true);
+  this->text_buffer->set_text(Glib::locale_to_utf8(item.details));
 
   Gtk::VBox* main_box = MK_VBOX;
   main_box->set_border_width(5);
+  main_box->pack_start(this->message, false, false, 0);
   main_box->pack_start(*scwin, true, true, 0);
   main_box->pack_end(*button_box, false, false, 0);
 
@@ -113,6 +135,6 @@ GtkInfoDisplayLog::GtkInfoDisplayLog (InfoItem const& item)
 
   close_but->signal_clicked().connect(sigc::mem_fun(*this, &WinBase::close));
 
-  this->set_default_size(350, 200);
+  this->set_default_size(400, 250);
   this->show_all();
 }

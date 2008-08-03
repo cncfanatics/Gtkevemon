@@ -113,6 +113,10 @@ class GtkCharPage : public Gtk::VBox
 
     GtkInfoDisplay info_display;
 
+    /* Tooltips. */
+    Gtk::Tooltips tooltips;
+
+    /* Signals. */
     sigc::signal<void, EveApiAuth> sig_close_request;
     sigc::signal<void, EveApiAuth> sig_sheet_updated;
 
@@ -169,6 +173,7 @@ class GtkCharPage : public Gtk::VBox
     std::string get_skill_remaining (bool slim = false);
     void set_parent_window (Gtk::Window* parent);
     void open_skill_planner (void);
+    void open_source_viewer (void);
 
     /* Pass close requests to the outside. */
     sigc::signal<void, EveApiAuth>& signal_close_request (void);

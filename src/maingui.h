@@ -20,6 +20,7 @@
 #include <gtkmm/notebook.h>
 #include <gtkmm/statusicon.h>
 
+#include "gtkinfodisplay.h"
 #include "versionchecker.h"
 #include "gtkserver.h"
 #include "eveapi.h"
@@ -44,6 +45,7 @@ class MainGui : public Gtk::Window
     Gtk::Notebook notebook;
     Gtk::Label evetime_label;
     Gtk::Label localtime_label;
+    GtkInfoDisplay info_display;
 
     void init_from_config (void);
     bool update_servers (void);
@@ -66,6 +68,7 @@ class MainGui : public Gtk::Window
     void create_tray_icon (void);
     void destroy_tray_icon (void);
     void create_skillplan (void);
+    void view_xml_source (void);
     bool internal_add_character (EveApiAuth const& auth);
     bool internal_remove_character (EveApiAuth const& auth);
 

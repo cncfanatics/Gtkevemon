@@ -6,6 +6,7 @@
 #include <gtkmm/box.h>
 #include <gtkmm/textbuffer.h>
 #include <gtkmm/textview.h>
+#include <gtkmm/tooltips.h>
 
 #include "winbase.h"
 
@@ -14,6 +15,13 @@ enum InfoItemType
   INFO_NOTIFICATION,
   INFO_WARNING,
   INFO_ERROR
+};
+
+enum InfoDisplayStyle
+{
+  INFO_STYLE_NONE,
+  INFO_STYLE_TOP_HSEP,
+  INFO_STYLE_FRAMED
 };
 
 /* ---------------------------------------------------------------- */
@@ -40,12 +48,13 @@ class GtkInfoDisplay : public Gtk::VBox
     Gtk::Image icon;
     Gtk::Label text;
     Gtk::Button info_but;
+    Gtk::Tooltips tooltips;
 
   protected:
     void show_info_log (void);
 
   public:
-    GtkInfoDisplay (void);
+    GtkInfoDisplay (InfoDisplayStyle style);
 
     void append (InfoItemType type, std::string const& message);
     void append (InfoItemType type, std::string const& message,
@@ -58,6 +67,7 @@ class GtkInfoDisplay : public Gtk::VBox
 class GtkInfoDisplayLog : public WinBase
 {
   private:
+    Gtk::Label message;
     Glib::RefPtr<Gtk::TextBuffer> text_buffer;
     Gtk::TextView text_view;
 

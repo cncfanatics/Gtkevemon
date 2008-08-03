@@ -11,6 +11,7 @@ ApiInTraining::set_from_xml (HttpDataPtr xmldata)
 {
   this->valid = false;
 
+  this->http_data = xmldata;
   this->parse_xml(xmldata);
 
   /* Do some checking if end time is expired. */

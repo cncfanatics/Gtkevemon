@@ -8,7 +8,8 @@
 
 VersionChecker::VersionChecker (void)
 {
-  this->parent_win = 0;
+  this->info_display = 0;
+  this->parent_window = 0;
   Glib::signal_timeout().connect(sigc::mem_fun
       (*this, &VersionChecker::request_version), VERSION_CHECK_INTERVAL);
 }
@@ -66,16 +67,30 @@ VersionChecker::handle_result (AsyncHttpData result)
   last_seen->set(svn_version);
   Config::save_to_file();
 
-  Gtk::MessageDialog md("There is an update available!",
-      false, Gtk::MESSAGE_INFO, Gtk::BUTTONS_OK);
-  md.set_secondary_text("A new version of GtkEveMon is available "
-      "in SVN! Please consider updating to the latest version.\n\n"
-      "Your local version is: " + cur_version + "\n"
-      "The latest version is: " + svn_version + "\n\n"
-      "Take a look at the forums for further information:\n"
-      "http://www.battleclinic.com/forum/index.php#43");
-  md.set_title("Version check - GtkEveMon");
-  if (this->parent_win != 0)
-    md.set_transient_for(*this->parent_win);
-  md.run();
+  if (this->info_display != 0)
+  {
+    this->info_display->append(INFO_NOTIFICATION,
+        "The current SVN version is " + svn_version,
+        "A new version of GtkEveMon is available "
+        "in SVN! Please consider updating to the latest version.\n\n"
+        "Your local version is: " + cur_version + "\n"
+        "The latest version is: " + svn_version + "\n\n"
+        "Take a look at the forums for further information:\n"
+        "http://www.battleclinic.com/forum/index.php#43");
+  }
+  else
+  {
+    Gtk::MessageDialog md("There is an update available!",
+        false, Gtk::MESSAGE_INFO, Gtk::BUTTONS_OK);
+    md.set_secondary_text("A new version of GtkEveMon is available "
+        "in SVN! Please consider updating to the latest version.\n\n"
+        "Your local version is: " + cur_version + "\n"
+        "The latest version is: " + svn_version + "\n\n"
+        "Take a look at the forums for further information:\n"
+        "http://www.battleclinic.com/forum/index.php#43");
+    md.set_title("Version check - GtkEveMon");
+    if (this->parent_window != 0)
+      md.set_transient_for(*this->parent_window);
+    md.run();
+  }
 }

@@ -23,6 +23,7 @@ ApiCharSheet::set_from_xml (HttpDataPtr xmldata)
   this->implant_wil = 0;
 
   /* Parse the data. */
+  this->http_data = xmldata;
   this->parse_xml(xmldata);
 
   /* Find bonus attributes for skills. */

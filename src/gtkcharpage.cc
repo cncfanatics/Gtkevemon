@@ -23,10 +23,12 @@
 #include "gtkdefines.h"
 #include "guiskill.h"
 #include "guiskillplanner.h"
+#include "guixmlsource.h"
 #include "gtkcharpage.h"
 
 GtkCharPage::GtkCharPage (void)
-  : Gtk::VBox(false, 5)
+  : Gtk::VBox(false, 5),
+    info_display(INFO_STYLE_TOP_HSEP)
 {
   /* Setup the API HTTP fetchers and API data. */
   this->sheet_fetcher.set_doctype(EVE_API_DOCTYPE_CHARSHEET);
@@ -111,9 +113,11 @@ GtkCharPage::GtkCharPage (void)
   Gtk::Button* close_but = MK_BUT0;
   close_but->set_relief(Gtk::RELIEF_NONE);
   close_but->set_image(*Gtk::manage(new Gtk::Image
-      (Gtk::Stock::CLOSE, Gtk::ICON_SIZE_BUTTON)));
-  Gtk::HBox* close_but_box = MK_HBOX;
-  close_but_box->pack_end(*close_but, false, false, 0);
+      (Gtk::Stock::CLOSE, Gtk::ICON_SIZE_MENU)));
+  Gtk::HBox* close_but_hbox = MK_HBOX;
+  close_but_hbox->pack_end(*close_but, false, false, 0);
+  Gtk::VBox* close_but_vbox = MK_VBOX;
+  close_but_vbox->pack_start(*close_but_hbox, false, false, 0);
 
   info_table->attach(this->char_image, 0, 1, 0, 5, Gtk::FILL, Gtk::FILL);
   info_table->attach(this->char_name_label, 1, 2, 0, 1, Gtk::FILL, Gtk::FILL);
@@ -139,8 +143,8 @@ GtkCharPage::GtkCharPage (void)
   info_table->attach(this->attr_per_label, 5, 6, 2, 3, Gtk::FILL, Gtk::FILL);
   info_table->attach(this->attr_mem_label, 5, 6, 3, 4, Gtk::FILL, Gtk::FILL);
   info_table->attach(this->attr_wil_label, 5, 6, 4, 5, Gtk::FILL, Gtk::FILL);
-  info_table->attach(*close_but_box, 6, 7, 0, 2,
-      Gtk::FILL | Gtk::EXPAND, Gtk::SHRINK);
+  info_table->attach(*close_but_vbox, 6, 7, 0, 2,
+      Gtk::FILL | Gtk::EXPAND, Gtk::SHRINK | Gtk::FILL);
 
   Gtk::Table* train_table = Gtk::manage(new Gtk::Table(4, 3));
   train_table->set_col_spacings(10);
@@ -174,6 +178,11 @@ GtkCharPage::GtkCharPage (void)
   this->pack_start(*train_table, false, false, 0);
   this->pack_start(this->info_display, false, false, 0);
 
+  /* Setup tooltips. */
+  this->tooltips.set_tip(*close_but, "Closes the character");
+  this->tooltips.set_tip(this->info_but, "Infomation about cached sheets");
+  this->tooltips.set_tip(this->refresh_but, "Request character sheets");
+
   /* Signals. */
   close_but->signal_clicked().connect(sigc::mem_fun
       (*this, &GtkCharPage::on_close_clicked));
@@ -201,6 +210,7 @@ GtkCharPage::GtkCharPage (void)
   Glib::signal_timeout().connect(sigc::mem_fun(*this,
       &GtkCharPage::check_expired_sheets), CHARPAGE_CHECK_EXPIRED_SHEETS);
 
+  /* Update GUI. */
   this->update_charsheet_details();
   this->update_training_details();
 
@@ -1162,4 +1172,14 @@ GtkCharPage::open_skill_planner (void)
 
   GuiSkillPlanner* planner = new GuiSkillPlanner();
   planner->set_character(this->sheet);
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GtkCharPage::open_source_viewer (void)
+{
+  GuiXmlSource* window = new GuiXmlSource();
+  window->append(this->sheet->get_http_data(), "CharacterSheet.xml");
+  window->append(this->training->get_http_data(), "InTraining.xml");
 }
