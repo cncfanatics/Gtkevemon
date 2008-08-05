@@ -6,6 +6,7 @@
 #include "images/eveportrait.h"
 #include "images/applogo.h"
 #include "images/aboutlogo.h"
+#include "images/menuicons.h"
 
 #include "imagestore.h"
 
@@ -16,6 +17,7 @@ Glib::RefPtr<Gdk::Pixbuf> ImageStore::eveportrait;
 Glib::RefPtr<Gdk::Pixbuf> ImageStore::skillicons[5];
 Glib::RefPtr<Gdk::Pixbuf> ImageStore::skillstatus[8];
 Glib::RefPtr<Gdk::Pixbuf> ImageStore::skilldeps[3];
+Glib::RefPtr<Gdk::Pixbuf> ImageStore::menuicons[3];
 
 /* ---------------------------------------------------------------- */
 
@@ -65,6 +67,13 @@ ImageStore::init (void)
       (-1, img_skilldeps_partial, false);
   ImageStore::skilldeps[2] = Gdk::Pixbuf::create_from_inline
       (-1, img_skilldeps_have, false);
+
+  ImageStore::menuicons[0] = Gdk::Pixbuf::create_from_xpm_data
+      (img_menu_evemon_xpm);
+  ImageStore::menuicons[1] = Gdk::Pixbuf::create_from_xpm_data
+      (img_menu_char_xpm);
+  ImageStore::menuicons[2] = Gdk::Pixbuf::create_from_xpm_data
+      (img_menu_help_xpm);
 }
 
 /* ---------------------------------------------------------------- */

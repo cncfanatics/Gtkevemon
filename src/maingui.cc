@@ -95,8 +95,14 @@ MainGui::MainGui (void)
   /* Set icon for the EveMon menu. */
   Gtk::ImageMenuItem* tmp_item = (Gtk::ImageMenuItem*)
       this->uiman->get_widget("/MenuBar/MenuEveMon");
-  tmp_item->set_image(*Gtk::manage(new Gtk::Image
-      (ImageStore::applogo->scale_simple(16, 16, Gdk::INTERP_BILINEAR))));
+  tmp_item->set_image(*Gtk::manage(new Gtk::Image(ImageStore::menuicons[0])));
+
+  tmp_item = (Gtk::ImageMenuItem*)this->uiman->get_widget
+      ("/MenuBar/MenuCharacter");
+  tmp_item->set_image(*Gtk::manage(new Gtk::Image(ImageStore::menuicons[1])));
+
+  tmp_item = (Gtk::ImageMenuItem*)this->uiman->get_widget("/MenuBar/MenuHelp");
+  tmp_item->set_image(*Gtk::manage(new Gtk::Image(ImageStore::menuicons[2])));
 
   tmp_item = (Gtk::ImageMenuItem*)this->uiman->get_widget
       ("/MenuBar/MenuCharacter/MenuCharPlanning");

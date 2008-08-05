@@ -1,5 +1,6 @@
 #include <netdb.h>
 #include <arpa/inet.h>
+#include <sys/socket.h>
 #include <cmath>
 #include <cerrno>
 #include <cstring>
@@ -16,9 +17,11 @@
  */
 class GetHostByName
 {
+  private:
+    char* strange_data;
+
   public:
     struct hostent result;
-    char* strange_data;
 
   public:
     GetHostByName (char const* host);
@@ -36,6 +39,10 @@ GetHostByName::GetHostByName (char const* host)
 {
   this->strange_data = 0;
 
+#ifdef _GNU_SOURCE
+
+  /* If this is compiled as GNU source, assume that
+   * gethostbyname_r is available. */
   struct hostent* hp;
   int res;
   int herr;
@@ -56,6 +63,20 @@ GetHostByName::GetHostByName (char const* host)
   if (res || hp == 0)
     throw Exception("gethostbyname_r() failed: "
         + std::string(::strerror(errno)));
+
+#else
+#  ifdef __APPLE__
+
+  /* Under MacOS the gethostbyname function is already thead safe. */
+  this->result = *::gethostbyname(host);
+
+#  else
+
+  /* There is no solution yet for other systems. */
+#    error "gethostbyname_r(): no implementation available. PEASE REPORT THIS!"
+
+#  endif
+#endif
 }
 
 GetHostByName::~GetHostByName (void)
@@ -122,8 +143,8 @@ Http::request (void)
       //std::cout << "Resolved " << this->host << ": " << address << std::endl;
 
       remote.sin_family = AF_INET;
-      remote.sin_port = ::htons(this->port);
-      remote.sin_addr.s_addr = *(unsigned long*)hn.result.h_addr;
+      remote.sin_port = htons(this->port);
+      remote.sin_addr.s_addr = *(uint32_t*)hn.result.h_addr;
     }
     catch (Exception& e)
     {
