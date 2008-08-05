@@ -67,12 +67,12 @@ GetHostByName::GetHostByName (char const* host)
 #else
 #  ifdef __APPLE__
 
-  /* Under MacOS the gethostbyname function is already thead safe. */
+  /* Under MacOS X the gethostbyname function is already thread safe. */
   this->result = *::gethostbyname(host);
 
 #  else
 
-  /* There is no solution yet for other systems. */
+  /* There is no solution for other systems yet. */
 #    error "gethostbyname_r(): no implementation available. PEASE REPORT THIS!"
 
 #  endif
