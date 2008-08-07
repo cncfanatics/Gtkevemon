@@ -35,7 +35,12 @@ void
 GuiXmlSource::append (HttpDataPtr data, std::string const& title)
 {
   Glib::RefPtr<Gtk::TextBuffer> buffer = Gtk::TextBuffer::create();
-  buffer->set_text(Glib::ustring(data->data, data->data + data->size));
+
+  if (data.get() != 0 && data->size != 0)
+    buffer->set_text(Glib::ustring(data->data, data->data + data->size));
+  else
+    buffer->set_text("There is no data available!");
+
   Gtk::TextView* textview = Gtk::manage(new Gtk::TextView(buffer));
   textview->set_editable(false);
   Gtk::ScrolledWindow* scwin = MK_SCWIN;

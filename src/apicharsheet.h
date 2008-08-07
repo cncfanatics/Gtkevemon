@@ -26,10 +26,10 @@ class ApiCharSheetSkill
 {
   public:
     int id;
+    int level;
     int points;
     int points_start;
     int points_dest;
-    int level;
     double completed;
 
     ApiSkill const* details;

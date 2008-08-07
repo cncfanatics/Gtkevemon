@@ -1,5 +1,6 @@
 #include <sys/stat.h>
 #include <iostream>
+#include <gtkmm/table.h>
 #include <gtkmm/stock.h>
 #include <gtkmm/separator.h>
 #include <gtkmm/scrolledwindow.h>
@@ -11,6 +12,7 @@
 #include <gtkmm/textview.h>
 #include <gtkmm/notebook.h>
 
+#include "helpers.h"
 #include "gtkdefines.h"
 #include "imagestore.h"
 #include "guiconfiguration.h"
@@ -19,15 +21,6 @@ GuiConfiguration::GuiConfiguration (void)
   : tray_usage("settings.tray_usage")
 {
   /* The MISC notebook tab. */
-  GtkConfTextEntry* eve_cmd_entry = Gtk::manage(new GtkConfTextEntry
-      ("settings.eve_command"));
-  Gtk::HBox* eve_cmd_box = MK_HBOX;
-  eve_cmd_box->pack_start(*MK_LABEL("EVE command:"), false, false, 0);
-  eve_cmd_box->pack_start(*eve_cmd_entry, true, true, 0);
-
-  //GtkConfCheckButton* misc_tray_cb = Gtk::manage(new GtkConfCheckButton
-  //    ("Minimize to tray", false, "settings.minimize_to_tray"));
-
   this->tray_usage.append_conf_row("Don't use tray", "never");
   this->tray_usage.append_conf_row("Minimize to tray", "minimize");
   this->tray_usage.append_conf_row("Always stay in tray", "always");
@@ -56,7 +49,44 @@ GuiConfiguration::GuiConfiguration (void)
   page_misc->pack_start(*misc_detailed_tray_tt_cb, false, false, 0);
   page_misc->pack_start(*misc_autoupdate_sheets_cb, false, false, 0);
   page_misc->pack_start(*misc_versionchecking_cb, false, false, 0);
-  page_misc->pack_start(*eve_cmd_box, false, false, 0);
+
+  /* The LAUNCHER notebook tab. */
+  Gtk::Label* launch_info_label = MK_LABEL("You can define up to "
+      "five EVE commands to launch EVE online. If you specify more than "
+      "one command, GtkEveMon will prompt for the command to be started.");
+  launch_info_label->property_xalign() = 0.0f;
+  launch_info_label->set_line_wrap(true);
+
+  #define EVE_CMD_AMOUNT 5
+
+  Gtk::Table* launch_table = Gtk::manage(new Gtk::Table
+      (EVE_CMD_AMOUNT, 2, false));
+  launch_table->set_col_spacings(5);
+  launch_table->set_row_spacings(1);
+
+  for (unsigned int i = 0; i < EVE_CMD_AMOUNT; ++i)
+  {
+    std::string key;
+    if (i == 0)
+      key = "eve_command";
+    else
+      key = "eve_command_" + Helpers::get_string_from_uint(i + 1);
+
+    Gtk::Label* eve_cmd_label = MK_LABEL("Command "
+        + Helpers::get_string_from_uint(i + 1) + ":");
+    eve_cmd_label->property_xalign() = 0.0f;
+
+    GtkConfTextEntry* eve_cmd_entry = Gtk::manage
+        (new GtkConfTextEntry("settings." + key));
+
+    launch_table->attach(*eve_cmd_label, 0, 1, i, i + 1, Gtk::FILL);
+    launch_table->attach(*eve_cmd_entry, 1, 2, i, i + 1, Gtk::EXPAND|Gtk::FILL);
+  }
+
+  Gtk::VBox* page_launch = MK_VBOX;
+  page_launch->set_border_width(5);
+  page_launch->pack_start(*launch_info_label, false, false, 0);
+  page_launch->pack_start(*launch_table, false, false, 0);
 
   /* The NETWORK notebook tab. */
   Gtk::Label* net_info_label = MK_LABEL("EVE API requests are done "
@@ -399,6 +429,7 @@ GuiConfiguration::GuiConfiguration (void)
   Gtk::Notebook* notebook = Gtk::manage(new Gtk::Notebook);
   notebook->append_page(*page_misc, "Misc");
   notebook->append_page(*page_notifications, "Notifications");
+  notebook->append_page(*page_launch, "Launcher");
   notebook->append_page(*page_timeformat, "Time format");
   notebook->append_page(*page_network, "Network");
 

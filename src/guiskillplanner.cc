@@ -16,24 +16,12 @@
 #include "gtkdefines.h"
 #include "guiskillplanner.h"
 
-GuiSkillPlanner::GuiSkillPlanner (void)
-  : skill_store(Gtk::TreeStore::create(skill_cols)),
-    skill_view(skill_store),
+GtkSkillDetails::GtkSkillDetails (void)
+  : Gtk::VBox(false, 5),
     deps_store(Gtk::TreeStore::create(deps_cols)),
     deps_view(deps_store),
     skill_desc_buffer(Gtk::TextBuffer::create())
 {
-  this->skill_store->set_sort_column
-      (this->skill_cols.name, Gtk::SORT_ASCENDING);
-
-  Gtk::TreeViewColumn* skill_col_name = Gtk::manage(new Gtk::TreeViewColumn);
-  skill_col_name->set_title("Name");
-  skill_col_name->pack_start(this->skill_cols.icon, false);
-  skill_col_name->pack_start(this->skill_cols.name, true);
-  this->skill_view.append_column(*skill_col_name);
-  this->skill_view.set_headers_visible(false);
-  this->skill_view.get_selection()->set_mode(Gtk::SELECTION_SINGLE);
-
   Gtk::TreeViewColumn* deps_col_name = Gtk::manage(new Gtk::TreeViewColumn);
   deps_col_name->set_title("Name");
   deps_col_name->pack_start(this->deps_cols.icon, false);
@@ -51,25 +39,6 @@ GuiSkillPlanner::GuiSkillPlanner (void)
   this->skill_secondary.property_xalign() = 0.0f;
   for (unsigned int i = 0; i < 5; ++i)
     this->skill_level[i].property_xalign() = 0.0f;
-
-  Gtk::ScrolledWindow* skill_scwin = MK_SCWIN;
-  skill_scwin->set_shadow_type(Gtk::SHADOW_ETCHED_IN);
-  skill_scwin->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_ALWAYS);
-  skill_scwin->add(this->skill_view);
-
-  Gtk::Button* clear_filter_but = MK_BUT0;
-  clear_filter_but->set_image(*MK_IMG(Gtk::Stock::CLEAR, Gtk::ICON_SIZE_MENU));
-  clear_filter_but->set_relief(Gtk::RELIEF_NONE);
-
-  Gtk::HBox* filter_box = MK_HBOX;
-  filter_box->pack_start(*MK_LABEL("Filter:"), false, false, 0);
-  filter_box->pack_start(this->filter_entry, true, true, 0);
-  filter_box->pack_start(*clear_filter_but, false, false, 0);
-
-  Gtk::VBox* skill_panechild = MK_VBOX;
-  skill_panechild->pack_start(*filter_box, false, false, 0);
-  skill_panechild->pack_start(*skill_scwin, true, true, 0);
-  skill_panechild->set_size_request(250, -1);
 
   Gtk::VBox* details_skill_vbox = MK_VBOX0;
   details_skill_vbox->pack_start(this->skill_group, false, false, 0);
@@ -110,14 +79,178 @@ GuiSkillPlanner::GuiSkillPlanner (void)
   deps_scwin->set_shadow_type(Gtk::SHADOW_ETCHED_IN);
   deps_scwin->add(this->deps_view);
 
-  Gtk::VBox* details_box = MK_VBOX;
-  details_box->set_border_width(5);
-  details_box->pack_start(*details_skill_box, false, false, 0);
-  details_box->pack_start(*details_table, false, false, 0);
-  details_box->pack_start(*deps_scwin, true, true, 0);
+  /* Init some labels. */
+  this->skill_group.set_text("No skill selected!");
+  this->skill_name.set_text("");
+  this->skill_primary.set_text("Primary: <not available>");
+  this->skill_secondary.set_text("Secondary: <not available>");
+  for (unsigned int i = 0; i < 5; ++i)
+    this->skill_level[i].set_text("To level "
+        + Helpers::get_string_from_uint(i) + ": 0d 0h 0m 0s");
+  this->skill_desc_buffer->set_text("");
+
+  this->tooltips.set_tip(*queue_skill_but, "Enqueues this skill");
+
+  this->set_border_width(5);
+  this->pack_start(*details_skill_box, false, false, 0);
+  this->pack_start(*details_table, false, false, 0);
+  this->pack_start(*deps_scwin, true, true, 0);
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GtkSkillDetails::set_skill (ApiSkill const* skill)
+{
+  /* Fill character invariant values. */
+  ApiSkillTreePtr tree = ApiSkillTree::request();
+  ApiSkillGroup const* group = tree->get_group_for_id(skill->group);
+
+  this->skill_group.set_text("<b>" + group->name + "</b>");
+  this->skill_name.set_text("<b>" + skill->name + " (rank "
+      + Helpers::get_string_from_int(skill->rank) + ")</b>");
+  this->skill_group.set_use_markup(true);
+  this->skill_name.set_use_markup(true);
+
+  this->skill_primary.set_text(Glib::ustring("Primary: ")
+      + tree->get_attrib_name(skill->primary));
+  this->skill_secondary.set_text(Glib::ustring("Secondary: ")
+      + tree->get_attrib_name(skill->secondary));
+
+  this->skill_desc_buffer->set_text(skill->desc);
+
+  /* Fill character related values. */
+  if (this->charsheet.get() == 0 || !this->charsheet->valid)
+    return;
+
+  ApiCharSheetSkill* cskill = this->charsheet->get_skill_for_id(skill->id);
+  time_t timediff = 0;
+  double spps = this->get_spps_for_skill(skill);
+
+  for (unsigned int i = 0; i < 5; ++i)
+  {
+    if (cskill == 0 || cskill->level < (int)i)
+    {
+      int start_sp = this->charsheet->calc_start_sp(i, skill->rank);
+      int dest_sp = this->charsheet->calc_dest_sp(i, skill->rank);
+      timediff += (time_t)((double)(dest_sp - start_sp) / spps);
+    }
+    else if (cskill->level == (int)i)
+    {
+      int diff_sp = cskill->points_dest - cskill->points;
+      timediff += (time_t)((double)diff_sp / spps);
+    }
+
+    this->skill_level[i].set_text("To level "
+        + Helpers::get_string_from_int(i + 1) + ": "
+        + EveTime::get_string_for_timediff(timediff, true));
+  }
+
+  this->deps_store->clear();
+  this->recurse_append_skill_req(skill, this->deps_store->append(), 1);
+  this->deps_view.expand_all();
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GtkSkillDetails::recurse_append_skill_req (ApiSkill const* skill,
+    Gtk::TreeModel::iterator slot, int level)
+{
+  (*slot)[this->deps_cols.name] = skill->name + " "
+      + Helpers::get_roman_from_int(level);
+  (*slot)[this->deps_cols.skill] = skill;
+
+  ApiCharSheetSkill* cskill = this->charsheet->get_skill_for_id(skill->id);
+  Glib::RefPtr<Gdk::Pixbuf> skill_icon;
+  if (cskill == 0)
+    skill_icon = ImageStore::skilldeps[0];
+  else if (cskill->level >= level)
+    skill_icon = ImageStore::skilldeps[2];
+  else
+    skill_icon = ImageStore::skilldeps[1];
+  (*slot)[this->deps_cols.icon] = skill_icon;
+
+  ApiSkillTreePtr tree = ApiSkillTree::request();
+  for (unsigned int i = 0; i < skill->deps.size(); ++i)
+  {
+    int skill_id = skill->deps[i].first;
+    int newlevel = skill->deps[i].second;
+    ApiSkill const* newskill = tree->get_skill_for_id(skill_id);
+    this->recurse_append_skill_req(newskill,
+        this->deps_store->append(slot->children()), newlevel);
+  }
+}
+
+/* ---------------------------------------------------------------- */
+
+double
+GtkSkillDetails::get_spps_for_skill (ApiSkill const* skill)
+{
+  double pri;
+  double sec;
+
+  switch (skill->primary)
+  {
+    case API_ATTRIB_INTELLIGENCE: pri = this->charsheet->total_int; break;
+    case API_ATTRIB_MEMORY:       pri = this->charsheet->total_mem; break;
+    case API_ATTRIB_CHARISMA:     pri = this->charsheet->total_cha; break;
+    case API_ATTRIB_PERCEPTION:   pri = this->charsheet->total_per; break;
+    case API_ATTRIB_WILLPOWER:    pri = this->charsheet->total_wil; break;
+    default: pri = 0.0;
+  }
+
+  switch (skill->secondary)
+  {
+    case API_ATTRIB_INTELLIGENCE: sec = this->charsheet->total_int; break;
+    case API_ATTRIB_MEMORY:       sec = this->charsheet->total_mem; break;
+    case API_ATTRIB_CHARISMA:     sec = this->charsheet->total_cha; break;
+    case API_ATTRIB_PERCEPTION:   sec = this->charsheet->total_per; break;
+    case API_ATTRIB_WILLPOWER:    sec = this->charsheet->total_wil; break;
+    default: sec = 0.0;
+  }
+
+  return (pri + sec / 2.0) / 60.0;
+}
+
+/* ================================================================ */
+
+GuiSkillPlanner::GuiSkillPlanner (void)
+  : skill_store(Gtk::TreeStore::create(skill_cols)),
+    skill_view(skill_store)
+{
+  this->skill_store->set_sort_column
+      (this->skill_cols.name, Gtk::SORT_ASCENDING);
+
+  Gtk::TreeViewColumn* skill_col_name = Gtk::manage(new Gtk::TreeViewColumn);
+  skill_col_name->set_title("Name");
+  skill_col_name->pack_start(this->skill_cols.icon, false);
+  skill_col_name->pack_start(this->skill_cols.name, true);
+  this->skill_view.append_column(*skill_col_name);
+  this->skill_view.set_headers_visible(false);
+  this->skill_view.get_selection()->set_mode(Gtk::SELECTION_SINGLE);
+
+  Gtk::ScrolledWindow* skill_scwin = MK_SCWIN;
+  skill_scwin->set_shadow_type(Gtk::SHADOW_ETCHED_IN);
+  skill_scwin->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_ALWAYS);
+  skill_scwin->add(this->skill_view);
+
+  Gtk::Button* clear_filter_but = MK_BUT0;
+  clear_filter_but->set_image(*MK_IMG(Gtk::Stock::CLEAR, Gtk::ICON_SIZE_MENU));
+  clear_filter_but->set_relief(Gtk::RELIEF_NONE);
+
+  Gtk::HBox* filter_box = MK_HBOX;
+  filter_box->pack_start(*MK_LABEL("Filter:"), false, false, 0);
+  filter_box->pack_start(this->filter_entry, true, true, 0);
+  filter_box->pack_start(*clear_filter_but, false, false, 0);
+
+  Gtk::VBox* skill_panechild = MK_VBOX;
+  skill_panechild->pack_start(*filter_box, false, false, 0);
+  skill_panechild->pack_start(*skill_scwin, true, true, 0);
+  skill_panechild->set_size_request(250, -1);
 
   Gtk::Notebook* details_notebook = MK_NOTEBOOK;
-  details_notebook->append_page(*details_box, "Skill details");
+  details_notebook->append_page(this->details_gui, "Skill details");
 
   Gtk::Button* close_but = MK_BUT(Gtk::Stock::CLOSE);
   Gtk::HBox* button_hbox = MK_HBOX;
@@ -144,7 +277,6 @@ GuiSkillPlanner::GuiSkillPlanner (void)
 
   this->tooltips.set_tip(*clear_filter_but, "Clears the filter");
   this->tooltips.set_tip(this->filter_entry, "Filtering is case-sensitive");
-  this->tooltips.set_tip(*queue_skill_but, "Enqueues this skill");
 
   this->skill_view.get_selection()->signal_changed().connect
       (sigc::mem_fun(*this, &GuiSkillPlanner::skill_selected));
@@ -155,16 +287,6 @@ GuiSkillPlanner::GuiSkillPlanner (void)
       (*this, &GuiSkillPlanner::fill_skill_store));
   clear_filter_but->signal_clicked().connect(sigc::mem_fun
       (*this, &GuiSkillPlanner::clear_filter));
-
-  /* Init some labels. */
-  this->skill_group.set_text("No skill selected!");
-  this->skill_name.set_text("");
-  this->skill_primary.set_text("Primary: <not available>");
-  this->skill_secondary.set_text("Secondary: <not available>");
-  for (unsigned int i = 0; i < 5; ++i)
-    this->skill_level[i].set_text("To level "
-        + Helpers::get_string_from_uint(i) + ": 0d 0h 0m 0s");
-  this->skill_desc_buffer->set_text("");
 
   this->add(*main_vbox);
   this->set_title("Skill browser - GtkEveMon");
@@ -185,8 +307,8 @@ void
 GuiSkillPlanner::set_character (ApiCharSheetPtr sheet)
 {
   this->charsheet = sheet;
+  this->details_gui.set_character(sheet);
   this->fill_skill_store();
-  this->skill_selected();
   this->character_label.set_text(this->charsheet->name);
   this->set_title(this->charsheet->name + " - GtkEveMon");
 }
@@ -298,48 +420,7 @@ GuiSkillPlanner::skill_selected (void)
   if (skill == 0)
     return;
 
-  ApiSkillTreePtr tree = ApiSkillTree::request();
-  ApiSkillGroup const& group = tree->get_group_from_id(skill->group);
-  ApiCharSheetSkill* cskill = this->charsheet->get_skill_for_id(skill->id);
-
-  this->skill_group.set_text("<b>" + group.name + "</b>");
-  this->skill_name.set_text("<b>" + skill->name + " (rank "
-      + Helpers::get_string_from_int(skill->rank) + ")</b>");
-  this->skill_group.set_use_markup(true);
-  this->skill_name.set_use_markup(true);
-
-  this->skill_primary.set_text(Glib::ustring("Primary: ")
-      + tree->get_attrib_name(skill->primary));
-  this->skill_secondary.set_text(Glib::ustring("Secondary: ")
-      + tree->get_attrib_name(skill->secondary));
-
-  time_t timediff = 0;
-  double spps = this->get_spps_for_skill(skill);
-
-  for (unsigned int i = 0; i < 5; ++i)
-  {
-    if (cskill == 0 || cskill->level < (int)i)
-    {
-      int start_sp = this->charsheet->calc_start_sp(i, skill->rank);
-      int dest_sp = this->charsheet->calc_dest_sp(i, skill->rank);
-      timediff += (time_t)((double)(dest_sp - start_sp) / spps);
-    }
-    else if (cskill->level == (int)i)
-    {
-      int diff_sp = cskill->points_dest - cskill->points;
-      timediff += (time_t)((double)diff_sp / spps);
-    }
-
-    this->skill_level[i].set_text("To level "
-        + Helpers::get_string_from_int(i + 1) + ": "
-        + EveTime::get_string_for_timediff(timediff, true));
-  }
-
-  this->skill_desc_buffer->set_text(skill->desc);
-
-  this->deps_store->clear();
-  this->recurse_append_skill_req(skill, this->deps_store->append(), 1);
-  this->deps_view.expand_all();
+  this->details_gui.set_skill(skill);
 }
 
 /* ---------------------------------------------------------------- */
@@ -369,68 +450,6 @@ GuiSkillPlanner::clear_filter (void)
 {
   this->filter_entry.set_text("");
   this->fill_skill_store();
-}
-
-/* ---------------------------------------------------------------- */
-
-void
-GuiSkillPlanner::recurse_append_skill_req (ApiSkill const* skill,
-    Gtk::TreeModel::iterator slot, int level)
-{
-  (*slot)[this->deps_cols.name] = skill->name + " "
-      + Helpers::get_roman_from_int(level);
-  (*slot)[this->deps_cols.skill] = skill;
-
-  ApiCharSheetSkill* cskill = this->charsheet->get_skill_for_id(skill->id);
-  Glib::RefPtr<Gdk::Pixbuf> skill_icon;
-  if (cskill == 0)
-    skill_icon = ImageStore::skilldeps[0];
-  else if (cskill->level >= level)
-    skill_icon = ImageStore::skilldeps[2];
-  else
-    skill_icon = ImageStore::skilldeps[1];
-  (*slot)[this->deps_cols.icon] = skill_icon;
-
-  ApiSkillTreePtr tree = ApiSkillTree::request();
-  for (unsigned int i = 0; i < skill->deps.size(); ++i)
-  {
-    int skill_id = skill->deps[i].first;
-    int newlevel = skill->deps[i].second;
-    ApiSkill const* newskill = &tree->get_skill_from_id(skill_id);
-    this->recurse_append_skill_req(newskill,
-        this->deps_store->append(slot->children()), newlevel);
-  }
-}
-
-/* ---------------------------------------------------------------- */
-
-double
-GuiSkillPlanner::get_spps_for_skill (ApiSkill const* skill)
-{
-  double pri;
-  double sec;
-
-  switch (skill->primary)
-  {
-    case API_ATTRIB_INTELLIGENCE: pri = this->charsheet->total_int; break;
-    case API_ATTRIB_MEMORY:       pri = this->charsheet->total_mem; break;
-    case API_ATTRIB_CHARISMA:     pri = this->charsheet->total_cha; break;
-    case API_ATTRIB_PERCEPTION:   pri = this->charsheet->total_per; break;
-    case API_ATTRIB_WILLPOWER:    pri = this->charsheet->total_wil; break;
-    default: pri = 0.0;
-  }
-
-  switch (skill->secondary)
-  {
-    case API_ATTRIB_INTELLIGENCE: sec = this->charsheet->total_int; break;
-    case API_ATTRIB_MEMORY:       sec = this->charsheet->total_mem; break;
-    case API_ATTRIB_CHARISMA:     sec = this->charsheet->total_cha; break;
-    case API_ATTRIB_PERCEPTION:   sec = this->charsheet->total_per; break;
-    case API_ATTRIB_WILLPOWER:    sec = this->charsheet->total_wil; break;
-    default: sec = 0.0;
-  }
-
-  return (pri + sec / 2.0) / 60.0;
 }
 
 /* ---------------------------------------------------------------- */

@@ -302,28 +302,26 @@ ApiSkillTree::set_attribute (ApiAttrib& var, std::string const& str)
 
 /* ---------------------------------------------------------------- */
 
-ApiSkill const&
-ApiSkillTree::get_skill_from_id (int id) const
+ApiSkill const*
+ApiSkillTree::get_skill_for_id (int id) const
 {
   ApiSkillMap::const_iterator iter = this->skills.find(id);
   if (iter == this->skills.end())
-    throw Exception("Cannot find skill ID: "
-        + Helpers::get_string_from_int(id));
+    return 0;
 
-  return iter->second;
+  return &iter->second;
 }
 
 /* ---------------------------------------------------------------- */
 
-ApiSkillGroup const&
-ApiSkillTree::get_group_from_id (int id) const
+ApiSkillGroup const*
+ApiSkillTree::get_group_for_id (int id) const
 {
   ApiSkillGroupMap::const_iterator iter = this->groups.find(id);
   if (iter == this->groups.end())
-    throw Exception("Cannot find skill group ID: "
-        + Helpers::get_string_from_int(id));
+    return 0;
 
-  return iter->second;
+  return &iter->second;
 }
 
 /* ---------------------------------------------------------------- */

@@ -9,7 +9,6 @@
 #include <gtkmm/messagedialog.h>
 
 #include "helpers.h"
-#include "bgprocess.h"
 #include "evetime.h"
 #include "eveapi.h"
 #include "server.h"
@@ -23,6 +22,7 @@
 #include "guiuserdata.h"
 #include "guiconfiguration.h"
 #include "guiaboutdialog.h"
+#include "guievelauncher.h"
 #include "maingui.h"
 
 MainGui::MainGui (void)
@@ -283,6 +283,23 @@ MainGui::about_dialog (void)
 /* ---------------------------------------------------------------- */
 
 void
+MainGui::launch_eve (void)
+{
+  try
+  {
+    Gtk::Window* win = GuiEveLauncher::launch_eve();
+    if (win != 0)
+      win->set_transient_for(*this);
+  }
+  catch (Exception& e)
+  {
+    this->info_display.append(INFO_WARNING, e);
+  }
+}
+
+/* ---------------------------------------------------------------- */
+
+void
 MainGui::close (void)
 {
   Gtk::Main::quit();
@@ -326,16 +343,6 @@ MainGui::init_from_config (void)
   }
 
   this->check_if_no_pages();
-}
-
-/* ---------------------------------------------------------------- */
-
-void
-MainGui::launch_eve (void)
-{
-  ConfValuePtr cmd = Config::conf.get_value("settings.eve_command");
-  std::vector<std::string> args = Helpers::tokenize_cmd(**cmd);
-  new BGProcess(args);
 }
 
 /* ---------------------------------------------------------------- */

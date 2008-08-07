@@ -83,13 +83,13 @@ ApiCharSheet::set_from_xml (HttpDataPtr xmldata)
   ApiSkillTreePtr tree = ApiSkillTree::request();
   for (unsigned int i = 0; i < this->skills.size(); ++i)
   {
-    ApiSkill const& skill = tree->get_skill_from_id(skills[i].id);
-    skills[i].details = &skill;
+    ApiSkill const* skill = tree->get_skill_for_id(skills[i].id);
+    skills[i].details = skill;
 
     skills[i].points_start = ApiCharSheet::calc_start_sp
-        (skills[i].level, skill.rank);
+        (skills[i].level, skill->rank);
     skills[i].points_dest = ApiCharSheet::calc_dest_sp
-        (skills[i].level, skill.rank);
+        (skills[i].level, skill->rank);
     skills[i].completed = (double)(skills[i].points - skills[i].points_start)
         / (double)(skills[i].points_dest - skills[i].points_start);
   }

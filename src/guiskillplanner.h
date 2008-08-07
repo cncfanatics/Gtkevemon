@@ -19,6 +19,7 @@
 #include <gtkmm/textbuffer.h>
 #include <gtkmm/entry.h>
 #include <gtkmm/tooltips.h>
+#include <gtkmm/box.h>
 
 #include "apiskilltree.h"
 #include "apicharsheet.h"
@@ -36,16 +37,10 @@ class GuiPlannerSkillCols : public Gtk::TreeModel::ColumnRecord
 
 /* ---------------------------------------------------------------- */
 
-class GuiSkillPlanner : public WinBase
+class GtkSkillDetails : public Gtk::VBox
 {
   private:
     ApiCharSheetPtr charsheet;
-    Gtk::Label character_label;
-
-    /* Skill list. */
-    GuiPlannerSkillCols skill_cols;
-    Glib::RefPtr<Gtk::TreeStore> skill_store;
-    Gtk::TreeView skill_view;
 
     /* Dependency list. */
     GuiPlannerSkillCols deps_cols;
@@ -60,6 +55,35 @@ class GuiSkillPlanner : public WinBase
     Gtk::Label skill_level[5];
     Glib::RefPtr<Gtk::TextBuffer> skill_desc_buffer;
 
+    Gtk::Tooltips tooltips;
+
+    void recurse_append_skill_req (ApiSkill const* skill,
+        Gtk::TreeModel::iterator slot, int level);
+    double get_spps_for_skill (ApiSkill const* skill);
+
+  public:
+    GtkSkillDetails (void);
+
+    void set_skill (ApiSkill const* skill);
+    void set_character (ApiCharSheetPtr character);
+};
+
+/* ---------------------------------------------------------------- */
+
+class GuiSkillPlanner : public WinBase
+{
+  private:
+    GtkSkillDetails details_gui;
+
+    /* Character stuff. */
+    ApiCharSheetPtr charsheet;
+    Gtk::Label character_label;
+
+    /* Skill list. */
+    GuiPlannerSkillCols skill_cols;
+    Glib::RefPtr<Gtk::TreeStore> skill_store;
+    Gtk::TreeView skill_view;
+
     /* Misc. */
     Gtk::Entry filter_entry;
     Gtk::Tooltips tooltips;
@@ -67,11 +91,8 @@ class GuiSkillPlanner : public WinBase
     void fill_skill_store (void);
     void skill_selected (void);
     void clear_filter (void);
-    void recurse_append_skill_req (ApiSkill const* skill,
-        Gtk::TreeModel::iterator slot, int level);
     void skill_row_activated (Gtk::TreeModel::Path const& path,
         Gtk::TreeViewColumn* col);
-    double get_spps_for_skill (ApiSkill const* skill);
     bool have_prerequisites_for_skill (ApiSkill const* skill);
 
   public:
@@ -82,6 +103,12 @@ class GuiSkillPlanner : public WinBase
 };
 
 /* ---------------------------------------------------------------- */
+
+inline void
+GtkSkillDetails::set_character (ApiCharSheetPtr character)
+{
+  this->charsheet = character;
+}
 
 inline
 GuiPlannerSkillCols::GuiPlannerSkillCols (void)

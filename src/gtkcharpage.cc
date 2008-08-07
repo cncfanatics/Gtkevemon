@@ -623,11 +623,33 @@ GtkCharPage::api_info_changed (void)
     this->spph_label.set_text(Helpers::get_string_from_uint
         ((unsigned int)this->skill_info.sp_per_hour) + " SP per hour");
 
-    /* Update the skill level, start and dest SP if the character
+    /* Update the skill: level, start and dest SP if the character
      * skill information is outdated outdated or the character
-     * sheet is still cached and has old info. */
-    if (this->skill_info.char_skill->level != this->training->to_level - 1)
+     * sheet is still cached and has old info. Create the skill if the
+     * character does not even have it. */
+    if (this->skill_info.char_skill == 0)
     {
+      /* The character does not even have the skill. Create it. */
+      ApiSkillTreePtr tree = ApiSkillTree::request();
+      ApiSkill const* skill = tree->get_skill_for_id(this->training->skill);
+
+      ApiCharSheetSkill cskill;
+      cskill.id = skill->id;
+      cskill.level = this->training->to_level - 1;
+      cskill.points = 0;
+      cskill.points_start = ApiCharSheet::calc_start_sp
+          (cskill.level, skill->rank);
+      cskill.points_dest = ApiCharSheet::calc_dest_sp
+          (cskill.level, skill->rank);
+      cskill.completed = 0.0;
+      cskill.details = skill;
+
+      this->sheet->skills.push_back(cskill);
+      this->skill_info.char_skill = &this->sheet->skills.back();
+    }
+    else if (this->skill_info.char_skill->level != this->training->to_level - 1)
+    {
+      /* The character has outdated skill information. Update. */
       ApiCharSheetSkill* skill = this->skill_info.char_skill;
       skill->level = this->training->to_level - 1;
       skill->points_start = ApiCharSheet::calc_start_sp
@@ -637,8 +659,7 @@ GtkCharPage::api_info_changed (void)
     }
 
     /* Cache the total skill points for the skill in training. */
-    ApiCharSheetSkill* training_skill = this->sheet->get_skill_for_id
-        (this->training->skill);
+    ApiCharSheetSkill* training_skill = this->skill_info.char_skill;
     int training_skill_group = training_skill->details->group;
     this->skill_info.skill_group_sp = 0;
     for (unsigned int i = 0; i < this->sheet->skills.size(); ++i)
@@ -789,14 +810,14 @@ GtkCharPage::on_query_skillview_tooltip (int x, int y, bool key,
   try
   {
     ApiSkillTreePtr tree = ApiSkillTree::request();
-    ApiSkill const& skill = tree->get_skill_from_id(skill_id);
+    ApiSkill const* skill = tree->get_skill_for_id(skill_id);
     tooltip->set_icon(ImageStore::skill);
 
     std::stringstream ss;
-    ss << "Name: " << skill.name << "\n"
-        << "Attributes: " << tree->get_attrib_name(skill.primary)
-        << " / " << tree->get_attrib_name(skill.secondary) << "\n\n"
-        << skill.desc;
+    ss << "Name: " << skill->name << "\n"
+        << "Attributes: " << tree->get_attrib_name(skill->primary)
+        << " / " << tree->get_attrib_name(skill->secondary) << "\n\n"
+        << skill->desc;
     tooltip->set_text(ss.str());
     return true;
   }
@@ -1070,7 +1091,7 @@ GtkCharPage::get_skill_in_training (void)
     try
     {
       ApiSkillTreePtr skills = ApiSkillTree::request();
-      skill_str = skills->get_skill_from_id(skill_id).name;
+      skill_str = skills->get_skill_for_id(skill_id)->name;
     }
     catch (Exception& e)
     {
@@ -1103,9 +1124,9 @@ GtkCharPage::get_spph_in_training (void)
   {
     int skill_id = this->training->skill;
     ApiSkillTreePtr skills = ApiSkillTree::request();
-    ApiSkill const& skill = skills->get_skill_from_id(skill_id);
-    primary = skill.primary;
-    secondary = skill.secondary;
+    ApiSkill const* skill = skills->get_skill_for_id(skill_id);
+    primary = skill->primary;
+    secondary = skill->secondary;
   }
   catch (Exception& e)
   {
@@ -1179,6 +1200,13 @@ GtkCharPage::open_skill_planner (void)
 void
 GtkCharPage::open_source_viewer (void)
 {
+  if (!this->sheet->valid || !this->training->valid)
+  {
+    this->info_display.append(INFO_WARNING, "Cannot open the source "
+        "viewer without valid sheets!");
+    return;
+  }
+
   GuiXmlSource* window = new GuiXmlSource();
   window->append(this->sheet->get_http_data(), "CharacterSheet.xml");
   window->append(this->training->get_http_data(), "InTraining.xml");

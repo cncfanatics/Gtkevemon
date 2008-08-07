@@ -93,16 +93,16 @@ GuiSkill::set_skill (int skill_id)
   try
   {
     ApiSkillTreePtr tree = ApiSkillTree::request();
-    ApiSkill const& skill = tree->get_skill_from_id(skill_id);
-    int group_id = skill.group;
-    ApiSkillGroup const& group = tree->get_group_from_id(group_id);
+    ApiSkill const* skill = tree->get_skill_for_id(skill_id);
+    int group_id = skill->group;
+    ApiSkillGroup const* group = tree->get_group_for_id(group_id);
 
-    this->skill_name.set_text(skill.name + " ("
-        + Helpers::get_string_from_int(skill.rank) + ")");
-    this->group_name.set_text(group.name);
-    this->skill_attribs.set_text(tree->get_attrib_name(skill.primary)
-        + std::string(" / ") + tree->get_attrib_name(skill.secondary));
-    this->desc_buffer->set_text(skill.desc);
+    this->skill_name.set_text(skill->name + " ("
+        + Helpers::get_string_from_int(skill->rank) + ")");
+    this->group_name.set_text(group->name);
+    this->skill_attribs.set_text(tree->get_attrib_name(skill->primary)
+        + std::string(" / ") + tree->get_attrib_name(skill->secondary));
+    this->desc_buffer->set_text(skill->desc);
   }
   catch (...)
   {

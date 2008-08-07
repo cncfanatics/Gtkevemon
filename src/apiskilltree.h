@@ -89,8 +89,8 @@ class ApiSkillTree : public ApiBase
     ApiSkillMap skills;
     ApiSkillGroupMap groups;
 
-    ApiSkill const& get_skill_from_id (int id) const;
-    ApiSkillGroup const& get_group_from_id (int id) const;
+    ApiSkill const* get_skill_for_id (int id) const;
+    ApiSkillGroup const* get_group_for_id (int id) const;
 
     char const* get_attrib_name (ApiAttrib const& attrib);
 };
