@@ -3,51 +3,14 @@ User interface
  - Timer until next update is possible
  - Training time in the window title
  - Make links clickable (about dialog)
- - Multiple EVE commands to launch (e.g. 5)
  - Implant viewer
  - Tips & Tricks Website
 
- - XML source viewer [DONE]
- - Automatically update (via option only) [DONE]
- - Show day of skill finish [DONE]
- - Portrait generation (online fetching) [DONE]
- - Hint that the LIMITED key is needed [DONE]
- - Make option to always have GtkEveMon in tray [DONE]
- - Show percentage of skill training [DONE]
- - Icons for the skills: [ALL DONE]
-   - Icon for completed (level V) skills [DONE]
-   - Icon for unfinished skills [DONE]
-   - Icon for regular skills at level <V [DONE]
-   - Icon for skill in training [DONE]
- - Configureable EVE command [DONE]
- - Tray right-click menu (close, uniconify) [DONE]
-
- - Tooltips for skill tree view with description [DONE]
- - Tooltip for tray (skills in training) [DONE]
- - Help menu button to the right! [DONE]
- - Help -> About dialog (URL, version) [DONE]
- - Possibility to launch EVE online [DONE]
- - Tray icon for notification [DONE]
- - Tray icon when minimized [DONE]
- - Sort skill list alphabetical [DONE]
- - Mark currently trained skill [DONE]
- - Mark group of currently trained skill [DONE]
- - Application icon [DONE]
- - Period separation of server population [DONE]
-
-Skill things
-------------
- - Hide empty skill groups [DONE]
- - Real skill point counting [DONE]
- - Primary/secondary attributes of skills [DONE]
- - Skill points per hour [DONE]
 
 Tricky things
 -------------
  - Caching of XML sheets
- - Online version checking (Help - Check version...) [DONE]
- - Asynchron portrait fetching [DONE]
- - Multiple accounts in the tabs [DONE]
+
 
 Skill Browser / Planner
 -----------------------
@@ -64,10 +27,3 @@ Skill Browser / Planner
    - Subplan
    - Training priorities
    - Enabled skilles through training
-
- - On the left: Skill Browser [DONE]
- - On the right: Notebook with skill details [DONE]
-
-Networking
-----------
- - Implement HTTP proxy support [DONE]

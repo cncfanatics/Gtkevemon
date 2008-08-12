@@ -331,18 +331,12 @@ ApiSkillTree::get_attrib_name (ApiAttrib const& attrib)
 {
   switch (attrib)
   {
-    case API_ATTRIB_INTELLIGENCE:
-      return "Intelligence";
-    case API_ATTRIB_MEMORY:
-      return "Memory";
-    case API_ATTRIB_CHARISMA:
-      return "Charisma";
-    case API_ATTRIB_PERCEPTION:
-      return "Perception";
-    case API_ATTRIB_WILLPOWER:
-      return "Willpower";
-    default:
-      break;
+    case API_ATTRIB_INTELLIGENCE: return "Intelligence";
+    case API_ATTRIB_MEMORY: return "Memory";
+    case API_ATTRIB_CHARISMA: return "Charisma";
+    case API_ATTRIB_PERCEPTION: return "Perception";
+    case API_ATTRIB_WILLPOWER: return "Willpower";
+    default: break;
   }
 
   return "Unknown";

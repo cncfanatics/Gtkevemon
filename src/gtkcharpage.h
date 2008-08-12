@@ -45,6 +45,7 @@ class GtkCharSkillsCols : public Gtk::TreeModel::ColumnRecord
     GtkCharSkillsCols (void);
 
     Gtk::TreeModelColumn<int> id;
+    Gtk::TreeModelColumn<ApiCharSheetSkill*> skill;
     Gtk::TreeModelColumn<Glib::ustring> name;
     Gtk::TreeModelColumn<Glib::ustring> points;
     Gtk::TreeModelColumn<Glib::RefPtr<Gdk::Pixbuf> > level;
@@ -186,6 +187,7 @@ inline
 GtkCharSkillsCols::GtkCharSkillsCols (void)
 {
   this->add(this->id);
+  this->add(this->skill);
   this->add(this->name);
   this->add(this->points);
   this->add(this->level);

@@ -16,6 +16,95 @@
 #include "gtkdefines.h"
 #include "guiskillplanner.h"
 
+GtkSkillHistory::GtkSkillHistory (void)
+  : Gtk::HBox(false, 0)
+{
+  this->history_pos = 0;
+
+  this->back_but.set_image(*MK_IMG(Gtk::Stock::GO_BACK, Gtk::ICON_SIZE_MENU));
+  this->next_but.set_image(*MK_IMG(Gtk::Stock::GO_FORWARD,
+      Gtk::ICON_SIZE_MENU));
+  this->back_but.set_relief(Gtk::RELIEF_NONE);
+  this->next_but.set_relief(Gtk::RELIEF_NONE);
+  this->position_label.set_text("0/0");
+
+  this->pack_start(this->back_but, false, false, 0);
+  this->pack_start(this->position_label, false, false, 2);
+  this->pack_start(this->next_but, false, false, 0);
+
+  this->back_but.signal_clicked().connect(sigc::mem_fun
+      (*this, &GtkSkillHistory::back_clicked));
+  this->next_but.signal_clicked().connect(sigc::mem_fun
+      (*this, &GtkSkillHistory::next_clicked));
+
+  this->update_sensitive();
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GtkSkillHistory::append_skill (ApiSkill const* skill)
+{
+  this->history.push_back(skill);
+
+  while (this->history.size() > HISTORY_MAX_SIZE)
+    this->history.erase(this->history.begin());
+
+  this->history_pos = this->history.size() - 1;
+
+  this->update_pos_label();
+  this->update_sensitive();
+  this->sig_skill_changed.emit(this->history[this->history_pos]);
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GtkSkillHistory::update_sensitive (void)
+{
+  this->back_but.set_sensitive(this->history_pos > 0);
+  this->next_but.set_sensitive(!this->history.empty()
+      && this->history_pos < this->history.size() - 1);
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GtkSkillHistory::update_pos_label (void)
+{
+  this->position_label.set_text(Helpers::get_string_from_uint
+      (this->history_pos + 1) + "/" + Helpers::get_string_from_uint
+      (this->history.size()));
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GtkSkillHistory::back_clicked (void)
+{
+  if (this->history_pos > 0)
+    this->history_pos -= 1;
+
+  this->update_pos_label();
+  this->update_sensitive();
+  this->sig_skill_changed.emit(this->history[this->history_pos]);
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GtkSkillHistory::next_clicked (void)
+{
+  if (this->history_pos < this->history.size() -1)
+    this->history_pos += 1;
+
+  this->update_pos_label();
+  this->update_sensitive();
+  this->sig_skill_changed.emit(this->history[this->history_pos]);
+}
+
+/* ================================================================ */
+
 GtkSkillDetails::GtkSkillDetails (void)
   : Gtk::VBox(false, 5),
     deps_store(Gtk::TreeStore::create(deps_cols)),
@@ -50,6 +139,7 @@ GtkSkillDetails::GtkSkillDetails (void)
 
   Gtk::HBox* details_skill_box = MK_HBOX;
   details_skill_box->pack_start(*details_skill_vbox, true, true, 0);
+  details_skill_box->pack_start(this->history, false, false, 0);
   //details_skill_box->pack_start(*queue_skill_but, false, false, 0);
 
   Gtk::TextView* text_view = Gtk::manage
@@ -91,6 +181,9 @@ GtkSkillDetails::GtkSkillDetails (void)
 
   this->tooltips.set_tip(*queue_skill_but, "Enqueues this skill");
 
+  this->history.signal_skill_changed().connect(sigc::mem_fun
+      (*this, &GtkSkillDetails::on_skill_changed));
+
   this->set_border_width(5);
   this->pack_start(*details_skill_box, false, false, 0);
   this->pack_start(*details_table, false, false, 0);
@@ -101,6 +194,14 @@ GtkSkillDetails::GtkSkillDetails (void)
 
 void
 GtkSkillDetails::set_skill (ApiSkill const* skill)
+{
+  this->history.append_skill(skill);
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GtkSkillDetails::on_skill_changed (ApiSkill const* skill)
 {
   /* Fill character invariant values. */
   ApiSkillTreePtr tree = ApiSkillTree::request();
@@ -113,9 +214,9 @@ GtkSkillDetails::set_skill (ApiSkill const* skill)
   this->skill_name.set_use_markup(true);
 
   this->skill_primary.set_text(Glib::ustring("Primary: ")
-      + tree->get_attrib_name(skill->primary));
+      + ApiSkillTree::get_attrib_name(skill->primary));
   this->skill_secondary.set_text(Glib::ustring("Secondary: ")
-      + tree->get_attrib_name(skill->secondary));
+      + ApiSkillTree::get_attrib_name(skill->secondary));
 
   this->skill_desc_buffer->set_text(skill->desc);
 
@@ -125,7 +226,7 @@ GtkSkillDetails::set_skill (ApiSkill const* skill)
 
   ApiCharSheetSkill* cskill = this->charsheet->get_skill_for_id(skill->id);
   time_t timediff = 0;
-  double spps = this->get_spps_for_skill(skill);
+  double spps = this->charsheet->get_sppm_for_skill(skill) / 60.0;
 
   for (unsigned int i = 0; i < 5; ++i)
   {
@@ -180,37 +281,6 @@ GtkSkillDetails::recurse_append_skill_req (ApiSkill const* skill,
     this->recurse_append_skill_req(newskill,
         this->deps_store->append(slot->children()), newlevel);
   }
-}
-
-/* ---------------------------------------------------------------- */
-
-double
-GtkSkillDetails::get_spps_for_skill (ApiSkill const* skill)
-{
-  double pri;
-  double sec;
-
-  switch (skill->primary)
-  {
-    case API_ATTRIB_INTELLIGENCE: pri = this->charsheet->total_int; break;
-    case API_ATTRIB_MEMORY:       pri = this->charsheet->total_mem; break;
-    case API_ATTRIB_CHARISMA:     pri = this->charsheet->total_cha; break;
-    case API_ATTRIB_PERCEPTION:   pri = this->charsheet->total_per; break;
-    case API_ATTRIB_WILLPOWER:    pri = this->charsheet->total_wil; break;
-    default: pri = 0.0;
-  }
-
-  switch (skill->secondary)
-  {
-    case API_ATTRIB_INTELLIGENCE: sec = this->charsheet->total_int; break;
-    case API_ATTRIB_MEMORY:       sec = this->charsheet->total_mem; break;
-    case API_ATTRIB_CHARISMA:     sec = this->charsheet->total_cha; break;
-    case API_ATTRIB_PERCEPTION:   sec = this->charsheet->total_per; break;
-    case API_ATTRIB_WILLPOWER:    sec = this->charsheet->total_wil; break;
-    default: sec = 0.0;
-  }
-
-  return (pri + sec / 2.0) / 60.0;
 }
 
 /* ================================================================ */

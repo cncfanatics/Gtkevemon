@@ -362,8 +362,9 @@ GtkCharPage::update_skill_list (void)
       name += "  <i>(1 in training)</i>";
 
     Gtk::TreeModel::iterator siter = this->skill_store->append();
-    (*siter)[this->skill_cols.name] = name;
     (*siter)[this->skill_cols.id] = -1;
+    (*siter)[this->skill_cols.skill] = 0;
+    (*siter)[this->skill_cols.name] = name;
     (*siter)[this->skill_cols.icon] = ImageStore::skillicons[0];
     iter_map.insert(std::make_pair(iter->first, std::make_pair(siter, 0)));
   }
@@ -411,6 +412,7 @@ GtkCharPage::update_skill_list (void)
 
     /* Set skill id, points and name. */
     (*iter)[this->skill_cols.id] = skill.id;
+    (*iter)[this->skill_cols.skill] = &skills[i];
     (*iter)[this->skill_cols.points]
         = Helpers::get_dotted_str_from_int(skills[i].points);
     (*iter)[this->skill_cols.name] = skill_name;
@@ -739,14 +741,34 @@ GtkCharPage::remove_tray_notify (void)
 void
 GtkCharPage::on_skill_completed (void)
 {
-  this->training->in_training = false;
-
+  /* Set up some GUI elements. */
   this->remaining_label.set_text("Completed!");
   this->finish_eve_label.set_text("---");
   this->finish_local_label.set_text("---");
   this->spph_label.set_text("0 SP per hour");
   this->live_sp_label.set_text("---");
 
+  /* Remove skill from training. */
+  this->training->in_training = false;
+
+  /* Update skill for the character. */
+  ApiCharSheetSkill* cskill = this->skill_info.char_skill;
+  if (cskill != 0)
+  {
+    cskill->level = this->training->to_level;
+    cskill->points_start = ApiCharSheet::calc_start_sp
+        (cskill->level, cskill->details->rank);
+    cskill->points_dest = ApiCharSheet::calc_dest_sp
+        (cskill->level, cskill->details->rank);
+    cskill->points = cskill->points_start;
+    cskill->completed = 0.0;
+  }
+
+  /* Update GUI to reflect changes. */
+  this->api_info_changed();
+  this->update_charsheet_details();
+
+  /* Now bring up some notifications. */
   ConfValuePtr show_popup = Config::conf.get_value
       ("notifications.show_popup_dialog");
   ConfValuePtr show_tray = Config::conf.get_value
@@ -803,6 +825,7 @@ GtkCharPage::on_query_skillview_tooltip (int x, int y, bool key,
 
   Gtk::TreeIter iter = this->skill_store->get_iter(path);
   int skill_id = (*iter)[this->skill_cols.id];
+  ApiCharSheetSkill* cskill = (*iter)[this->skill_cols.skill];
 
   if (skill_id < 0)
     return false;
@@ -810,15 +833,28 @@ GtkCharPage::on_query_skillview_tooltip (int x, int y, bool key,
   try
   {
     ApiSkillTreePtr tree = ApiSkillTree::request();
-    ApiSkill const* skill = tree->get_skill_for_id(skill_id);
+    ApiSkill const* skill = cskill->details;
     tooltip->set_icon(ImageStore::skill);
 
     std::stringstream ss;
     ss << "Name: " << skill->name << "\n"
-        << "Attributes: " << tree->get_attrib_name(skill->primary)
-        << " / " << tree->get_attrib_name(skill->secondary) << "\n\n"
-        << skill->desc;
+        << "Attributes: " << ApiSkillTree::get_attrib_name(skill->primary)
+        << " / " << ApiSkillTree::get_attrib_name(skill->secondary) << "\n";
+
+    if (cskill->level != 5)
+    {
+      int sp_to_go = cskill->points_dest - cskill->points;
+      double sppm = this->sheet->get_sppm_for_skill(skill);
+      time_t secs_next_level = (time_t)(60.0 * (double)sp_to_go / sppm);
+      std::string next_level_str = EveTime::get_string_for_timediff
+          (secs_next_level, false);
+      ss << "SP per hour: " << (int)(sppm * 60.0) << "\n"
+          << "Training time: " << next_level_str << "\n";
+    }
+
+    ss  << "\n" << skill->desc;
     tooltip->set_text(ss.str());
+
     return true;
   }
   catch (...)
@@ -1117,51 +1153,18 @@ GtkCharPage::get_spph_in_training (void)
       || !this->sheet->valid)
     return 0;
 
-  /* Receive primary and secondary attribs. */
-  ApiAttrib primary;
-  ApiAttrib secondary;
   try
   {
     int skill_id = this->training->skill;
     ApiSkillTreePtr skills = ApiSkillTree::request();
     ApiSkill const* skill = skills->get_skill_for_id(skill_id);
-    primary = skill->primary;
-    secondary = skill->secondary;
+    return this->sheet->get_sppm_for_skill(skill) * 60.0;
   }
   catch (Exception& e)
   {
     /* This happens if the ID is not found. */
     return 0;
-    //skill_str = Helpers::get_string_from_int(skill_id);
   }
-
-  /* Get attribute values. */
-  double pri;
-  double sec;
-
-  switch (primary)
-  {
-    case API_ATTRIB_INTELLIGENCE: pri = this->sheet->total_int; break;
-    case API_ATTRIB_MEMORY:       pri = this->sheet->total_mem; break;
-    case API_ATTRIB_CHARISMA:     pri = this->sheet->total_cha; break;
-    case API_ATTRIB_PERCEPTION:   pri = this->sheet->total_per; break;
-    case API_ATTRIB_WILLPOWER:    pri = this->sheet->total_wil; break;
-    default: pri = 0.0;
-  }
-
-  switch (secondary)
-  {
-    case API_ATTRIB_INTELLIGENCE: sec = this->sheet->total_int; break;
-    case API_ATTRIB_MEMORY:       sec = this->sheet->total_mem; break;
-    case API_ATTRIB_CHARISMA:     sec = this->sheet->total_cha; break;
-    case API_ATTRIB_PERCEPTION:   sec = this->sheet->total_per; break;
-    case API_ATTRIB_WILLPOWER:    sec = this->sheet->total_wil; break;
-    default: sec = 0.0;
-  }
-
-  /* Calculate SP/h */
-  double spph = 60.0 * (pri + sec / 2.0);
-  return spph;
 }
 
 /* ---------------------------------------------------------------- */

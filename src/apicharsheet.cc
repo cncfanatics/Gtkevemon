@@ -247,3 +247,34 @@ ApiCharSheet::calc_dest_sp (int level, int rank)
 {
   return (int)::ceil(250.0 * rank * ::pow(32.0, level / 2.0));
 }
+
+/* ---------------------------------------------------------------- */
+
+double
+ApiCharSheet::get_sppm_for_skill (ApiSkill const* skill)
+{
+  double pri;
+  double sec;
+
+  switch (skill->primary)
+  {
+    case API_ATTRIB_INTELLIGENCE: pri = this->total_int; break;
+    case API_ATTRIB_MEMORY:       pri = this->total_mem; break;
+    case API_ATTRIB_CHARISMA:     pri = this->total_cha; break;
+    case API_ATTRIB_PERCEPTION:   pri = this->total_per; break;
+    case API_ATTRIB_WILLPOWER:    pri = this->total_wil; break;
+    default: pri = 0.0;
+  }
+
+  switch (skill->secondary)
+  {
+    case API_ATTRIB_INTELLIGENCE: sec = this->total_int; break;
+    case API_ATTRIB_MEMORY:       sec = this->total_mem; break;
+    case API_ATTRIB_CHARISMA:     sec = this->total_cha; break;
+    case API_ATTRIB_PERCEPTION:   sec = this->total_per; break;
+    case API_ATTRIB_WILLPOWER:    sec = this->total_wil; break;
+    default: sec = 0.0;
+  }
+
+  return (pri + sec / 2.0);
+}

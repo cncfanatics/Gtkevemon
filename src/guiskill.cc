@@ -100,8 +100,8 @@ GuiSkill::set_skill (int skill_id)
     this->skill_name.set_text(skill->name + " ("
         + Helpers::get_string_from_int(skill->rank) + ")");
     this->group_name.set_text(group->name);
-    this->skill_attribs.set_text(tree->get_attrib_name(skill->primary)
-        + std::string(" / ") + tree->get_attrib_name(skill->secondary));
+    this->skill_attribs.set_text(ApiSkillTree::get_attrib_name(skill->primary)
+        + std::string(" / ") + ApiSkillTree::get_attrib_name(skill->secondary));
     this->desc_buffer->set_text(skill->desc);
   }
   catch (...)

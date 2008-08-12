@@ -25,6 +25,11 @@
 #include "apicharsheet.h"
 #include "winbase.h"
 
+/* The maximum history size. */
+#define HISTORY_MAX_SIZE 9
+
+/* ---------------------------------------------------------------- */
+
 class GuiPlannerSkillCols : public Gtk::TreeModel::ColumnRecord
 {
   public:
@@ -33,6 +38,31 @@ class GuiPlannerSkillCols : public Gtk::TreeModel::ColumnRecord
     Gtk::TreeModelColumn<Glib::ustring> name;
     Gtk::TreeModelColumn<Glib::RefPtr<Gdk::Pixbuf> > icon;
     Gtk::TreeModelColumn<ApiSkill const*> skill;
+};
+
+/* ---------------------------------------------------------------- */
+
+class GtkSkillHistory : public Gtk::HBox
+{
+  private:
+    std::vector<ApiSkill const*> history;
+    unsigned int history_pos;
+    sigc::signal<void, ApiSkill const*> sig_skill_changed;
+
+    Gtk::Button back_but;
+    Gtk::Button next_but;
+    Gtk::Label position_label;
+
+    void update_sensitive (void);
+    void update_pos_label (void);
+    void back_clicked (void);
+    void next_clicked (void);
+
+  public:
+    GtkSkillHistory (void);
+
+    void append_skill (ApiSkill const* skill);
+    sigc::signal<void, ApiSkill const*>& signal_skill_changed (void);
 };
 
 /* ---------------------------------------------------------------- */
@@ -55,11 +85,13 @@ class GtkSkillDetails : public Gtk::VBox
     Gtk::Label skill_level[5];
     Glib::RefPtr<Gtk::TextBuffer> skill_desc_buffer;
 
+    GtkSkillHistory history;
     Gtk::Tooltips tooltips;
 
     void recurse_append_skill_req (ApiSkill const* skill,
         Gtk::TreeModel::iterator slot, int level);
     double get_spps_for_skill (ApiSkill const* skill);
+    void on_skill_changed (ApiSkill const* skill);
 
   public:
     GtkSkillDetails (void);
@@ -103,6 +135,12 @@ class GuiSkillPlanner : public WinBase
 };
 
 /* ---------------------------------------------------------------- */
+
+inline sigc::signal<void, ApiSkill const*>&
+GtkSkillHistory::signal_skill_changed (void)
+{
+  return this->sig_skill_changed;
+}
 
 inline void
 GtkSkillDetails::set_character (ApiCharSheetPtr character)

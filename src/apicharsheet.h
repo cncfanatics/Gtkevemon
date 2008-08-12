@@ -101,6 +101,8 @@ class ApiCharSheet : public ApiBase
 
     static int calc_start_sp (int level, int rank);
     static int calc_dest_sp (int level, int rank);
+
+    double get_sppm_for_skill (ApiSkill const* skill);
 };
 
 /* ---------------------------------------------------------------- */
