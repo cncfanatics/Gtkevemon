@@ -13,6 +13,6 @@
 #ifndef DEFINES_HEADER
 #define DEFINES_HEADER
 
-#define GTKEVEMON_VERSION_STR "Revision 1.2-RC47"
+#define GTKEVEMON_VERSION_STR "Revision 1.2-48"
 
 #endif /* DEFINES_HEADER */
