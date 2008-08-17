@@ -4,12 +4,12 @@ COMPILER = g++
 SOURCES = maingui.cc guiuserdata.cc guiconfiguration.cc guiaboutdialog.cc \
           guiskill.cc guiskillplanner.cc guixmlsource.cc guievelauncher.cc \
           gtkevemon.cc gtkserver.cc gtkconfwidgets.cc gtkcharpage.cc \
-	  gtkportrait.cc gtkinfodisplay.cc imagestore.cc \
+          gtkportrait.cc gtkinfodisplay.cc imagestore.cc \
           server.cc serverlist.cc helpers.cc conf.cc config.cc \
-	  xml.cc evetime.cc bgprocess.cc \
-	  http.cc asynchttp.cc eveapi.cc versionchecker.cc \
+          xml.cc evetime.cc bgprocess.cc \
+          http.cc asynchttp.cc eveapi.cc versionchecker.cc \
           apibase.cc apicharlist.cc apicharsheet.cc apiintraining.cc \
-	  apiskilltree.cc
+          apiskilltree.cc argumentsettings.cc
 
 OBJECTS = $(foreach file,$(SOURCES),$(subst .cc,.o,$(file)))
 BINARY = gtkevemon

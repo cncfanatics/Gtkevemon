@@ -8,6 +8,7 @@
 #include <gtkmm/stock.h>
 #include <gtkmm/messagedialog.h>
 
+#include "argumentsettings.h"
 #include "helpers.h"
 #include "evetime.h"
 #include "eveapi.h"
@@ -121,15 +122,17 @@ MainGui::MainGui (void)
   help_menu->set_right_justified(true);
 
   /* Create the server list. */
-  Gtk::HBox* server_box = Gtk::manage(new Gtk::HBox(false, 10));
+  Gtk::HBox* server_box = Gtk::manage(new Gtk::HBox(false, 5));
+  server_box->pack_start(*MK_LABEL0, true, true, 0);
   for (unsigned int i = 0; i < ServerList::list.size(); ++i)
   {
     GtkServer* server = Gtk::manage(new GtkServer(ServerList::list[i]));
     server_box->pack_start(*server, false, false, 0);
     if (i != ServerList::list.size() - 1)
-      server_box->pack_start(*MK_VSEP, false, false);
+      server_box->pack_start(*MK_VSEP, false, false, 0);
     this->gtkserver.push_back(server);
   }
+  server_box->pack_start(*MK_LABEL0, true, true, 0);
 
   Gtk::HBox* time_hbox = MK_HBOX;
   time_hbox->pack_start(this->evetime_label, false, false, 0);
@@ -164,9 +167,10 @@ MainGui::MainGui (void)
   /* Setup window stuff. */
   this->set_icon(ImageStore::applogo);
   this->set_title("GTK EveMon");
-  this->set_default_size(480, 640);
+  this->set_default_size(550, 640);
   this->add(*main_vbox);
   this->show_all();
+  if (ArgumentSettings::start_minimized) this->iconify();
   this->info_display.hide();
 
   /* Connect signals. */

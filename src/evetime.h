@@ -56,6 +56,7 @@ class EveTime
 
     /* Returns a string representing a time difference. */
     static std::string get_string_for_timediff (time_t diff, bool slim);
+    static std::string get_minute_str_for_diff (time_t diff);
 
     /* Returns if the EVE time has been initialized. Otherwise
      * the EVE time is equal to the local time. */

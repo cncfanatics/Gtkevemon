@@ -183,6 +183,8 @@ GtkSkillDetails::GtkSkillDetails (void)
 
   this->history.signal_skill_changed().connect(sigc::mem_fun
       (*this, &GtkSkillDetails::on_skill_changed));
+  this->deps_view.signal_row_activated().connect
+      (sigc::mem_fun(*this, &GtkSkillDetails::on_skill_selected));
 
   this->set_border_width(5);
   this->pack_start(*details_skill_box, false, false, 0);
@@ -250,6 +252,23 @@ GtkSkillDetails::on_skill_changed (ApiSkill const* skill)
   this->deps_store->clear();
   this->recurse_append_skill_req(skill, this->deps_store->append(), 1);
   this->deps_view.expand_all();
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GtkSkillDetails::on_skill_selected (Gtk::TreeModel::Path const& path,
+    Gtk::TreeViewColumn* col)
+{
+  col = 0;
+
+  Gtk::TreeModel::iterator iter = this->deps_store->get_iter(path);
+  ApiSkill const* skill = (*iter)[this->deps_cols.skill];
+
+  if (skill == 0)
+    return;
+
+  this->set_skill(skill);
 }
 
 /* ---------------------------------------------------------------- */
@@ -505,12 +524,16 @@ GuiSkillPlanner::skill_row_activated (Gtk::TreeModel::Path const& path,
   ApiSkill const* skill = (*iter)[this->skill_cols.skill];
 
   if (skill != 0)
-    return;
-
-  if (this->skill_view.row_expanded(path))
-    this->skill_view.collapse_row(path);
+  {
+    this->details_gui.set_skill(skill);
+  }
   else
-    this->skill_view.expand_row(path, true);
+  {
+    if (this->skill_view.row_expanded(path))
+      this->skill_view.collapse_row(path);
+    else
+      this->skill_view.expand_row(path, true);
+  }
 }
 
 /* ---------------------------------------------------------------- */

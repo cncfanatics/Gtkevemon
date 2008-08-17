@@ -187,6 +187,16 @@ EveTime::get_string_for_timediff (time_t diff, bool slim)
 
 /* ---------------------------------------------------------------- */
 
+std::string
+EveTime::get_minute_str_for_diff (time_t diff)
+{
+  std::stringstream ss;
+  ss << ((diff + 59) / 60) << "m";
+  return ss.str();
+}
+
+/* ---------------------------------------------------------------- */
+
 bool
 EveTime::is_initialized (void)
 {

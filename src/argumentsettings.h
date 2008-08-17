@@ -10,9 +10,19 @@
  * along with GtkEveMon. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DEFINES_HEADER
-#define DEFINES_HEADER
+#ifndef ARGUMENT_SETTINGS_HEADER
+#define ARGUMENT_SETTINGS_HEADER
 
-#define GTKEVEMON_VERSION_STR "Revision 1.3-49"
+class ArgumentSettings
+{
+  private:
+    static void show_help (void);
 
-#endif /* DEFINES_HEADER */
+  public:
+    static bool start_minimized;
+
+  public:
+    static void init (int argc, char** argv);
+};
+
+#endif /* ARGUMENT_SETTINGS_HEADER */

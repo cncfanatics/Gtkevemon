@@ -48,41 +48,31 @@ GtkServerChecker::run (void)
 /* ================================================================ */
 
 GtkServer::GtkServer (Server& server)
-  : Gtk::Table(4, 3, false)
+  : Gtk::Table(2, 3, false)
 {
   this->server = &server;
+  this->status_desc.set_text("Status:");
+  this->status.set_text("Fetching");
 
   this->set_col_spacings(5);
   this->set_status_icon(Gtk::Stock::REFRESH);
   this->status_but.set_relief(Gtk::RELIEF_NONE);
 
   Gtk::Label* label_server = Gtk::manage(new Gtk::Label("Server:"));
-  Gtk::Label* label_status = Gtk::manage(new Gtk::Label("Status:"));
-  Gtk::Label* label_population = Gtk::manage(new Gtk::Label("Population:"));
-  Gtk::Label* label_address = Gtk::manage(new Gtk::Label("Address:"));
 
   label_server->property_xalign() = 0.0f;
-  label_status->property_xalign() = 0.0f;
-  label_population->property_xalign() = 0.0f;
-  label_address->property_xalign() = 0.0f;
+  this->status_desc.property_xalign() = 0.0f;
 
   this->name.property_xalign() = 1.0f;
   this->status.property_xalign() = 1.0f;
-  this->population.property_xalign() = 1.0f;
-  this->address.property_xalign() = 1.0f;
 
   this->name.set_text(server.get_name());
-  this->address.set_text(server.get_host());
 
   this->attach(this->status_but, 0, 1, 0, 2, Gtk::FILL, Gtk::FILL);
   this->attach(*label_server, 1, 2, 0, 1, Gtk::FILL, Gtk::FILL);
-  this->attach(*label_status, 1, 2, 1, 2, Gtk::FILL, Gtk::FILL);
-  this->attach(*label_population, 0, 2, 2, 3, Gtk::FILL, Gtk::FILL);
-  this->attach(*label_address, 0, 2, 3, 4, Gtk::FILL, Gtk::FILL);
+  this->attach(this->status_desc, 1, 2, 1, 2, Gtk::FILL, Gtk::FILL);
   this->attach(this->name, 2, 3, 0, 1, Gtk::FILL, Gtk::FILL);
   this->attach(this->status, 2, 3, 1, 2, Gtk::FILL, Gtk::FILL);
-  this->attach(this->population, 2, 3, 2, 3, Gtk::FILL, Gtk::FILL);
-  this->attach(this->address, 2, 3, 3, 4, Gtk::FILL, Gtk::FILL);
 
   this->status_but.signal_clicked().connect
       (sigc::mem_fun(*this, &GtkServer::force_refresh));
@@ -102,16 +92,15 @@ GtkServer::update (void)
   else if (server->is_online())
   {
     this->set_status_icon(Gtk::Stock::YES);
-    this->status.set_text("Online");
-    this->population.set_text(Helpers::get_dotted_str_from_int
+    this->status_desc.set_text("Players:");
+    this->status.set_text(Helpers::get_dotted_str_from_int
         (this->server->get_players()));
   }
   else
   {
     this->set_status_icon(Gtk::Stock::NO);
+    this->status_desc.set_text("Status:");
     this->status.set_text("Offline");
-    this->population.set_text(Helpers::get_dotted_str_from_int
-        (this->server->get_players()));
   }
 }
 

@@ -59,10 +59,10 @@ GtkCharPage::GtkCharPage (void)
 
   this->char_image.property_xalign() = 1.0f;
   this->refresh_but.set_image(*Gtk::manage(new Gtk::Image
-      (Gtk::Stock::REFRESH, Gtk::ICON_SIZE_BUTTON)));
-  this->info_but.set_image(*Gtk::manage(new Gtk::Image
-      (Gtk::Stock::INFO, Gtk::ICON_SIZE_BUTTON)));
+      (Gtk::Stock::REFRESH, Gtk::ICON_SIZE_MENU)));
   this->refresh_but.set_relief(Gtk::RELIEF_NONE);
+  this->info_but.set_image(*Gtk::manage(new Gtk::Image
+      (Gtk::Stock::INFO, Gtk::ICON_SIZE_MENU)));
   this->info_but.set_relief(Gtk::RELIEF_NONE);
 
   this->char_name_label.property_xalign() = 0.0f;
@@ -82,6 +82,9 @@ GtkCharPage::GtkCharPage (void)
   this->finish_local_label.property_xalign() = 0.0f;
   this->spph_label.property_xalign() = 1.0f;
   this->live_sp_label.property_xalign() = 1.0f;
+
+  this->charsheet_info_label.property_xalign() = 1.0f;
+  this->trainsheet_info_label.property_xalign() = 1.0f;
 
   Gtk::ScrolledWindow* scwin = Gtk::manage(new Gtk::ScrolledWindow);
   scwin->set_shadow_type(Gtk::SHADOW_ETCHED_IN);
@@ -114,10 +117,14 @@ GtkCharPage::GtkCharPage (void)
   close_but->set_relief(Gtk::RELIEF_NONE);
   close_but->set_image(*Gtk::manage(new Gtk::Image
       (Gtk::Stock::CLOSE, Gtk::ICON_SIZE_MENU)));
-  Gtk::HBox* close_but_hbox = MK_HBOX;
-  close_but_hbox->pack_end(*close_but, false, false, 0);
-  Gtk::VBox* close_but_vbox = MK_VBOX;
-  close_but_vbox->pack_start(*close_but_hbox, false, false, 0);
+
+  Gtk::VBox* char_buts_vbox = MK_VBOX0;
+  char_buts_vbox->pack_start(*close_but, false, false, 0);
+  //char_buts_vbox->pack_start(*MK_HSEP, true, true, 0);
+  char_buts_vbox->pack_end(this->refresh_but, false, false, 0);
+  char_buts_vbox->pack_end(this->info_but, false, false, 0);
+  Gtk::HBox* char_buts_hbox = MK_HBOX;
+  char_buts_hbox->pack_end(*char_buts_vbox, false, false, 0);
 
   info_table->attach(this->char_image, 0, 1, 0, 5, Gtk::FILL, Gtk::FILL);
   info_table->attach(this->char_name_label, 1, 2, 0, 1, Gtk::FILL, Gtk::FILL);
@@ -143,11 +150,10 @@ GtkCharPage::GtkCharPage (void)
   info_table->attach(this->attr_per_label, 5, 6, 2, 3, Gtk::FILL, Gtk::FILL);
   info_table->attach(this->attr_mem_label, 5, 6, 3, 4, Gtk::FILL, Gtk::FILL);
   info_table->attach(this->attr_wil_label, 5, 6, 4, 5, Gtk::FILL, Gtk::FILL);
-  info_table->attach(*close_but_vbox, 6, 7, 0, 2,
+  info_table->attach(*char_buts_hbox, 6, 7, 0, 5,
       Gtk::FILL | Gtk::EXPAND, Gtk::SHRINK | Gtk::FILL);
 
-  Gtk::Table* train_table = Gtk::manage(new Gtk::Table(4, 3));
-  train_table->set_col_spacings(10);
+  /* Prepare training table. */
   Gtk::Label* train_desc = MK_LABEL("<b>Training:</b>");
   Gtk::Label* remain_desc = MK_LABEL("Remaining:");
   Gtk::Label* finish_eve_desc = MK_LABEL("Finish (EVE):");
@@ -157,21 +163,37 @@ GtkCharPage::GtkCharPage (void)
   remain_desc->property_xalign() = 0.0f;
   finish_eve_desc->property_xalign() = 0.0f;
   finish_local_desc->property_xalign() = 0.0f;
+
+  Gtk::Label* charsheet_info_desc = MK_LABEL("Character sheet:");
+  Gtk::Label* trainsheet_info_desc = MK_LABEL("Training sheet:");
+  Gtk::HBox* charsheet_info_hbox = MK_HBOX;
+  charsheet_info_hbox->pack_end(this->charsheet_info_label, false, false, 0);
+  charsheet_info_hbox->pack_end(*charsheet_info_desc, false, false, 0);
+  Gtk::HBox* trainsheet_info_hbox = MK_HBOX;
+  trainsheet_info_hbox->pack_end(this->trainsheet_info_label, false, false, 0);
+  trainsheet_info_hbox->pack_end(*trainsheet_info_desc, false, false, 0);
+
+  /* Setup training table. */
+  Gtk::Table* train_table = Gtk::manage(new Gtk::Table(4, 3));
+  train_table->set_col_spacings(10);
   train_table->attach(*train_desc, 0, 1, 0, 1, Gtk::FILL, Gtk::FILL);
   train_table->attach(*remain_desc, 0, 1, 1, 2, Gtk::FILL, Gtk::FILL);
   train_table->attach(*finish_eve_desc, 0, 1, 2, 3, Gtk::FILL, Gtk::FILL);
   train_table->attach(*finish_local_desc, 0, 1, 3, 4, Gtk::FILL, Gtk::FILL);
-  train_table->attach(this->training_label, 1, 2, 0, 1);
-  train_table->attach(this->remaining_label, 1, 2, 1, 2);
-  train_table->attach(this->finish_eve_label, 1, 2, 2, 3);
-  train_table->attach(this->finish_local_label, 1, 2, 3, 4);
-  Gtk::HBox* mini_but_box = MK_HBOX0;
-  mini_but_box->pack_end(this->refresh_but, false, false, 0);
-  mini_but_box->pack_end(this->info_but, false, false, 0);
-  train_table->attach(*mini_but_box, 2, 3, 0, 2, Gtk::FILL, Gtk::SHRINK);
-  train_table->attach(this->spph_label, 2, 3, 2, 3, Gtk::FILL, Gtk::SHRINK);
-  train_table->attach(this->live_sp_label, 2, 3, 3, 4, Gtk::FILL, Gtk::SHRINK);
+  train_table->attach(this->training_label, 1, 2, 0, 1, Gtk::FILL);
+  train_table->attach(this->remaining_label, 1, 2, 1, 2, Gtk::FILL);
+  train_table->attach(this->finish_eve_label, 1, 2, 2, 3, Gtk::FILL);
+  train_table->attach(this->finish_local_label, 1, 2, 3, 4, Gtk::FILL);
+  train_table->attach(this->spph_label, 2, 3, 2, 3,
+      Gtk::FILL | Gtk::EXPAND, Gtk::SHRINK);
+  train_table->attach(this->live_sp_label, 2, 3, 3, 4,
+      Gtk::FILL | Gtk::EXPAND, Gtk::SHRINK);
+  train_table->attach(*charsheet_info_hbox, 2, 3, 0, 1,
+      Gtk::FILL | Gtk::EXPAND, Gtk::FILL);
+  train_table->attach(*trainsheet_info_hbox, 2, 3, 1, 2,
+      Gtk::FILL | Gtk::EXPAND, Gtk::FILL);
 
+  /* Global packing. */
   this->set_border_width(5);
   this->pack_start(*info_table, false, false, 0);
   this->pack_start(*scwin, true, true, 0);
@@ -181,7 +203,7 @@ GtkCharPage::GtkCharPage (void)
   /* Setup tooltips. */
   this->tooltips.set_tip(*close_but, "Closes the character");
   this->tooltips.set_tip(this->info_but, "Infomation about cached sheets");
-  this->tooltips.set_tip(this->refresh_but, "Request character sheets");
+  this->tooltips.set_tip(this->refresh_but, "Request API information");
 
   /* Signals. */
   close_but->signal_clicked().connect(sigc::mem_fun
@@ -209,6 +231,8 @@ GtkCharPage::GtkCharPage (void)
       &GtkCharPage::on_live_sp_image_update), CHARPAGE_LIVE_SP_IMAGE_UPDATE);
   Glib::signal_timeout().connect(sigc::mem_fun(*this,
       &GtkCharPage::check_expired_sheets), CHARPAGE_CHECK_EXPIRED_SHEETS);
+  Glib::signal_timeout().connect(sigc::mem_fun(*this,
+      &GtkCharPage::update_cached_duration), CHARPAGE_UPDATE_CACHED_DURATION);
 
   /* Update GUI. */
   this->update_charsheet_details();
@@ -501,12 +525,13 @@ GtkCharPage::request_documents (void)
   /* Request the documents. */
   if (update_char && !this->sheet_fetcher.is_busy())
   {
+    this->charsheet_info_label.set_text("Requesting...");
     this->sheet_fetcher.async_request();
   }
 
   if (update_training && !this->training_fetcher.is_busy())
   {
-    this->training_label.set_text("Requesting...");
+    this->trainsheet_info_label.set_text("Requesting...");
     this->training_fetcher.async_request();
   }
 }
@@ -686,12 +711,10 @@ GtkCharPage::api_info_changed (void)
     this->skill_info.char_skill = 0;
     this->skill_info.sp_per_hour = 0;
     this->skill_info.skill_group_sp = 0;
-    this->spph_label.set_text("---");
   }
 
-  //std::cout << "Total SP are: " << this->skill_info.total_sp
-  //    << " Skill: " << this->skill_info.char_skill->points
-  //    << " Dest: " << this->skill_info.char_skill->points_dest << std::endl;
+  /* Update the char sheet and training sheet info. */
+  this->update_cached_duration();
 }
 
 /* ---------------------------------------------------------------- */
@@ -709,6 +732,38 @@ GtkCharPage::update_remaining (void)
       this->on_skill_completed();
     else
       this->remaining_label.set_text(this->get_skill_remaining());
+  }
+
+  return true;
+}
+
+/* ---------------------------------------------------------------- */
+
+bool
+GtkCharPage::update_cached_duration (void)
+{
+  time_t current = EveTime::get_eve_time();
+
+  if (this->training->valid)
+  {
+    time_t cached_until = this->training->get_cached_until_t();
+
+    if (cached_until > current)
+      this->trainsheet_info_label.set_text(EveTime::get_minute_str_for_diff
+          (cached_until - current) + " cached");
+    else
+      this->trainsheet_info_label.set_text("Ready for update!");
+  }
+
+  if (this->sheet->valid)
+  {
+    time_t cached_until = this->sheet->get_cached_until_t();
+
+    if (cached_until > current)
+      this->charsheet_info_label.set_text(EveTime::get_minute_str_for_diff
+          (cached_until - current) + " cached");
+    else
+      this->charsheet_info_label.set_text("Ready for update!");
   }
 
   return true;
@@ -996,6 +1051,7 @@ GtkCharPage::on_skilltree_error (std::string const& e)
 void
 GtkCharPage::on_charsheet_error (std::string const& e)
 {
+  this->charsheet_info_label.set_text("Error requesting!");
   std::cout << "Error requesting char sheet: " << e << std::endl;
 
   this->info_display.append(INFO_ERROR,
@@ -1023,8 +1079,7 @@ GtkCharPage::on_charsheet_error (std::string const& e)
 void
 GtkCharPage::on_intraining_error (std::string const& e)
 {
-  this->training_label.set_text("Error requesting!");
-
+  this->trainsheet_info_label.set_text("Error requesting!");
   std::cout << "Error requesting training sheet: " << e << std::endl;
 
   this->info_display.append(INFO_ERROR,

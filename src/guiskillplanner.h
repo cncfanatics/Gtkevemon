@@ -92,6 +92,8 @@ class GtkSkillDetails : public Gtk::VBox
         Gtk::TreeModel::iterator slot, int level);
     double get_spps_for_skill (ApiSkill const* skill);
     void on_skill_changed (ApiSkill const* skill);
+    void on_skill_selected (Gtk::TreeModel::Path const& path,
+        Gtk::TreeViewColumn* col);
 
   public:
     GtkSkillDetails (void);

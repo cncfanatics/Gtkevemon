@@ -27,8 +27,7 @@ class GtkServer : public Gtk::Table
     Gtk::Button status_but;
     Gtk::Label name;
     Gtk::Label status;
-    Gtk::Label population;
-    Gtk::Label address;
+    Gtk::Label status_desc;
 
     void force_refresh (void);
     void set_status_icon (Gtk::BuiltinStockID const& id);

@@ -2,6 +2,7 @@
 #include <iostream>
 #include <gtkmm/main.h>
 
+#include "argumentsettings.h"
 #include "evetime.h"
 #include "config.h"
 #include "serverlist.h"
@@ -30,6 +31,7 @@ main (int argc, char* argv[])
   ServerList::init_from_config();
   EveTime::init_from_config();
   Gtk::Main kit(&argc, &argv);
+  ArgumentSettings::init(argc, argv);
   ImageStore::init();
 
   {

@@ -38,6 +38,8 @@
 #define CHARPAGE_LIVE_SP_IMAGE_UPDATE 60000
 /* Check for expired sheets every this milli seconds. */
 #define CHARPAGE_CHECK_EXPIRED_SHEETS 300000
+/* Update the cached duration this milli seconds. */
+#define CHARPAGE_UPDATE_CACHED_DURATION 15000
 
 class GtkCharSkillsCols : public Gtk::TreeModel::ColumnRecord
 {
@@ -103,6 +105,8 @@ class GtkCharPage : public Gtk::VBox
     Gtk::Label finish_local_label;
     Gtk::Label spph_label;
     Gtk::Label live_sp_label;
+    Gtk::Label charsheet_info_label;
+    Gtk::Label trainsheet_info_label;
     Gtk::Button refresh_but;
     Gtk::Button info_but;
     GtkPortrait char_image;
@@ -139,6 +143,7 @@ class GtkCharPage : public Gtk::VBox
 
     /* Misc GUI stuff. */
     bool update_remaining (void);
+    bool update_cached_duration (void);
     void api_info_changed (void);
     void remove_tray_notify (void);
     void create_tray_notify (void);
