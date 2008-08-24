@@ -7,15 +7,11 @@ User interface
  - Tips & Tricks Website
 
 
-Tricky things
--------------
- - Caching of XML sheets
-
-
 Skill Browser / Planner
 -----------------------
  - Notebook page with training queue
  - Context menu for training in the browser
+ - Make filer case-insensitive
 
  - Training queue has:
    - TreeView with skills (and levels) to train

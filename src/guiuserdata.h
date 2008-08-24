@@ -70,8 +70,8 @@ class GuiUserData : public WinBase
     void on_add_clicked (void);
     void on_apply_clicked (void);
     void on_history_selected (void);
-    void on_charlist_available (AsyncHttpData data);
-    void print_error (std::string const& error);
+    void on_charlist_available (EveApiData data);
+    void print_error (std::string const& error, bool cached = false);
 
   public:
     GuiUserData (void);

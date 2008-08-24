@@ -11,9 +11,10 @@
 #include "apicharsheet.h"
 
 void
-ApiCharSheet::set_from_xml (HttpDataPtr xmldata)
+ApiCharSheet::set_api_data (EveApiData const& data)
 {
   this->valid = false;
+  this->ApiBase::set_api_data(data);
 
   /* Reset values. */
   this->implant_int = 0;
@@ -23,8 +24,7 @@ ApiCharSheet::set_from_xml (HttpDataPtr xmldata)
   this->implant_wil = 0;
 
   /* Parse the data. */
-  this->http_data = xmldata;
-  this->parse_xml(xmldata);
+  this->parse_xml();
 
   /* Find bonus attributes for skills. */
 
@@ -100,12 +100,13 @@ ApiCharSheet::set_from_xml (HttpDataPtr xmldata)
 /* ---------------------------------------------------------------- */
 
 void
-ApiCharSheet::parse_xml (HttpDataPtr doc)
+ApiCharSheet::parse_xml (void)
 {
   this->skills.clear();
 
   std::cout << "Parsing XML: CharacterSheet.xml ..." << std::endl;
-  XmlDocumentPtr xml = XmlDocument::create(doc->data, doc->size);
+  XmlDocumentPtr xml = XmlDocument::create
+      (this->http_data->data, this->http_data->size);
   xmlNodePtr root = xml->get_root_element();
   this->parse_recursive(root);
 }

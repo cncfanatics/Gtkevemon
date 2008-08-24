@@ -478,7 +478,7 @@ GtkCharPage::request_documents (void)
   std::string train_cached("<unknown>");
 
   /* Check which docs to re-request. */
-  if (this->sheet->valid)
+  if (this->sheet->valid && !this->sheet->is_locally_cached())
   {
     time_t char_cached_t = this->sheet->get_cached_until_t();
     char_cached = EveTime::get_gm_time_string(char_cached_t);
@@ -486,7 +486,7 @@ GtkCharPage::request_documents (void)
       update_char = false;
   }
 
-  if (this->training->valid)
+  if (this->training->valid && !this->training->is_locally_cached())
   {
     time_t train_cached_t = this->training->get_cached_until_t();
     train_cached = EveTime::get_gm_time_string(train_cached_t);
@@ -541,9 +541,18 @@ GtkCharPage::request_documents (void)
 bool
 GtkCharPage::check_expired_sheets (void)
 {
+  /* Check if automatic update is enabled. */
   ConfValuePtr value = Config::conf.get_value("settings.auto_update_sheets");
   if (!value->get_bool())
     return true;
+
+  /* Skip automatic update if both sheets are cached. */
+  if (this->training->valid && this->training->is_locally_cached()
+      && this->sheet->valid && this->sheet->is_locally_cached())
+  {
+    std::cout << "Skipping auto-update" << std::endl;
+    return true;
+  }
 
   //std::cout << "Checking for expired sheets..." << std::endl;
 
@@ -560,7 +569,7 @@ GtkCharPage::check_expired_sheets (void)
 /* ---------------------------------------------------------------- */
 
 void
-GtkCharPage::on_charsheet_available (AsyncHttpData data)
+GtkCharPage::on_charsheet_available (EveApiData data)
 {
   if (data.data.get() == 0)
   {
@@ -570,7 +579,9 @@ GtkCharPage::on_charsheet_available (AsyncHttpData data)
 
   try
   {
-    this->sheet->set_from_xml(data.data);
+    this->sheet->set_api_data(data);
+    if (data.locally_cached)
+      this->on_charsheet_error(data.exception, true);
   }
   catch (Exception& e)
   {
@@ -589,7 +600,7 @@ GtkCharPage::on_charsheet_available (AsyncHttpData data)
 /* ---------------------------------------------------------------- */
 
 void
-GtkCharPage::on_intraining_available (AsyncHttpData data)
+GtkCharPage::on_intraining_available (EveApiData data)
 {
   if (data.data.get() == 0)
   {
@@ -599,7 +610,9 @@ GtkCharPage::on_intraining_available (AsyncHttpData data)
 
   try
   {
-    this->training->set_from_xml(data.data);
+    this->training->set_api_data(data);
+    if (data.locally_cached)
+      this->on_intraining_error(data.exception, true);
   }
   catch (Exception& e)
   {
@@ -748,7 +761,9 @@ GtkCharPage::update_cached_duration (void)
   {
     time_t cached_until = this->training->get_cached_until_t();
 
-    if (cached_until > current)
+    if (this->training->is_locally_cached())
+      this->trainsheet_info_label.set_text("Locally cached!");
+    else if (cached_until > current)
       this->trainsheet_info_label.set_text(EveTime::get_minute_str_for_diff
           (cached_until - current) + " cached");
     else
@@ -759,7 +774,9 @@ GtkCharPage::update_cached_duration (void)
   {
     time_t cached_until = this->sheet->get_cached_until_t();
 
-    if (cached_until > current)
+    if (this->sheet->is_locally_cached())
+      this->charsheet_info_label.set_text("Locally cached!");
+    else if (cached_until > current)
       this->charsheet_info_label.set_text(EveTime::get_minute_str_for_diff
           (cached_until - current) + " cached");
     else
@@ -1031,75 +1048,62 @@ GtkCharPage::on_skilltree_error (std::string const& e)
       "Reasons might be: The file was not found, the file "
       "is currupted, the file uses a new syntax unknown "
       "to GtkEveMon. The error message is:\n\n" + e);
-
-  #if 0
-  Gtk::MessageDialog md("Error parsing skill tree!",
-      false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
-  md.set_secondary_text("There was an error while parsing the "
-      "skill tree. Reasons might be: The file was not found, "
-      "the file is currupted, the file was updated and uses "
-      "a new syntax unknown to GtkEveMon. "
-      "The error message is:\n\n" + Glib::locale_to_utf8(e));
-  md.set_title("Error - GtkEveMon");
-  md.set_transient_for(*this->parent_window);
-  md.run();
-  #endif
 }
 
 /* ---------------------------------------------------------------- */
 
 void
-GtkCharPage::on_charsheet_error (std::string const& e)
+GtkCharPage::on_charsheet_error (std::string const& e, bool cached)
 {
   this->charsheet_info_label.set_text("Error requesting!");
   std::cout << "Error requesting char sheet: " << e << std::endl;
 
-  this->info_display.append(INFO_ERROR,
-      "Error requesting character sheet!",
+  InfoItemType info_type;
+  std::string message;
+  if (cached)
+  {
+    info_type = INFO_WARNING;
+    message = "Error requesting character sheet! Using cache.";
+  }
+  else
+  {
+    info_type = INFO_ERROR;
+    message = "Error requesting character sheet!";
+  }
+
+  this->info_display.append(info_type, message,
       "There was an error while requesting the character "
       "sheet from the EVE API. The EVE API is either offline, or the "
       "requested document is not understood by GtkEveMon. "
       "The error message is:\n\n" + e);
-
-  #if 0
-  Gtk::MessageDialog md("Error retrieving character sheet!",
-      false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
-  md.set_secondary_text("There was an error while requesting the character "
-      "sheet from the EVE API. The EVE API is either offline, or the "
-      "requested document is not understood by GtkEveMon. "
-      "The error message is:\n\n" + Glib::locale_to_utf8(e));
-  md.set_title("Error - GtkEveMon");
-  md.set_transient_for(*this->parent_window);
-  md.run();
-  #endif
 }
 
 /* ---------------------------------------------------------------- */
 
 void
-GtkCharPage::on_intraining_error (std::string const& e)
+GtkCharPage::on_intraining_error (std::string const& e, bool cached)
 {
   this->trainsheet_info_label.set_text("Error requesting!");
   std::cout << "Error requesting training sheet: " << e << std::endl;
 
-  this->info_display.append(INFO_ERROR,
-      "Error requesting training sheet!",
+  InfoItemType info_type;
+  std::string message;
+  if (cached)
+  {
+    info_type = INFO_WARNING;
+    message = "Error requesting training sheet! Using cache.";
+  }
+  else
+  {
+    info_type = INFO_ERROR;
+    message = "Error requesting training sheet!";
+  }
+
+  this->info_display.append(info_type, message,
       "There was an error while requesting the training "
       "sheet from the EVE API. The EVE API is either offline, or the "
       "requested document is not understood by GtkEveMon. "
       "The error message is:\n\n" + e);
-
-  #if 0
-  Gtk::MessageDialog md("Error retrieving training sheet!",
-      false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
-  md.set_secondary_text("There was an error while requesting the training "
-      "sheet from the EVE API. The EVE API is either offline, or the "
-      "requested document is not understood by GtkEveMon. "
-      "The error message is:\n\n" + Glib::locale_to_utf8(e));
-  md.set_title("Error - GtkEveMon");
-  md.set_transient_for(*this->parent_window);
-  md.run();
-  #endif
 }
 
 /* ---------------------------------------------------------------- */
@@ -1267,5 +1271,5 @@ GtkCharPage::open_source_viewer (void)
 
   GuiXmlSource* window = new GuiXmlSource();
   window->append(this->sheet->get_http_data(), "CharacterSheet.xml");
-  window->append(this->training->get_http_data(), "InTraining.xml");
+  window->append(this->training->get_http_data(), "SkillInTraining.xml");
 }

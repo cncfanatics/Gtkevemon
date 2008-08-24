@@ -7,12 +7,13 @@
 #include "apicharlist.h"
 
 void
-ApiCharacterList::parse_xml (HttpDataPtr doc)
+ApiCharacterList::parse_xml (void)
 {
   this->chars.clear();
 
   std::cout << "Parsing XML: Characters.xml ..." << std::endl;
-  XmlDocumentPtr xml = XmlDocument::create(doc->data, doc->size);
+  XmlDocumentPtr xml = XmlDocument::create
+      (this->http_data->data, this->http_data->size);
   xmlNodePtr root = xml->get_root_element();
   this->parse_recursive(root);
 }

@@ -1,3 +1,7 @@
+#include <sys/stat.h>
+#include <cerrno>
+#include <cstring>
+#include <fstream>
 #include <iostream>
 
 #include "config.h"
@@ -68,7 +72,7 @@ EveApiFetcher::request (void)
   if (fetcher == 0)
     return;
 
-  AsyncHttpData ret;
+  EveApiData ret;
 
   this->busy = true;
 
@@ -79,15 +83,19 @@ EveApiFetcher::request (void)
   }
   catch (Exception& e)
   {
+    delete fetcher;
     ret.data.reset();
     ret.exception = e;
+    this->process_caching(ret);
     this->sig_done.emit(ret);
+    return;
   }
 
   delete fetcher;
 
   this->busy = false;
 
+  this->process_caching(ret);
   this->sig_done.emit(ret);
 }
 
@@ -113,5 +121,96 @@ void
 EveApiFetcher::async_reply (AsyncHttpData data)
 {
   this->busy = false;
-  this->sig_done.emit(data);
+  EveApiData apidata(data);
+  this->process_caching(apidata);
+  this->sig_done.emit(apidata);
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+EveApiFetcher::process_caching (EveApiData& data)
+{
+  /* Generate filename to use as cache. */
+  std::string path = Config::get_conf_dir();
+  path += "/sheets";
+  std::string file = path;
+  file += "/";
+  std::string fileonly;
+  switch (this->type)
+  {
+    case EVE_API_DOCTYPE_CHARLIST:
+      fileonly = "Characters.xml";
+      file += this->auth.user_id;
+      break;
+    case EVE_API_DOCTYPE_INTRAINING:
+      fileonly = "SkillInTraining.xml";
+      file += this->auth.char_id;
+      break;
+    case EVE_API_DOCTYPE_CHARSHEET:
+      fileonly = "CharacterSheet.xml";
+      file += this->auth.char_id;
+      break;
+    default:
+      std::cout << "Error: Invalid API document type!" << std::endl;
+      return;
+  }
+  file += "_";
+  file += fileonly;
+
+  if (data.data.get() != 0)
+  {
+    /* Cache successful request to file. */
+    //std::cout << "Should cache to file: " << file << std::endl;
+    int dir_exists = ::access(path.c_str(), F_OK);
+    if (dir_exists < 0)
+    {
+      int ret = ::mkdir(path.c_str(), S_IRWXU);
+      if (ret < 0)
+      {
+        std::cout << "Error: Couldn't create the cache directory: "
+            << ::strerror(errno) << std::endl;
+        return;
+      }
+    }
+
+    /* Write the file. */
+    std::ofstream out(file.c_str());
+    if (out.fail())
+    {
+      std::cout << "Error: Couldn't write to cache file!" << std::endl;
+      return;
+    }
+    std::cout << "Caching " << fileonly << " to file!" << std::endl;
+    out.write(data.data->data, data.data->size);
+    out.close();
+  }
+  else
+  {
+    /* Read unsuccessful requests from cache if available. */
+    //std::cout << "Should read from cache: " << file << std::endl;
+    int file_exists = ::access(file.c_str(), F_OK);
+    if (file_exists < 0)
+    {
+      std::cout << "Warning: No cache file for " << fileonly << std::endl;
+      return;
+    }
+
+    /* Read from file. */
+    std::string input;
+    std::ifstream in(file.c_str());
+    while (!in.eof())
+    {
+      std::string line;
+      std::getline(in, line);
+      input += line;
+    }
+    in.close();
+
+    data.data = HttpData::create(input.size());
+    data.locally_cached = true;
+    ::memcpy(data.data->data, input.c_str(), input.size());
+
+    std::cout << "Warning: Using " << fileonly << " from cache!" << std::endl;
+  }
 }

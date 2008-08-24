@@ -43,7 +43,7 @@ class ApiCharacterList : public ApiBase
   /* Some internal stuff. */
   protected:
     ApiCharacterList (void);
-    void parse_xml (HttpDataPtr doc);
+    void parse_xml (void);
     void parse_recursive (xmlNodePtr node);
 
   /* Publicly available collection of gathered data. */
@@ -52,7 +52,7 @@ class ApiCharacterList : public ApiBase
 
   public:
     static ApiCharacterListPtr create (void);
-    void set_from_xml (HttpDataPtr xmldata);
+    void set_api_data (EveApiData const& data);
 };
 
 /* ---------------------------------------------------------------- */
@@ -70,9 +70,10 @@ ApiCharacterList::create (void)
 }
 
 inline void
-ApiCharacterList::set_from_xml (HttpDataPtr xmldata)
+ApiCharacterList::set_api_data (EveApiData const& data)
 {
-  this->parse_xml(xmldata);
+  this->ApiBase::set_api_data(data);
+  this->parse_xml();
 }
 
 #endif /* API_CHAR_LIST_HEADER */

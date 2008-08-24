@@ -9,7 +9,8 @@
 void
 ApiBase::check_node (xmlNodePtr node)
 {
-  if (!xmlStrcmp(node->name, (xmlChar const*)"currentTime"))
+  if (!this->locally_cached
+      && !xmlStrcmp(node->name, (xmlChar const*)"currentTime"))
   {
     std::string text = this->get_node_text(node);
     EveTime::init_from_eveapi_string(text);

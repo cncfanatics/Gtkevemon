@@ -52,6 +52,7 @@ Server::refresh (void)
   if (::inet_aton(this->host.c_str(), &remote.sin_addr) == 0)
   {
     this->refreshing = false;
+    ::close(sock);
     throw Exception(std::string("inet_aton() failed: ") + ::strerror(errno));
   }
 
@@ -69,8 +70,11 @@ Server::refresh (void)
     this->refreshing = false;
     this->online = false;
     this->players = 0;
+    ::alarm(0);
+    Server::current_socket = 0;
+    ::close(sock);
 
-    std::cout << "Server " << this->name << " offline. Error: " << errno
+    std::cout << "Server " << this->name << " offline. Error " << errno
         << ": " << ::strerror(errno) << std::endl;
 
     return;
@@ -95,6 +99,7 @@ Server::refresh (void)
     if (ret < 0)
     {
       this->refreshing = false;
+      ::close(sock);
       throw Exception(std::string("read() failed: ") + ::strerror(errno));
     }
 

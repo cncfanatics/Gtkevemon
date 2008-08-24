@@ -7,12 +7,11 @@
 #include "apiintraining.h"
 
 void
-ApiInTraining::set_from_xml (HttpDataPtr xmldata)
+ApiInTraining::set_api_data (EveApiData const& data)
 {
   this->valid = false;
-
-  this->http_data = xmldata;
-  this->parse_xml(xmldata);
+  this->ApiBase::set_api_data(data);
+  this->parse_xml();
 
   /* Do some checking if end time is expired. */
   if (this->in_training && this->end_time_t < EveTime::get_eve_time())
@@ -27,10 +26,11 @@ ApiInTraining::set_from_xml (HttpDataPtr xmldata)
 /* ---------------------------------------------------------------- */
 
 void
-ApiInTraining::parse_xml (HttpDataPtr doc)
+ApiInTraining::parse_xml (void)
 {
   std::cout << "Parsing XML: SkillInTraining.xml ..." << std::endl;
-  XmlDocumentPtr xml = XmlDocument::create(doc->data, doc->size);
+  XmlDocumentPtr xml = XmlDocument::create
+      (this->http_data->data, this->http_data->size);
   xmlNodePtr root = xml->get_root_element();
   this->parse_recursive(root);
 }

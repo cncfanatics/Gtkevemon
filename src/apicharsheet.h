@@ -45,7 +45,7 @@ class ApiCharSheet : public ApiBase
   /* Some internal stuff. */
   protected:
     ApiCharSheet (void);
-    void parse_xml (HttpDataPtr doc);
+    void parse_xml (void);
     void parse_recursive (xmlNodePtr node);
     void find_implant_bonus (xmlNodePtr node, char const* name, int& var);
 
@@ -94,7 +94,7 @@ class ApiCharSheet : public ApiBase
 
   public:
     static ApiCharSheetPtr create (void);
-    void set_from_xml (HttpDataPtr xmldata);
+    void set_api_data (EveApiData const& data);
 
     int get_level_for_skill (int id);
     ApiCharSheetSkill* get_skill_for_id (int id);

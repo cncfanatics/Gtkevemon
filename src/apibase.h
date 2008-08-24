@@ -16,12 +16,14 @@
 #include <string>
 #include <libxml/parser.h>
 
+#include "eveapi.h"
 #include "http.h"
 
 class ApiBase
 {
   protected:
     HttpDataPtr http_data;
+    bool locally_cached;
     std::string cached_until;
     time_t cached_until_t;
 
@@ -41,12 +43,22 @@ class ApiBase
         bool& target);
 
   public:
+    virtual void set_api_data (EveApiData const& data);
+
+    bool is_locally_cached (void) const;
     std::string const& get_cached_until (void) const;
     time_t get_cached_until_t (void) const;
     HttpDataPtr get_http_data (void) const;
 };
 
 /* ---------------------------------------------------------------- */
+
+inline void
+ApiBase::set_api_data (EveApiData const& data)
+{
+  this->locally_cached = data.locally_cached;
+  this->http_data = data.data;
+}
 
 inline std::string const&
 ApiBase::get_cached_until (void) const
@@ -64,6 +76,12 @@ inline HttpDataPtr
 ApiBase::get_http_data (void) const
 {
   return this->http_data;
+}
+
+inline bool
+ApiBase::is_locally_cached (void) const
+{
+  return this->locally_cached;
 }
 
 #endif /* API_BASE_HEADER */

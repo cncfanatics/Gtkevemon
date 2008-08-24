@@ -48,6 +48,17 @@ enum EveApiDocType
 
 /* ---------------------------------------------------------------- */
 
+class EveApiData : public AsyncHttpData
+{
+  public:
+    bool locally_cached;
+
+    EveApiData (void);
+    EveApiData (AsyncHttpData const& data);
+};
+
+/* ---------------------------------------------------------------- */
+
 /*
  * Class that fetches EVE API documents synchronously or
  * asynchronously with a simplified and comfortable interface.
@@ -58,12 +69,13 @@ class EveApiFetcher
     bool busy;
     EveApiAuth auth;
     EveApiDocType type;
-    sigc::signal<void, AsyncHttpData> sig_done;
+    sigc::signal<void, EveApiData> sig_done;
     sigc::connection conn_sigdone;
 
   protected:
     AsyncHttp* setup_fetcher (void);
     void async_reply (AsyncHttpData data);
+    void process_caching (EveApiData& data);
 
   public:
     EveApiFetcher (void);
@@ -76,7 +88,7 @@ class EveApiFetcher
     void request (void);
     void async_request (void);
 
-    sigc::signal<void, AsyncHttpData>& signal_done (void);
+    sigc::signal<void, EveApiData>& signal_done (void);
     bool is_busy (void);
 
 };
@@ -102,6 +114,20 @@ EveApiAuth::EveApiAuth (std::string const& uid, std::string const& apikey,
 }
 
 inline
+EveApiData::EveApiData (void)
+{
+  this->locally_cached = false;
+}
+
+inline
+EveApiData::EveApiData (AsyncHttpData const& data)
+{
+  this->data = data.data;
+  this->exception = data.exception;
+  this->locally_cached = false;
+}
+
+inline
 EveApiFetcher::EveApiFetcher (void) : busy(false)
 {
 }
@@ -124,7 +150,7 @@ EveApiFetcher::set_doctype (EveApiDocType type)
   this->type = type;
 }
 
-inline sigc::signal<void, AsyncHttpData>&
+inline sigc::signal<void, EveApiData>&
 EveApiFetcher::signal_done (void)
 {
   return this->sig_done;

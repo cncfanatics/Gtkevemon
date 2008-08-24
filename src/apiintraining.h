@@ -28,7 +28,7 @@ class ApiInTraining : public ApiBase
   /* Some internal stuff. */
   protected:
     ApiInTraining (void);
-    void parse_xml (HttpDataPtr doc);
+    void parse_xml (void);
     void parse_recursive (xmlNodePtr node);
 
   /* Publicly available collection of gathered data. */
@@ -48,7 +48,7 @@ class ApiInTraining : public ApiBase
 
   public:
     static ApiInTrainingPtr create (void);
-    void set_from_xml (HttpDataPtr xmldata);
+    void set_api_data (EveApiData const& data);
 };
 
 /* ---------------------------------------------------------------- */

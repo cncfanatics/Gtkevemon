@@ -247,10 +247,6 @@ Http::request (void)
 
     dpos = dpos + nbytes;
   }
-  /* Push a trailing \0. */
-  data.push_back('\0');
-  data[dpos] = '\0';
-  dpos++;
 
   /* Ok, we're done with the connection. */
   ::close(sock);
@@ -285,9 +281,10 @@ Http::request (void)
     /* Deal with chunks *sigh*. */
 
     /* Alloc the full size ignoring chunk space, this is a bit to much,
-     * but it doesn't care. But the size argument should be right!. */
-    result->alloc(dpos - pos);
+     * but it doesn't matter. But the size member is still precise!. */
+    result->alloc(dpos - pos + 1);
     result->size = 0;
+    ::memset(result->data, '\0', dpos - pos + 1);
     while (true)
     {
       std::string line;
@@ -295,15 +292,19 @@ Http::request (void)
       unsigned int bytes = this->get_int_from_hex(line);
       if (bytes == 0)
         break;
-      ::memcpy(result->data, &data[pos], bytes);
+      ::memcpy(&result->data[result->size], &data[pos], bytes);
       pos += bytes;
       result->size += bytes;
     }
   }
   else
   {
-    /* Simply copy the buffer to the result. */
-    result->alloc(dpos - pos);
+    /* Simply copy the buffer to the result. Allocating one more byte and
+     * setting the memory to '\0' makes it safe for use as string. But
+     * the size member is still precise and does not include the '\0'. */
+    result->alloc(dpos - pos + 1);
+    result->size = dpos - pos;
+    ::memset(result->data, '\0', dpos - pos + 1);
     ::memcpy(result->data, &data[pos], dpos - pos);
   }
 

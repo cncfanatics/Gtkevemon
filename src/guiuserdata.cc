@@ -165,7 +165,7 @@ GuiUserData::init_from_config (void)
 /* ---------------------------------------------------------------- */
 
 void
-GuiUserData::on_charlist_available (AsyncHttpData data)
+GuiUserData::on_charlist_available (EveApiData data)
 {
   this->apply_button.set_sensitive(true);
 
@@ -179,7 +179,9 @@ GuiUserData::on_charlist_available (AsyncHttpData data)
   try
   {
     clist = ApiCharacterList::create();
-    clist->set_from_xml(data.data);
+    clist->set_api_data(data);
+    if (clist->is_locally_cached())
+      this->print_error(data.exception, true);
   }
   catch (Exception& e)
   {
@@ -233,10 +235,22 @@ GuiUserData::on_apply_clicked (void)
 /* ---------------------------------------------------------------- */
 
 void
-GuiUserData::print_error (std::string const& error)
+GuiUserData::print_error (std::string const& error, bool cached)
 {
-  Gtk::MessageDialog md(*this, "Error retrieving character list!",
-      false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+  Gtk::MessageType message_type;
+  Glib::ustring message;
+  if (cached)
+  {
+    message = "Using cached version of the character list!";
+    message_type = Gtk::MESSAGE_WARNING;
+  }
+  else
+  {
+    message = "Error retrieving character list!";
+    message_type = Gtk::MESSAGE_ERROR;
+  }
+
+  Gtk::MessageDialog md(*this, message, false, message_type, Gtk::BUTTONS_OK);
   md.set_secondary_text("There was an error while requesting the character "
       "list from the EVE API. The EVE API is either offline, or the "
       "requested document is not understood by GtkEveMon. "
