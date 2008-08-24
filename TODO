@@ -17,7 +17,7 @@ Skill Browser / Planner
    - TreeView with skills (and levels) to train
    - Name, Group, Training Time, Earliest Start/End, Priority
    - Double click opens details for that skill
-   - Right click -> Priority -> 0 - 10 ?
+   - Right click -> Priority -> 0 - 10?
 
  - Optional:
    - Subplan
