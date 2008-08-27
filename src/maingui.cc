@@ -29,6 +29,8 @@
 MainGui::MainGui (void)
   : info_display(INFO_STYLE_FRAMED)
 {
+  this->conf_windowtitle = Config::conf.get_value("settings.verbose_wintitle");
+
   //this->versionchecker.set_parent_window(this);
   this->versionchecker.set_info_display(&this->info_display);
 
@@ -166,7 +168,7 @@ MainGui::MainGui (void)
 
   /* Setup window stuff. */
   this->set_icon(ImageStore::applogo);
-  this->set_title("GTK EveMon");
+  this->set_title("GtkEveMon");
   this->set_default_size(550, 640);
   this->add(*main_vbox);
   this->show_all();
@@ -180,6 +182,8 @@ MainGui::MainGui (void)
       (*this, &MainGui::on_pages_changed));
   this->notebook.signal_page_removed().connect(sigc::mem_fun
       (*this, &MainGui::on_pages_changed));
+  this->notebook.signal_switch_page().connect(sigc::mem_fun
+      (*this, &MainGui::on_pages_switched));
 
   /* Setup timers for refresh and GUI update for the servers. */
   Glib::signal_timeout().connect(sigc::mem_fun
@@ -190,9 +194,12 @@ MainGui::MainGui (void)
       (*this, &MainGui::update_time), MAINGUI_TIME_UPDATE);
   Glib::signal_timeout().connect(sigc::mem_fun
       (*this, &MainGui::update_tooltip), MAINGUI_TOOLTIP_UPDATE);
+  Glib::signal_timeout().connect(sigc::mem_fun(*this,
+      &MainGui::update_windowtitle), MAINGUI_WINDOWTITLE_UPDATE);
 
   this->update_time();
   this->init_from_config();
+  //this->update_windowtitle();
   this->versionchecker.request_version();
 }
 
@@ -500,6 +507,16 @@ MainGui::on_pages_changed (Gtk::Widget* widget, guint pnum)
 
 /* ---------------------------------------------------------------- */
 
+void
+MainGui::on_pages_switched (GtkNotebookPage* page, guint pnum)
+{
+  page = 0;
+  pnum = 0;
+  this->update_windowtitle();
+}
+
+/* ---------------------------------------------------------------- */
+
 bool
 MainGui::internal_add_character (EveApiAuth const& auth)
 {
@@ -530,9 +547,9 @@ MainGui::internal_add_character (EveApiAuth const& auth)
   /* Create the new character page for the notebook. */
   GtkCharPage* page = Gtk::manage(new GtkCharPage);
   page->set_parent_window(this);
+  page->set_character(auth);
   this->notebook.append_page(*page, auth.char_id, false);
   this->notebook.set_current_page(-1);
-  page->set_character(auth);
 
   /* Update tray icon tooltips. */
   this->update_tooltip();
@@ -737,4 +754,31 @@ MainGui::view_xml_source (void)
 
   GtkCharPage* page = (GtkCharPage*)this->notebook.pages()[current].get_child();
   page->open_source_viewer();
+}
+
+/* ---------------------------------------------------------------- */
+
+bool
+MainGui::update_windowtitle (void)
+{
+  int current = this->notebook.get_current_page();
+  if (current < 0
+      || !this->notebook.get_show_tabs()
+      || !this->conf_windowtitle->get_bool())
+  {
+    this->set_title("GtkEveMon");
+    return true;
+  }
+
+  GtkCharPage* page = (GtkCharPage*)this->notebook.pages()[current].get_child();
+  Glib::ustring title;
+
+  title.append(page->get_char_name());
+  title.append(": ");
+  title.append(page->get_skill_remaining(true));
+  title.append(" - GtkEveMon");
+
+  this->set_title(title);
+
+  return true;
 }

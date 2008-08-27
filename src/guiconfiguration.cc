@@ -41,6 +41,9 @@ GuiConfiguration::GuiConfiguration (void)
   GtkConfCheckButton* misc_versionchecking_cb = Gtk::manage
       (new GtkConfCheckButton("Online version checking",
       false, "versionchecker.enabled"));
+  GtkConfCheckButton* misc_verbose_wintitle_cb = Gtk::manage
+      (new GtkConfCheckButton("Show training info in window title",
+      false, "settings.verbose_wintitle"));
 
   Gtk::VBox* page_misc = MK_VBOX;
   page_misc->set_border_width(5);
@@ -49,6 +52,7 @@ GuiConfiguration::GuiConfiguration (void)
   page_misc->pack_start(*misc_detailed_tray_tt_cb, false, false, 0);
   page_misc->pack_start(*misc_autoupdate_sheets_cb, false, false, 0);
   page_misc->pack_start(*misc_versionchecking_cb, false, false, 0);
+  page_misc->pack_start(*misc_verbose_wintitle_cb, false, false, 0);
 
   /* The LAUNCHER notebook tab. */
   Gtk::Label* launch_info_label = MK_LABEL("You can define up to "

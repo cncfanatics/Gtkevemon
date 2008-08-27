@@ -5,13 +5,14 @@ User interface
  - Make links clickable (about dialog)
  - Implant viewer
  - Tips & Tricks Website
+ - Skill statistics as tooltip (how many at L0, L1, ...)
 
 
 Skill Browser / Planner
 -----------------------
  - Notebook page with training queue
  - Context menu for training in the browser
- - Make filer case-insensitive
+ - Make filer case-insensitive (DO IT SOON!!!)
 
  - Training queue has:
    - TreeView with skills (and levels) to train

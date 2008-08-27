@@ -33,10 +33,13 @@
 #define MAINGUI_TIME_UPDATE 1000
 /* Update the tooltip for the tray icon this milli seconds. */
 #define MAINGUI_TOOLTIP_UPDATE 30000
+/* Update the window title this milli seconds. */
+#define MAINGUI_WINDOWTITLE_UPDATE 5000
 
 class MainGui : public Gtk::Window
 {
   private:
+    ConfValuePtr conf_windowtitle;
     VersionChecker versionchecker;
     std::vector<GtkServer*> gtkserver;
     Glib::RefPtr<Gtk::ActionGroup> actions;
@@ -52,6 +55,7 @@ class MainGui : public Gtk::Window
     bool refresh_servers (void);
     bool update_time (void);
     bool update_tooltip (void);
+    bool update_windowtitle (void);
     void update_char_page (EveApiAuth const& auth);
     void setup_profile (void);
     void configuration (void);
@@ -63,6 +67,7 @@ class MainGui : public Gtk::Window
     bool on_delete_event (GdkEventAny* event);
     void on_tray_icon_clicked (void);
     void on_pages_changed (Gtk::Widget* widget, guint pnum);
+    void on_pages_switched (GtkNotebookPage* page, guint pnum);
     void tray_popup_menu (guint button, guint32 activate_time);
     void update_tray_settings (void);
     void create_tray_icon (void);

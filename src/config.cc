@@ -38,6 +38,7 @@ char const* default_config =
     "  minimize_on_close = false\n"
     "  startup_servercheck = true\n"
     "  tray_usage = never\n"
+    "  verbose_wintitle = true\n"
     "[versionchecker]\n"
     "  enabled = true\n"
     "  last_seen = \n";

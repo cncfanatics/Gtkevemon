@@ -408,7 +408,7 @@ void
 GuiSkillPlanner::fill_skill_store (void)
 {
   this->skill_store->clear();
-  std::string filter = this->filter_entry.get_text();
+  Glib::ustring filter = this->filter_entry.get_text();
 
   ApiSkillTreePtr tree = ApiSkillTree::request();
   ApiSkillMap& skills = tree->skills;
@@ -436,7 +436,9 @@ GuiSkillPlanner::fill_skill_store (void)
   {
     ApiSkill& skill = iter->second;
 
-    if (skill.name.find(filter) == std::string::npos)
+    /* Apply filter. */
+    if (Glib::ustring(skill.name).casefold()
+        .find(filter.casefold()) == Glib::ustring::npos)
       continue;
 
     SkillGroupsMap::iterator giter = skill_group_iters.find(skill.group);
