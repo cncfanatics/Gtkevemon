@@ -54,7 +54,7 @@ class ApiInTraining : public ApiBase
 /* ---------------------------------------------------------------- */
 
 inline
-ApiInTraining::ApiInTraining (void) : valid(false)
+ApiInTraining::ApiInTraining (void) : valid(false), in_training(false)
 {
 }
 

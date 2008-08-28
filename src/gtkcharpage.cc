@@ -347,6 +347,22 @@ GtkCharPage::update_training_details (void)
 
 /* ---------------------------------------------------------------- */
 
+/* Create a data structure that maps the group ID to the iterator of
+ * the group, skill points for that group and the amount of skills.
+ * This is needed for building the skill list. */
+struct SkillGroupInfo
+{
+  Gtk::TreeModel::iterator iter;
+  int sp;
+  bool empty;
+
+  SkillGroupInfo (Gtk::TreeModel::iterator iter)
+      : iter(iter), sp(0), empty(true) {}
+};
+typedef std::map<int, SkillGroupInfo> IterMapType;
+
+/* ---------------------------------------------------------------- */
+
 void
 GtkCharPage::update_skill_list (void)
 {
@@ -376,7 +392,6 @@ GtkCharPage::update_skill_list (void)
 
   /* Append all groups to the store. Save their iterators for the children.
    * Format is <group_id, <model iter, group sp> >. */
-  typedef std::map<int, std::pair<Gtk::TreeModel::iterator, int> > IterMapType;
   IterMapType iter_map;
   for (ApiSkillGroupMap::iterator iter = tree->groups.begin();
       iter != tree->groups.end(); iter++)
@@ -390,7 +405,8 @@ GtkCharPage::update_skill_list (void)
     (*siter)[this->skill_cols.skill] = 0;
     (*siter)[this->skill_cols.name] = name;
     (*siter)[this->skill_cols.icon] = ImageStore::skillicons[0];
-    iter_map.insert(std::make_pair(iter->first, std::make_pair(siter, 0)));
+    SkillGroupInfo group_info(siter);
+    iter_map.insert(std::make_pair(iter->first, SkillGroupInfo(siter)));
   }
 
   /* Append all skills to the skill groups. */
@@ -410,7 +426,7 @@ GtkCharPage::update_skill_list (void)
 
     /* Append a new row. */
     Gtk::TreeModel::iterator iter = this->skill_store->append
-        (iiter->second.first->children());
+        (iiter->second.iter->children());
 
     /* Get skill name and set icon. */
     std::string skill_name = skill.name + " ("
@@ -443,25 +459,28 @@ GtkCharPage::update_skill_list (void)
     (*iter)[this->skill_cols.level] = ImageStore::skill_progress
         (skills[i].level, skills[i].completed);
 
-    iiter->second.second += skills[i].points;
+    /* Update group info. */
+    iiter->second.sp += skills[i].points;
+    iiter->second.empty = false;
   }
 
   /* Update the skillpoints for the groups. */
   for (IterMapType::iterator iter = iter_map.begin();
       iter != iter_map.end(); iter++)
   {
-    if (iter->second.second == 0)
+    /* Remove group with no skills. */
+    if (iter->second.empty)
     {
-      this->skill_store->erase(iter->second.first);
+      this->skill_store->erase(iter->second.iter);
       continue;
     }
 
-    (*iter->second.first)[this->skill_cols.points]
-        = Helpers::get_dotted_str_from_int(iter->second.second);
+    (*iter->second.iter)[this->skill_cols.points]
+        = Helpers::get_dotted_str_from_int(iter->second.sp);
 
     /* Update of the SkillInTrainingInfo. */
     if (iter->first == skill_training.group)
-      this->skill_info.tree_group_iter = iter->second.first;
+      this->skill_info.tree_group_iter = iter->second.iter;
   }
 }
 
@@ -1231,8 +1250,11 @@ GtkCharPage::get_spph_in_training (void)
 std::string
 GtkCharPage::get_skill_remaining (bool slim)
 {
-  if (!this->training->valid || !this->training->in_training)
+  if (!this->training->valid)
     return "No training information!";
+
+  if (!this->training->in_training)
+    return "No skill in training!";
 
   time_t evetime = EveTime::get_eve_time();
   time_t finish = this->training->end_time_t;
