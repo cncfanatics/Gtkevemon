@@ -124,6 +124,13 @@ ApiCharSheet::parse_recursive (xmlNodePtr node)
       /* Let the base class know of some fields. */
       this->check_node(node);
 
+      /* Skip all rowsets but the skills one. */
+      if (!xmlStrcmp(node->name, (xmlChar const*)"rowset"))
+      {
+        if (this->get_property(node, "name") != "skills")
+          recurse_node = false;
+      }
+
       if (!xmlStrcmp(node->name, (xmlChar const*)"row"))
       {
         /* Prepare a new skill to append. */

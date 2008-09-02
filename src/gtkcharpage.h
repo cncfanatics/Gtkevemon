@@ -62,7 +62,7 @@ struct SkillInTrainingInfo
   ApiCharSheetSkill* char_skill;
   double sp_per_hour;
   unsigned int total_sp;
-  unsigned int skills_at_five;
+  unsigned int skills_at[6];
   unsigned int skill_group_sp;
   Gtk::TreeIter tree_skill_iter;
   Gtk::TreeIter tree_group_iter;
@@ -205,7 +205,8 @@ SkillInTrainingInfo::SkillInTrainingInfo (void)
   this->char_skill = 0;
   this->sp_per_hour = 0;
   this->total_sp = 0;
-  this->skills_at_five = 0;
+  for (unsigned int i = 0; i < 6; ++i)
+    this->skills_at[i] = 0;
 }
 
 inline void

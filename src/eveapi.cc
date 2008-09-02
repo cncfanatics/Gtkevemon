@@ -181,7 +181,7 @@ EveApiFetcher::process_caching (EveApiData& data)
       std::cout << "Error: Couldn't write to cache file!" << std::endl;
       return;
     }
-    std::cout << "Caching " << fileonly << " to file!" << std::endl;
+    std::cout << "Caching XML: " << fileonly << "..." << std::endl;
     out.write(data.data->data, data.data->size);
     out.close();
   }

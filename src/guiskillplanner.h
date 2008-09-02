@@ -104,10 +104,25 @@ class GtkSkillDetails : public Gtk::VBox
 
 /* ---------------------------------------------------------------- */
 
+class GtkTrainingPlan : public Gtk::VBox
+{
+  private:
+    std::vector<ApiSkill*> list;
+
+  public:
+    GtkTrainingPlan (void);
+
+    void append_skill (ApiSkill* skill);
+    void update_plan (void);
+};
+
+/* ---------------------------------------------------------------- */
+
 class GuiSkillPlanner : public WinBase
 {
   private:
     GtkSkillDetails details_gui;
+    GtkTrainingPlan plan_gui;
 
     /* Character stuff. */
     ApiCharSheetPtr charsheet;

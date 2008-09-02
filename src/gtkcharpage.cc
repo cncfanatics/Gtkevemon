@@ -290,7 +290,7 @@ GtkCharPage::update_charsheet_details (void)
         (this->skill_info.total_sp));
     this->known_skills_label.set_text(Helpers::get_string_from_uint
         (this->sheet->skills.size()) + " known skills ("
-        + Helpers::get_string_from_uint(this->skill_info.skills_at_five)
+        + Helpers::get_string_from_uint(this->skill_info.skills_at[5])
         + " at V)");
 
     this->attr_cha_label.set_text(Helpers::get_string_from_double
@@ -658,14 +658,30 @@ GtkCharPage::api_info_changed (void)
   {
     /* Update worked-up information. */
     this->skill_info.total_sp = 0;
-    this->skill_info.skills_at_five = 0;
+    for (unsigned int i = 0; i < 6; ++i)
+      this->skill_info.skills_at[i] = 0;
 
     for (unsigned int i = 0; i < this->sheet->skills.size(); ++i)
     {
       ApiCharSheetSkill& skill = this->sheet->skills[i];
       this->skill_info.total_sp += skill.points;
-      this->skill_info.skills_at_five += (skill.level == 5 ? 1 : 0);
+      this->skill_info.skills_at[skill.level] += 1;
     }
+
+    Glib::ustring skills_at_str;
+    for (unsigned int i = 0; i < 6; ++i)
+    {
+      skills_at_str += "Known skills at ";
+      skills_at_str += Helpers::get_string_from_uint(i);
+      skills_at_str += ": ";
+      skills_at_str += Helpers::get_string_from_uint
+          (this->skill_info.skills_at[i]);
+      if (i != 5)
+        skills_at_str += "\n";
+    }
+
+    /* Update some character sheet related skills. */
+    this->tooltips.set_tip(this->known_skills_label, skills_at_str);
 
     this->sig_sheet_updated.emit(this->character);
   }
@@ -939,6 +955,9 @@ GtkCharPage::on_query_skillview_tooltip (int x, int y, bool key,
       time_t secs_next_level = (time_t)(60.0 * (double)sp_to_go / sppm);
       std::string next_level_str = EveTime::get_string_for_timediff
           (secs_next_level, false);
+      if (cskill->completed != 0.0)
+        next_level_str += " (" + Helpers::get_string_from_double
+            (cskill->completed * 100.0, 0) + "% completed)";
       ss << "SP per hour: " << (int)(sppm * 60.0) << "\n"
           << "Training time: " << next_level_str << "\n";
     }

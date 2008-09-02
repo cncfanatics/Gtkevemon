@@ -128,6 +128,7 @@ GtkSkillDetails::GtkSkillDetails (void)
   this->skill_secondary.property_xalign() = 0.0f;
   for (unsigned int i = 0; i < 5; ++i)
     this->skill_level[i].property_xalign() = 0.0f;
+  this->skill_level[4].property_yalign() = 0.0f;
 
   Gtk::VBox* details_skill_vbox = MK_VBOX0;
   details_skill_vbox->pack_start(this->skill_group, false, false, 0);
@@ -154,13 +155,20 @@ GtkSkillDetails::GtkSkillDetails (void)
 
   Gtk::Table* details_table = Gtk::manage(new Gtk::Table(7, 2, false));
   details_table->set_col_spacings(5);
-  details_table->attach(this->skill_primary, 0, 1, 0, 1, Gtk::FILL);
-  details_table->attach(this->skill_secondary, 0, 1, 1, 2, Gtk::FILL);
-  details_table->attach(this->skill_level[0], 0, 1, 2, 3, Gtk::FILL);
-  details_table->attach(this->skill_level[1], 0, 1, 3, 4, Gtk::FILL);
-  details_table->attach(this->skill_level[2], 0, 1, 4, 5, Gtk::FILL);
-  details_table->attach(this->skill_level[3], 0, 1, 5, 6, Gtk::FILL);
-  details_table->attach(this->skill_level[4], 0, 1, 6, 7, Gtk::FILL);
+  details_table->attach(this->skill_primary, 0, 1, 0, 1,
+      Gtk::FILL | Gtk::SHRINK, Gtk::SHRINK);
+  details_table->attach(this->skill_secondary, 0, 1, 1, 2,
+      Gtk::FILL | Gtk::SHRINK, Gtk::SHRINK);
+  details_table->attach(this->skill_level[0], 0, 1, 2, 3,
+      Gtk::FILL | Gtk::SHRINK, Gtk::SHRINK);
+  details_table->attach(this->skill_level[1], 0, 1, 3, 4,
+      Gtk::FILL | Gtk::SHRINK, Gtk::SHRINK);
+  details_table->attach(this->skill_level[2], 0, 1, 4, 5,
+      Gtk::FILL | Gtk::SHRINK, Gtk::SHRINK);
+  details_table->attach(this->skill_level[3], 0, 1, 5, 6,
+      Gtk::FILL | Gtk::SHRINK, Gtk::SHRINK);
+  details_table->attach(this->skill_level[4], 0, 1, 6, 7,
+      Gtk::FILL | Gtk::SHRINK, Gtk::EXPAND | Gtk::FILL);
   details_table->attach(*text_scwin, 1, 2, 0, 7,
       Gtk::FILL | Gtk::EXPAND, Gtk::FILL | Gtk::EXPAND);
 
@@ -168,6 +176,19 @@ GtkSkillDetails::GtkSkillDetails (void)
   deps_scwin->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_ALWAYS);
   deps_scwin->set_shadow_type(Gtk::SHADOW_ETCHED_IN);
   deps_scwin->add(this->deps_view);
+
+  /* Pack stuff together, create vpaned window. */
+  Gtk::VBox* details_vbox = MK_VBOX;
+  details_vbox->pack_start(*details_skill_box, false, false, 0);
+  details_vbox->pack_start(*details_table, true, true, 0);
+
+  Gtk::VPaned* vpaned = Gtk::manage(new Gtk::VPaned);
+  vpaned->set_position(1);
+  vpaned->pack1(*details_vbox, true, false);
+  vpaned->pack2(*deps_scwin, true, false);
+
+  this->set_border_width(5);
+  this->pack_start(*vpaned, true, true, 0);
 
   /* Init some labels. */
   this->skill_group.set_text("No skill selected!");
@@ -185,11 +206,6 @@ GtkSkillDetails::GtkSkillDetails (void)
       (*this, &GtkSkillDetails::on_skill_changed));
   this->deps_view.signal_row_activated().connect
       (sigc::mem_fun(*this, &GtkSkillDetails::on_skill_selected));
-
-  this->set_border_width(5);
-  this->pack_start(*details_skill_box, false, false, 0);
-  this->pack_start(*details_table, false, false, 0);
-  this->pack_start(*deps_scwin, true, true, 0);
 }
 
 /* ---------------------------------------------------------------- */
@@ -232,21 +248,27 @@ GtkSkillDetails::on_skill_changed (ApiSkill const* skill)
 
   for (unsigned int i = 0; i < 5; ++i)
   {
+    Glib::ustring to_level_str = "To level "
+        + Helpers::get_string_from_int(i + 1) + ": ";
+
     if (cskill == 0 || cskill->level < (int)i)
     {
       int start_sp = this->charsheet->calc_start_sp(i, skill->rank);
       int dest_sp = this->charsheet->calc_dest_sp(i, skill->rank);
       timediff += (time_t)((double)(dest_sp - start_sp) / spps);
+      to_level_str += EveTime::get_string_for_timediff(timediff, true);
     }
     else if (cskill->level == (int)i)
     {
       int diff_sp = cskill->points_dest - cskill->points;
       timediff += (time_t)((double)diff_sp / spps);
+      to_level_str += EveTime::get_string_for_timediff(timediff, true);
+      if (cskill->completed != 0.0)
+        to_level_str += " (" + Helpers::get_string_from_double
+            (cskill->completed * 100.0, 0) + "%)";
     }
 
-    this->skill_level[i].set_text("To level "
-        + Helpers::get_string_from_int(i + 1) + ": "
-        + EveTime::get_string_for_timediff(timediff, true));
+    this->skill_level[i].set_text(to_level_str);
   }
 
   this->deps_store->clear();
@@ -304,6 +326,29 @@ GtkSkillDetails::recurse_append_skill_req (ApiSkill const* skill,
 
 /* ================================================================ */
 
+GtkTrainingPlan::GtkTrainingPlan (void)
+{
+  this->add(*MK_LABEL("Test"));
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GtkTrainingPlan::append_skill (ApiSkill* skill)
+{
+  this->list.push_back(skill);
+  this->update_plan();
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GtkTrainingPlan::update_plan (void)
+{
+}
+
+/* ================================================================ */
+
 GuiSkillPlanner::GuiSkillPlanner (void)
   : skill_store(Gtk::TreeStore::create(skill_cols)),
     skill_view(skill_store)
@@ -340,6 +385,7 @@ GuiSkillPlanner::GuiSkillPlanner (void)
 
   Gtk::Notebook* details_notebook = MK_NOTEBOOK;
   details_notebook->append_page(this->details_gui, "Skill details");
+  //details_notebook->append_page(this->plan_gui, "Training plan");
 
   Gtk::Button* close_but = MK_BUT(Gtk::Stock::CLOSE);
   Gtk::HBox* button_hbox = MK_HBOX;

@@ -482,6 +482,12 @@ MainGui::on_delete_event (GdkEventAny* event)
 void
 MainGui::on_tray_icon_clicked (void)
 {
+  //Gdk::WindowState ws = this->get_screen()->get_active_window()->get_state();
+  //std::cout << "WS: " << ws << std::endl;
+  //if ((ws & Gdk::WINDOW_STATE_ICONIFIED) == Gdk::WINDOW_STATE_ICONIFIED)
+
+  std::cout << "Tray clicked. Taskbar hint is: " << this->get_skip_taskbar_hint() << std::endl;
+
   if (this->get_skip_taskbar_hint())
     this->deiconify();
   else
