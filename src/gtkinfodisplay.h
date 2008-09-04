@@ -41,6 +41,7 @@ enum InfoDisplayStyle
 class InfoItem
 {
   public:
+    time_t time;
     InfoItemType type;
     std::string message;
     std::string details;
@@ -76,15 +77,24 @@ class GtkInfoDisplay : public Gtk::VBox
 
 /* ---------------------------------------------------------------- */
 
-class GtkInfoDisplayLog : public WinBase
+class GuiInfoDisplayLog : public WinBase
 {
   private:
+    std::vector<InfoItem> log;
+    unsigned int current_item;
+    Gtk::Button prev_but;
+    Gtk::Button next_but;
     Gtk::Label message;
     Glib::RefPtr<Gtk::TextBuffer> text_buffer;
     Gtk::TextView text_view;
 
+  protected:
+    void show_info_item (InfoItem const& item);
+    void on_prev_clicked (void);
+    void on_next_clicked (void);
+
   public:
-    GtkInfoDisplayLog (InfoItem const& item);
+    GuiInfoDisplayLog (std::vector<InfoItem> const& log);
 };
 
 /* ---------------------------------------------------------------- */
@@ -92,12 +102,14 @@ class GtkInfoDisplayLog : public WinBase
 inline
 InfoItem::InfoItem (void)
 {
+  this->time = ::time(0);
   this->type = INFO_ERROR;
 }
 
 inline
 InfoItem::InfoItem (InfoItemType type, std::string const& message)
 {
+  this->time = ::time(0);
   this->type = type;
   this->message = message;
 }
@@ -106,6 +118,7 @@ inline
 InfoItem::InfoItem (InfoItemType type, std::string const& message,
     std::string const& details)
 {
+  this->time = ::time(0);
   this->type = type;
   this->message = message;
   this->details = details;

@@ -4,6 +4,8 @@
 #include <gtkmm/stock.h>
 #include <gtkmm/frame.h>
 
+#include "evetime.h"
+#include "exception.h"
 #include "gtkdefines.h"
 #include "gtkinfodisplay.h"
 
@@ -92,7 +94,7 @@ GtkInfoDisplay::append (InfoItem const& item)
 void
 GtkInfoDisplay::show_info_log (void)
 {
-  GtkInfoDisplayLog* log = new GtkInfoDisplayLog(this->log.back());
+  GuiInfoDisplayLog* log = new GuiInfoDisplayLog(this->log);
 
   Gtk::Window* toplevel = (Gtk::Window*)this->get_toplevel();
   log->set_transient_for(*toplevel);
@@ -102,12 +104,21 @@ GtkInfoDisplay::show_info_log (void)
 
 /* ---------------------------------------------------------------- */
 
-GtkInfoDisplayLog::GtkInfoDisplayLog (InfoItem const& item)
-  : text_buffer(Gtk::TextBuffer::create()), text_view(text_buffer)
+GuiInfoDisplayLog::GuiInfoDisplayLog (std::vector<InfoItem> const& log)
+  : log(log),
+    prev_but(Gtk::Stock::GO_BACK),
+    next_but(Gtk::Stock::GO_FORWARD),
+    text_buffer(Gtk::TextBuffer::create()),
+    text_view(text_buffer)
 {
+  if (log.size() == 0)
+    throw Exception("Need log entries to display!");
+
   Gtk::Button* close_but = MK_BUT(Gtk::Stock::CLOSE);
 
   Gtk::HBox* button_box = MK_HBOX;
+  button_box->pack_start(this->prev_but, false, false, 0);
+  button_box->pack_start(this->next_but, false, false, 0);
   button_box->pack_start(*MK_HSEP, true, true, 0);
   button_box->pack_start(*close_but, false, false, 0);
 
@@ -120,10 +131,6 @@ GtkInfoDisplayLog::GtkInfoDisplayLog (InfoItem const& item)
   this->text_view.set_editable(false);
   this->text_view.set_wrap_mode(Gtk::WRAP_WORD);
 
-  this->message.set_text("<b>" + Glib::locale_to_utf8(item.message) + "</b>");
-  this->message.set_use_markup(true);
-  this->text_buffer->set_text(Glib::locale_to_utf8(item.details));
-
   Gtk::VBox* main_box = MK_VBOX;
   main_box->set_border_width(5);
   main_box->pack_start(this->message, false, false, 0);
@@ -134,7 +141,58 @@ GtkInfoDisplayLog::GtkInfoDisplayLog (InfoItem const& item)
   this->set_title("Info Log - GtkEveMon");
 
   close_but->signal_clicked().connect(sigc::mem_fun(*this, &WinBase::close));
+  this->prev_but.signal_clicked().connect(sigc::mem_fun
+      (*this, &GuiInfoDisplayLog::on_prev_clicked));
+  this->next_but.signal_clicked().connect(sigc::mem_fun
+      (*this, &GuiInfoDisplayLog::on_next_clicked));
 
   this->set_default_size(400, 250);
   this->show_all();
+
+  this->next_but.set_sensitive(false);
+  if (this->log.size() <= 1)
+    this->prev_but.set_sensitive(false);
+
+  this->current_item = this->log.size() - 1;
+  this->show_info_item(this->log.back());
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GuiInfoDisplayLog::show_info_item (InfoItem const& item)
+{
+  this->message.set_text("<b>" + Glib::locale_to_utf8(item.message) + "</b>");
+  this->message.set_use_markup(true);
+  this->text_buffer->set_text("Event time: "
+      + EveTime::get_local_time_string(item.time)
+      + "\n\n" + Glib::locale_to_utf8(item.details));
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GuiInfoDisplayLog::on_prev_clicked (void)
+{
+  if (this->current_item > 0)
+    this->current_item -= 1;
+  this->show_info_item(this->log[this->current_item]);
+
+  if (this->current_item == 0)
+    this->prev_but.set_sensitive(false);
+  this->next_but.set_sensitive(true);
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GuiInfoDisplayLog::on_next_clicked (void)
+{
+  if (this->current_item < this->log.size() - 1)
+    this->current_item += 1;
+  this->show_info_item(this->log[this->current_item]);
+
+  if (this->current_item == this->log.size() - 1)
+    this->next_but.set_sensitive(false);
+  this->prev_but.set_sensitive(true);
 }
