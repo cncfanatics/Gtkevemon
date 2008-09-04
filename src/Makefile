@@ -14,7 +14,7 @@ SOURCES = maingui.cc guiuserdata.cc guiconfiguration.cc guiaboutdialog.cc \
 OBJECTS = $(foreach file,$(SOURCES),$(subst .cc,.o,$(file)))
 BINARY = gtkevemon
 
-GCC_FLAGS = -Wall -W -ansi -pedantic -Wcast-align -Wcast-qual -Wpointer-arith -Wundef -Wconversion -O2
+GCC_FLAGS = -Wall -W -ansi -pedantic -Wcast-align -Wcast-qual -Wpointer-arith -Wundef -Wconversion -g
 GTK_FLAGS = $(shell pkg-config --cflags gtkmm-2.4)
 GTK_LIBS = $(shell pkg-config --libs gtkmm-2.4)
 PTH_LIBS = -lpthread
