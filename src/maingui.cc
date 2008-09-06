@@ -30,8 +30,8 @@ MainGui::MainGui (void)
   : info_display(INFO_STYLE_FRAMED)
 {
   this->conf_windowtitle = Config::conf.get_value("settings.verbose_wintitle");
+  this->notebook.set_scrollable(true);
 
-  //this->versionchecker.set_parent_window(this);
   this->versionchecker.set_info_display(&this->info_display);
 
   /* Create the actions, menus and toolbars. */
@@ -164,7 +164,6 @@ MainGui::MainGui (void)
   main_vbox->pack_start(*menu_bar, false, false, 0);
   main_vbox->pack_start(this->info_display, false, false, 0);
   main_vbox->pack_start(*content_vbox, true, true, 0);
-  //main_vbox->pack_start(STATUSBAR, false, false, 0);
 
   /* Setup window stuff. */
   this->set_icon(ImageStore::applogo);
@@ -199,7 +198,6 @@ MainGui::MainGui (void)
 
   this->update_time();
   this->init_from_config();
-  //this->update_windowtitle();
   this->versionchecker.request_version();
 }
 
@@ -486,7 +484,7 @@ MainGui::on_tray_icon_clicked (void)
   //std::cout << "WS: " << ws << std::endl;
   //if ((ws & Gdk::WINDOW_STATE_ICONIFIED) == Gdk::WINDOW_STATE_ICONIFIED)
 
-  std::cout << "Tray clicked. Taskbar hint is: " << this->get_skip_taskbar_hint() << std::endl;
+  //std::cout << "Tray clicked. Taskbar hint is: " << this->get_skip_taskbar_hint() << std::endl;
 
   if (this->get_skip_taskbar_hint())
     this->deiconify();

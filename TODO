@@ -1,11 +1,7 @@
 User interface
 --------------
- - Skill statistics as tooltip (how many at L0, L1, ...)
  - Display if skill training finish time is withing downtime
- - Refresh the character protrait cache if clicked on portrait
  - E-Mail notification (e.g. with mail program)
- - Try adjustable separator between skill desc and dep list in browser
- - Timer until next update is possible
  - Make links clickable (about dialog)
  - Implant viewer
  - Tips & Tricks Website

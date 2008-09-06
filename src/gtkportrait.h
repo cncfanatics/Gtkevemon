@@ -16,21 +16,26 @@
 #include <string>
 #include <gdkmm/pixbuf.h>
 #include <gtkmm/image.h>
+#include <gtkmm/eventbox.h>
 
 #include "asynchttp.h"
 
 /* The size of the portrait (pixels) in the GUI. */
 #define PORTRAIT_SIZE 85
 
-class GtkPortrait : public Gtk::Image
+class GtkPortrait : public Gtk::EventBox
 {
   private:
+    Gtk::Image image;
     std::string char_id;
     sigc::connection http_request;
 
     bool fetch_from_gtkevemon_cache (void);
     void request_from_eve_online (void);
     void set_from_eve_online (AsyncHttpData result);
+    bool on_button_press_event (GdkEventButton* event);
+    std::string get_portrait_dir (void);
+    std::string get_portrait_file (void);
 
     void cache_portrait (Glib::RefPtr<Gdk::Pixbuf> portrait);
 

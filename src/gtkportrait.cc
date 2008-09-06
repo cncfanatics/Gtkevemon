@@ -3,6 +3,7 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
+#include <gtkmm/messagedialog.h>
 
 #include "http.h"
 #include "imagestore.h"
@@ -11,6 +12,9 @@
 
 GtkPortrait::GtkPortrait (void)
 {
+  this->add(this->image);
+  this->signal_button_press_event().connect(sigc::mem_fun
+      (*this, &GtkPortrait::on_button_press_event));
 }
 
 /* ---------------------------------------------------------------- */
@@ -45,7 +49,7 @@ GtkPortrait::set (std::string const& charid)
     Glib::RefPtr<Gdk::Pixbuf> pixbuf = ImageStore::eveportrait;
     Glib::RefPtr<Gdk::Pixbuf> scaled = pixbuf->scale_simple
         (PORTRAIT_SIZE, PORTRAIT_SIZE, Gdk::INTERP_BILINEAR);
-    this->Gtk::Image::set(scaled);
+    this->image.set(scaled);
     this->request_from_eve_online();
   }
 }
@@ -74,7 +78,7 @@ GtkPortrait::fetch_from_gtkevemon_cache (void)
 
     Glib::RefPtr<Gdk::Pixbuf> portrait = Gdk::Pixbuf::create_from_file
         (filename.str());
-    this->Gtk::Image::set(portrait);
+    this->image.set(portrait);
     success = true;
   }
   catch (...)
@@ -120,14 +124,8 @@ GtkPortrait::set_from_eve_online (AsyncHttpData result)
 
   /* Generate filenames to store the fetched JPG and the destination PNG. */
   std::string confdir = Config::get_conf_dir();
-  std::string portraitdir = confdir + "/portraits";
-
   std::stringstream jpg_name;
   jpg_name << confdir << "/" << this->char_id << "_256.jpg";
-
-  std::stringstream png_name;
-  png_name << portraitdir << "/" << this->char_id
-      << "_" << PORTRAIT_SIZE << ".png";
 
   try
   {
@@ -161,19 +159,58 @@ GtkPortrait::cache_portrait (Glib::RefPtr<Gdk::Pixbuf> portrait)
   int dir_exists = ::access(portraitdir.c_str(), F_OK);
   if (dir_exists < 0)
   {
-    /* Ignore errors. We'll get then on creation. */
+    /* Ignore errors. We'll get them on creation. */
     ::mkdir(portraitdir.c_str(), S_IRWXU);
   }
 
   try
   {
-    std::stringstream filename;
-    filename << portraitdir << "/" << this->char_id
-        << "_" << PORTRAIT_SIZE << ".png";
-    portrait->save(filename.str(), "png");
+    std::string filename = this->get_portrait_file();
+    portrait->save(filename, "png");
   }
   catch (...)
   {
     std::cout << "Error caching portrait for " << this->char_id << std::endl;
   }
+}
+
+/* ---------------------------------------------------------------- */
+
+bool
+GtkPortrait::on_button_press_event (GdkEventButton* event)
+{
+  event = 0;
+  this->request_from_eve_online();
+
+  Gtk::Window* toplevel = (Gtk::Window*)this->get_toplevel();
+  Gtk::MessageDialog md("Portrait has been re-requested!",
+      false, Gtk::MESSAGE_INFO, Gtk::BUTTONS_OK);
+  md.set_secondary_text("A new portrait has been requested from the "
+      "EVE image server. If you can only see a \"!\" as portrait, "
+      "the image server most likely does not have the portrait.\n\n"
+      "Image URL: http://img.eve.is/serv.asp?s=256&c=" + this->char_id);
+  md.set_title("Portrait re-request - GtkEveMon");
+  md.set_transient_for(*toplevel);
+  md.run();
+
+  return true;
+}
+
+/* ---------------------------------------------------------------- */
+
+std::string
+GtkPortrait::get_portrait_dir (void)
+{
+  return Config::get_conf_dir() + "/portraits";
+}
+
+/* ---------------------------------------------------------------- */
+
+std::string
+GtkPortrait::get_portrait_file (void)
+{
+  std::stringstream filename;
+  filename << this->get_portrait_dir();
+  filename << "/" << this->char_id << "_" << PORTRAIT_SIZE << ".png";
+  return filename.str();
 }

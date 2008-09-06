@@ -57,7 +57,6 @@ GtkCharPage::GtkCharPage (void)
   this->skill_view.get_column(1)->get_first_cell_renderer
       ()->property_xalign() = 1.0f;
 
-  this->char_image.property_xalign() = 1.0f;
   this->refresh_but.set_image(*Gtk::manage(new Gtk::Image
       (Gtk::Stock::REFRESH, Gtk::ICON_SIZE_MENU)));
   this->refresh_but.set_relief(Gtk::RELIEF_NONE);
