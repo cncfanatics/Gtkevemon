@@ -13,8 +13,6 @@
 GtkPortrait::GtkPortrait (void)
 {
   this->add(this->image);
-  this->signal_button_press_event().connect(sigc::mem_fun
-      (*this, &GtkPortrait::on_button_press_event));
 }
 
 /* ---------------------------------------------------------------- */
@@ -52,6 +50,15 @@ GtkPortrait::set (std::string const& charid)
     this->image.set(scaled);
     this->request_from_eve_online();
   }
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GtkPortrait::set_enable_clicks (void)
+{
+  this->signal_button_press_event().connect(sigc::mem_fun
+      (*this, &GtkPortrait::on_button_press_myevent));
 }
 
 /* ---------------------------------------------------------------- */
@@ -143,6 +150,7 @@ GtkPortrait::set_from_eve_online (AsyncHttpData result)
   }
   catch (...)
   {
+    ::unlink(jpg_name.str().c_str());
     std::cout << "Error saving portrait from EVE Online" << std::endl;
     return;
   }
@@ -171,13 +179,16 @@ GtkPortrait::cache_portrait (Glib::RefPtr<Gdk::Pixbuf> portrait)
   catch (...)
   {
     std::cout << "Error caching portrait for " << this->char_id << std::endl;
+    return;
   }
+
+  std::cout << "Cached portrait: " << this->char_id << std::endl;
 }
 
 /* ---------------------------------------------------------------- */
 
 bool
-GtkPortrait::on_button_press_event (GdkEventButton* event)
+GtkPortrait::on_button_press_myevent (GdkEventButton* event)
 {
   event = 0;
   this->request_from_eve_online();

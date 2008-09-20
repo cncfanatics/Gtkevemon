@@ -37,7 +37,7 @@ class EveApiAuth
 /* ---------------------------------------------------------------- */
 
 /*
- * Possible documents that can be requested from the EVE API.
+ * Documents that can be requested from the EVE API.
  */
 enum EveApiDocType
 {
@@ -76,6 +76,7 @@ class EveApiFetcher
     AsyncHttp* setup_fetcher (void);
     void async_reply (AsyncHttpData data);
     void process_caching (EveApiData& data);
+    char const* get_doc_name (void);
 
   public:
     EveApiFetcher (void);
@@ -90,7 +91,6 @@ class EveApiFetcher
 
     sigc::signal<void, EveApiData>& signal_done (void);
     bool is_busy (void);
-
 };
 
 /* ---------------------------------------------------------------- */

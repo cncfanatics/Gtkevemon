@@ -56,6 +56,28 @@ VersionChecker::handle_result (AsyncHttpData result)
   Glib::ustring cur_version(GTKEVEMON_VERSION_STR);
   Glib::ustring svn_version(result.data->data);
 
+#define INVALID_RESPONSE "Version checker received an invalid response!"
+
+  /* Make some sanity checks. */
+  if (svn_version.empty())
+  {
+    this->info_display->append(INFO_WARNING, INVALID_RESPONSE,
+        "The version checker received a zero-length string.");
+    return;
+  }
+
+  if (svn_version.size() > 64)
+  {
+    this->info_display->append(INFO_WARNING, INVALID_RESPONSE,
+        "The version checker received a too long string.");
+    return;
+  }
+
+  size_t newline_pos = svn_version.find_first_of('\n');
+  if (newline_pos != std::string::npos)
+    svn_version = svn_version.substr(0, newline_pos);
+
+  /* Check the version. */
   if (svn_version == cur_version)
     return;
 

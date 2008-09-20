@@ -36,6 +36,8 @@ GtkCharPage::GtkCharPage (void)
   this->sheet = ApiCharSheet::create();
   this->training = ApiInTraining::create();
 
+  this->char_image.set_enable_clicks();
+
   /* GUI stuff. */
   Gtk::TreeViewColumn* name_column = Gtk::manage(new Gtk::TreeViewColumn);
   name_column->set_title("Skill name (rank)");
@@ -328,9 +330,9 @@ GtkCharPage::update_training_details (void)
     {
       this->training_label.set_text(this->get_skill_in_training());
       this->finish_eve_label.set_text
-          (EveTime::get_gm_time_string(this->training->end_time_t));
+          (EveTime::get_gm_time_string(this->training->end_time_t, false));
       this->finish_local_label.set_text(EveTime::get_local_time_string
-          (EveTime::adjust_local_time(this->training->end_time_t)));
+          (EveTime::adjust_local_time(this->training->end_time_t), false));
     }
     else
     {
@@ -499,7 +501,7 @@ GtkCharPage::request_documents (void)
   if (this->sheet->valid && !this->sheet->is_locally_cached())
   {
     time_t char_cached_t = this->sheet->get_cached_until_t();
-    char_cached = EveTime::get_gm_time_string(char_cached_t);
+    char_cached = EveTime::get_gm_time_string(char_cached_t, false);
     if (evetime < char_cached_t)
       update_char = false;
   }
@@ -507,7 +509,7 @@ GtkCharPage::request_documents (void)
   if (this->training->valid && !this->training->is_locally_cached())
   {
     time_t train_cached_t = this->training->get_cached_until_t();
-    train_cached = EveTime::get_gm_time_string(train_cached_t);
+    train_cached = EveTime::get_gm_time_string(train_cached_t, false);
     if (evetime < train_cached_t)
       update_training = false;
   }
@@ -958,6 +960,8 @@ GtkCharPage::on_query_skillview_tooltip (int x, int y, bool key,
         next_level_str += " (" + Helpers::get_string_from_double
             (cskill->completed * 100.0, 0) + "% completed)";
       ss << "SP per hour: " << (int)(sppm * 60.0) << "\n"
+          << "Destination SP: "
+          << Helpers::get_dotted_str_from_int(cskill->points_dest) << "\n"
           << "Training time: " << next_level_str << "\n";
     }
 
@@ -1153,11 +1157,11 @@ GtkCharPage::on_info_clicked (void)
 
   if (this->sheet->valid)
     char_cached = EveTime::get_gm_time_string
-        (this->sheet->get_cached_until_t());
+        (this->sheet->get_cached_until_t(), false);
 
   if (this->training->valid)
     train_cached = EveTime::get_gm_time_string
-        (this->training->get_cached_until_t());
+        (this->training->get_cached_until_t(), false);
 
   Gtk::MessageDialog md("Information about cached sheets",
       false, Gtk::MESSAGE_INFO, Gtk::BUTTONS_OK);
@@ -1286,14 +1290,15 @@ GtkCharPage::get_skill_remaining (bool slim)
 void
 GtkCharPage::open_skill_planner (void)
 {
-  if (!this->sheet->valid)
+  if (!this->sheet->valid || !this->training->valid)
   {
     this->info_display.append(INFO_WARNING, "Cannot open the skill "
-        "planner without a valid character sheet!");
+        "planner without valid character sheets!");
     return;
   }
 
   GuiSkillPlanner* planner = new GuiSkillPlanner();
+  planner->set_training(this->training);
   planner->set_character(this->sheet);
 }
 

@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "gtkportrait.h"
 #include "config.h"
 #include "gtkconfwidgets.h"
@@ -93,4 +95,198 @@ GtkConfComboBox::append_conf_row (const std::string& text,
 
   if (value == this->value->get_string())
     this->set_active(this->values.size() - 1);
+}
+
+/* ================================================================ */
+
+GtkConfSectionSelection::GtkConfSectionSelection (void)
+  : selection_store(Gtk::ListStore::create(selection_cols))
+{
+  this->set_model(this->selection_store);
+  this->pack_start(this->selection_cols.name, true);
+
+  this->changed_conn = this->signal_changed().connect(sigc::mem_fun
+      (*this, &GtkConfSectionSelection::on_combo_entry_changed));
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GtkConfSectionSelection::set_parent_config_section (std::string const& section,
+    std::string const& select)
+{
+  this->parent_section = Config::conf.get_or_create_section(section);
+  this->update_selection_store(select);
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GtkConfSectionSelection::update_selection_store (std::string const& select)
+{
+  /* Stop signalling. This one emits a lot of on_combo_entry_changed */
+  this->changed_conn.block();
+  this->selection_store->clear();
+  this->changed_conn.unblock();
+
+  bool selected = false;
+  conf_sections_t::iterator iter;
+  for (iter = this->parent_section->sections_begin();
+      iter != this->parent_section->sections_end(); iter++)
+  {
+    Gtk::ListStore::iterator row = this->selection_store->append();
+    (*row)[this->selection_cols.name] = iter->first;
+    (*row)[this->selection_cols.section] = iter->second;
+    if (!select.empty() && iter->first == select)
+    {
+      this->set_active(row);
+      selected = true;
+    }
+  }
+
+  if (!selected)
+  {
+    if (this->selection_store->children().size() > 0)
+      this->set_active(0);
+    else
+    {
+      this->set_active(-1);
+      this->on_combo_entry_changed();
+    }
+  }
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GtkConfSectionSelection::on_combo_entry_changed (void)
+{
+  if (this->get_active_row_number() == -1)
+  {
+    this->sig_conf_section_changed.emit(ConfSectionPtr());
+  }
+  else
+  {
+    Gtk::ListStore::iterator iter = this->get_active();
+    ConfSectionPtr section = this->get_active_section();
+    this->sig_conf_section_changed.emit(section);
+  }
+}
+
+/* ---------------------------------------------------------------- */
+
+ConfSectionPtr
+GtkConfSectionSelection::create_new_section (std::string const& name)
+{
+  ConfSectionPtr section;
+  try
+  {
+    /* Check if section exists. Select this if existing. */
+    section = this->parent_section->get_section(name);
+    this->update_selection_store(name);
+  }
+  catch (Exception& e)
+  {
+    /* Section does not exist. */
+    section = ConfSection::create();
+    this->parent_section->add(name, section);
+    this->update_selection_store(name);
+  }
+
+  return section;
+}
+
+/* ---------------------------------------------------------------- */
+
+ConfSectionPtr
+GtkConfSectionSelection::get_active_section (void)
+{
+  if (this->get_active_row_number() == -1)
+    return ConfSectionPtr();
+
+  Gtk::ListStore::iterator iter = this->get_active();
+  return (*iter)[this->selection_cols.section];
+}
+
+/* ---------------------------------------------------------------- */
+
+Glib::ustring
+GtkConfSectionSelection::get_active_name (void)
+{
+  if (this->get_active_row_number() == -1)
+    return "";
+
+  Gtk::ListStore::iterator iter = this->get_active();
+  return (*iter)[this->selection_cols.name];
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GtkConfSectionSelection::set_active_section (std::string const& name)
+{
+  Gtk::ListStore::iterator row;
+  for (row = this->selection_store->children().begin();
+      row != this->selection_store->children().end(); row++)
+  {
+    if ((*row)[this->selection_cols.name] == name)
+    {
+      this->set_active(row);
+      return;
+    }
+  }
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GtkConfSectionSelection::delete_section (std::string const& name)
+{
+  this->parent_section->remove_section(name);
+  this->update_selection_store();
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GtkConfSectionSelection::rename_section (std::string const& from,
+    std::string const& to)
+{
+  if (from.empty() || to.empty())
+    throw Exception("Old name or new name not specified!");
+
+  if (from == to)
+    throw Exception("Old name and new name are identical!");
+
+  ConfSectionPtr sect;
+  try
+  {
+    sect = this->parent_section->get_section(from);
+  }
+  catch (Exception& e)
+  {
+    throw Exception("Old section name not found!");
+  }
+
+  try
+  {
+    /* Check if destination exists. */
+    ConfSectionPtr dest = this->parent_section->get_section(to);
+    throw Exception("New section name already exists!");
+  }
+  catch (Exception& e)
+  {
+  }
+
+  this->parent_section->add(to, sect);
+  this->parent_section->remove_section(from);
+  this->update_selection_store(to);
+}
+
+/* ---------------------------------------------------------------- */
+
+sigc::signal<void, ConfSectionPtr>&
+GtkConfSectionSelection::signal_conf_section_changed (void)
+{
+  return this->sig_conf_section_changed;
 }

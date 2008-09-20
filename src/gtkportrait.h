@@ -33,7 +33,7 @@ class GtkPortrait : public Gtk::EventBox
     bool fetch_from_gtkevemon_cache (void);
     void request_from_eve_online (void);
     void set_from_eve_online (AsyncHttpData result);
-    bool on_button_press_event (GdkEventButton* event);
+    bool on_button_press_myevent (GdkEventButton* event);
     std::string get_portrait_dir (void);
     std::string get_portrait_file (void);
 
@@ -45,6 +45,7 @@ class GtkPortrait : public Gtk::EventBox
     ~GtkPortrait (void);
 
     void set (std::string const& charid);
+    void set_enable_clicks (void);
     void update (void);
 };
 

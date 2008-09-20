@@ -93,6 +93,7 @@ class ApiSkillTree : public ApiBase
     ApiSkillGroup const* get_group_for_id (int id) const;
 
     static char const* get_attrib_name (ApiAttrib const& attrib);
+    static char const* get_attrib_short_name (ApiAttrib const& attrib);
 };
 
 #endif /* API_SKILL_TREE_HEADER */

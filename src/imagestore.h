@@ -22,9 +22,11 @@ class ImageStore
     static Glib::RefPtr<Gdk::Pixbuf> applogo;
     static Glib::RefPtr<Gdk::Pixbuf> aboutlogo;
     static Glib::RefPtr<Gdk::Pixbuf> eveportrait;
-    static Glib::RefPtr<Gdk::Pixbuf> skillicons[5];
+    static Glib::RefPtr<Gdk::Pixbuf> columnconf;
+    static Glib::RefPtr<Gdk::Pixbuf> skillicons[6];
     static Glib::RefPtr<Gdk::Pixbuf> skillstatus[8];
     static Glib::RefPtr<Gdk::Pixbuf> skilldeps[3];
+    static Glib::RefPtr<Gdk::Pixbuf> skillplan[5];
     static Glib::RefPtr<Gdk::Pixbuf> menuicons[3];
 
     static Glib::RefPtr<Gdk::Pixbuf> skill_progress

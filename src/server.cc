@@ -74,8 +74,8 @@ Server::refresh (void)
     Server::current_socket = 0;
     ::close(sock);
 
-    std::cout << "Server " << this->name << " offline. Error " << errno
-        << ": " << ::strerror(errno) << std::endl;
+    std::cout << "Server info: " << this->name << " offline. "
+        << ::strerror(errno) << std::endl;
 
     return;
   }
@@ -136,7 +136,7 @@ Server::refresh (void)
   ::close(sock);
   this->refreshing = false;
 
-  std::cout << "Server " << this->name << " online. "
+  std::cout << "Server info: " << this->name << " online. "
       << "Players: " << this->players << std::endl;
 }
 

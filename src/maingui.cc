@@ -55,7 +55,7 @@ MainGui::MainGui (void)
   this->actions->add(Gtk::Action::create("MenuCharacter",
       Gtk::Stock::JUSTIFY_FILL, "Character"));
   this->actions->add(Gtk::Action::create("MenuCharPlanning",
-      Gtk::Stock::OK, "Skill browser..."),
+      Gtk::Stock::OK, "Training planner..."),
       sigc::mem_fun(*this, &MainGui::create_skillplan));
   this->actions->add(Gtk::Action::create("MenuCharXMLSource",
       Gtk::Stock::OK, "View XML source..."),

@@ -38,8 +38,8 @@ class EveTime
     static std::string get_local_time_string (void);
     /* Returns a formatted time string from a given time,
      * either using local time or GMT. */
-    static std::string get_local_time_string (time_t time);
-    static std::string get_gm_time_string (time_t time);
+    static std::string get_local_time_string (time_t time, bool slim);
+    static std::string get_gm_time_string (time_t time, bool slim);
 
     /* Adjusts the given local time to be in EVE time. */
     static time_t adjust_local_time (time_t time);

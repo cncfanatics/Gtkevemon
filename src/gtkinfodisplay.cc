@@ -165,7 +165,7 @@ GuiInfoDisplayLog::show_info_item (InfoItem const& item)
   this->message.set_text("<b>" + Glib::locale_to_utf8(item.message) + "</b>");
   this->message.set_use_markup(true);
   this->text_buffer->set_text("Event time: "
-      + EveTime::get_local_time_string(item.time)
+      + EveTime::get_local_time_string(item.time, false)
       + "\n\n" + Glib::locale_to_utf8(item.details));
 }
 

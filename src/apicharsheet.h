@@ -54,6 +54,7 @@ class ApiCharSheet : public ApiBase
     bool valid;
 
     /* Basic char information. */
+    std::string char_id;
     std::string name;
     std::string race;
     std::string bloodline;

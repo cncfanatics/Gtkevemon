@@ -55,7 +55,7 @@ std::string
 EveTime::get_eve_time_string (void)
 {
   time_t eve_time = EveTime::get_eve_time();
-  return EveTime::get_gm_time_string(eve_time);
+  return EveTime::get_gm_time_string(eve_time, false);
 }
 
 /* ---------------------------------------------------------------- */
@@ -64,28 +64,32 @@ std::string
 EveTime::get_local_time_string (void)
 {
   time_t local = EveTime::get_local_time();
-  return EveTime::get_local_time_string(local);
+  return EveTime::get_local_time_string(local, false);
 }
 
 /* ---------------------------------------------------------------- */
 
 std::string
-EveTime::get_local_time_string (time_t time)
+EveTime::get_local_time_string (time_t time, bool slim)
 {
-  static ConfValuePtr format = Config::conf.get_value("evetime.time_format");
+  static ConfValuePtr lf = Config::conf.get_value("evetime.time_format");
+  static ConfValuePtr sf = Config::conf.get_value("evetime.time_short_format");
+
   char buffer[128];
-  strftime(buffer, 128, format->get_string().c_str(), ::localtime(&time));
+  strftime(buffer, 128, (slim ? **sf : **lf).c_str(), ::localtime(&time));
   return std::string(buffer);
 }
 
 /* ---------------------------------------------------------------- */
 
 std::string
-EveTime::get_gm_time_string (time_t time)
+EveTime::get_gm_time_string (time_t time, bool slim)
 {
-  static ConfValuePtr format = Config::conf.get_value("evetime.time_format");
+  static ConfValuePtr lf = Config::conf.get_value("evetime.time_format");
+  static ConfValuePtr sf = Config::conf.get_value("evetime.time_short_format");
+
   char buffer[128];
-  strftime(buffer, 128, format->get_string().c_str(), ::gmtime(&time));
+  strftime(buffer, 128, (slim ? **sf : **lf).c_str(), ::gmtime(&time));
   return std::string(buffer);
 }
 

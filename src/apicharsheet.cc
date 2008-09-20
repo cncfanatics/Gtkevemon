@@ -172,6 +172,7 @@ ApiCharSheet::parse_recursive (xmlNodePtr node)
       this->find_implant_bonus(node, "intelligenceBonus", this->implant_int);
       this->find_implant_bonus(node, "charismaBonus", this->implant_cha);
 
+      this->set_string_if_node_text(node, "characterID", this->char_id);
       this->set_string_if_node_text(node, "name", this->name);
       this->set_string_if_node_text(node, "race", this->race);
       this->set_string_if_node_text(node, "bloodLine", this->bloodline);

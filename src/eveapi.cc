@@ -104,6 +104,8 @@ EveApiFetcher::request (void)
 void
 EveApiFetcher::async_request (void)
 {
+  std::cout << "Request XML: " << this->get_doc_name() << " ..." << std::endl;
+
   AsyncHttp* fetcher = this->setup_fetcher();
   if (fetcher == 0)
     return;
@@ -132,23 +134,18 @@ void
 EveApiFetcher::process_caching (EveApiData& data)
 {
   /* Generate filename to use as cache. */
+  std::string xmlname = this->get_doc_name();
   std::string path = Config::get_conf_dir();
   path += "/sheets";
   std::string file = path;
   file += "/";
-  std::string fileonly;
   switch (this->type)
   {
     case EVE_API_DOCTYPE_CHARLIST:
-      fileonly = "Characters.xml";
       file += this->auth.user_id;
       break;
     case EVE_API_DOCTYPE_INTRAINING:
-      fileonly = "SkillInTraining.xml";
-      file += this->auth.char_id;
-      break;
     case EVE_API_DOCTYPE_CHARSHEET:
-      fileonly = "CharacterSheet.xml";
       file += this->auth.char_id;
       break;
     default:
@@ -156,7 +153,7 @@ EveApiFetcher::process_caching (EveApiData& data)
       return;
   }
   file += "_";
-  file += fileonly;
+  file += xmlname;
 
   if (data.data.get() != 0)
   {
@@ -181,7 +178,7 @@ EveApiFetcher::process_caching (EveApiData& data)
       std::cout << "Error: Couldn't write to cache file!" << std::endl;
       return;
     }
-    std::cout << "Caching XML: " << fileonly << "..." << std::endl;
+    std::cout << "Caching XML: " << xmlname << " ..." << std::endl;
     out.write(data.data->data, data.data->size);
     out.close();
   }
@@ -192,7 +189,8 @@ EveApiFetcher::process_caching (EveApiData& data)
     int file_exists = ::access(file.c_str(), F_OK);
     if (file_exists < 0)
     {
-      std::cout << "Warning: No cache file for " << fileonly << std::endl;
+      std::cout << "Warning: No cache file for "
+          << xmlname << std::endl;
       return;
     }
 
@@ -211,6 +209,24 @@ EveApiFetcher::process_caching (EveApiData& data)
     data.locally_cached = true;
     ::memcpy(data.data->data, input.c_str(), input.size());
 
-    std::cout << "Warning: Using " << fileonly << " from cache!" << std::endl;
+    std::cout << "Warning: Using " << xmlname << " from cache!" << std::endl;
+  }
+}
+
+/* ---------------------------------------------------------------- */
+
+char const*
+EveApiFetcher::get_doc_name (void)
+{
+  switch (this->type)
+  {
+    case EVE_API_DOCTYPE_CHARLIST:
+      return "Characters.xml";
+    case EVE_API_DOCTYPE_INTRAINING:
+      return "SkillInTraining.xml";
+    case EVE_API_DOCTYPE_CHARSHEET:
+      return "CharacterSheet.xml";
+    default:
+      return "Unknown";
   }
 }

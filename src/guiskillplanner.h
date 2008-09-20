@@ -15,108 +15,17 @@
 
 #include <gtkmm/treestore.h>
 #include <gtkmm/treeview.h>
-#include <gtkmm/textview.h>
-#include <gtkmm/textbuffer.h>
 #include <gtkmm/entry.h>
 #include <gtkmm/tooltips.h>
-#include <gtkmm/box.h>
+#include <gtkmm/notebook.h>
 
+#include "gtkplannerbase.h"
+#include "gtkskilldetails.h"
+#include "gtktrainingplan.h"
 #include "apiskilltree.h"
 #include "apicharsheet.h"
+#include "apiintraining.h"
 #include "winbase.h"
-
-/* The maximum history size. */
-#define HISTORY_MAX_SIZE 9
-
-/* ---------------------------------------------------------------- */
-
-class GuiPlannerSkillCols : public Gtk::TreeModel::ColumnRecord
-{
-  public:
-    GuiPlannerSkillCols (void);
-
-    Gtk::TreeModelColumn<Glib::ustring> name;
-    Gtk::TreeModelColumn<Glib::RefPtr<Gdk::Pixbuf> > icon;
-    Gtk::TreeModelColumn<ApiSkill const*> skill;
-};
-
-/* ---------------------------------------------------------------- */
-
-class GtkSkillHistory : public Gtk::HBox
-{
-  private:
-    std::vector<ApiSkill const*> history;
-    unsigned int history_pos;
-    sigc::signal<void, ApiSkill const*> sig_skill_changed;
-
-    Gtk::Button back_but;
-    Gtk::Button next_but;
-    Gtk::Label position_label;
-
-    void update_sensitive (void);
-    void update_pos_label (void);
-    void back_clicked (void);
-    void next_clicked (void);
-
-  public:
-    GtkSkillHistory (void);
-
-    void append_skill (ApiSkill const* skill);
-    sigc::signal<void, ApiSkill const*>& signal_skill_changed (void);
-};
-
-/* ---------------------------------------------------------------- */
-
-class GtkSkillDetails : public Gtk::VBox
-{
-  private:
-    ApiCharSheetPtr charsheet;
-
-    /* Dependency list. */
-    GuiPlannerSkillCols deps_cols;
-    Glib::RefPtr<Gtk::TreeStore> deps_store;
-    Gtk::TreeView deps_view;
-
-    /* Skill details. */
-    Gtk::Label skill_group;
-    Gtk::Label skill_name;
-    Gtk::Label skill_primary;
-    Gtk::Label skill_secondary;
-    Gtk::Label skill_level[5];
-    Glib::RefPtr<Gtk::TextBuffer> skill_desc_buffer;
-
-    GtkSkillHistory history;
-    Gtk::Tooltips tooltips;
-
-    void recurse_append_skill_req (ApiSkill const* skill,
-        Gtk::TreeModel::iterator slot, int level);
-    double get_spps_for_skill (ApiSkill const* skill);
-    void on_skill_changed (ApiSkill const* skill);
-    void on_skill_selected (Gtk::TreeModel::Path const& path,
-        Gtk::TreeViewColumn* col);
-
-  public:
-    GtkSkillDetails (void);
-
-    void set_skill (ApiSkill const* skill);
-    void set_character (ApiCharSheetPtr character);
-};
-
-/* ---------------------------------------------------------------- */
-
-class GtkTrainingPlan : public Gtk::VBox
-{
-  private:
-    std::vector<ApiSkill*> list;
-
-  public:
-    GtkTrainingPlan (void);
-
-    void append_skill (ApiSkill* skill);
-    void update_plan (void);
-};
-
-/* ---------------------------------------------------------------- */
 
 class GuiSkillPlanner : public WinBase
 {
@@ -126,14 +35,16 @@ class GuiSkillPlanner : public WinBase
 
     /* Character stuff. */
     ApiCharSheetPtr charsheet;
-    Gtk::Label character_label;
+    ApiInTrainingPtr training;
+    //Gtk::Label character_label;
 
     /* Skill list. */
     GuiPlannerSkillCols skill_cols;
     Glib::RefPtr<Gtk::TreeStore> skill_store;
-    Gtk::TreeView skill_view;
+    GtkSkillListView skill_view;
 
     /* Misc. */
+    Gtk::Notebook notebook;
     Gtk::Entry filter_entry;
     Gtk::Tooltips tooltips;
 
@@ -143,34 +54,17 @@ class GuiSkillPlanner : public WinBase
     void skill_row_activated (Gtk::TreeModel::Path const& path,
         Gtk::TreeViewColumn* col);
     bool have_prerequisites_for_skill (ApiSkill const* skill);
+    void on_view_button_pressed (GdkEventButton* event);
+    void on_planning_requested (ApiSkill const* skill, int level);
+    bool on_gtkmain_quit (void);
 
   public:
     GuiSkillPlanner (void);
     ~GuiSkillPlanner (void);
 
     void set_character (ApiCharSheetPtr sheet);
+    void set_training (ApiInTrainingPtr training);
+    void set_skill (ApiSkill const* skill);
 };
-
-/* ---------------------------------------------------------------- */
-
-inline sigc::signal<void, ApiSkill const*>&
-GtkSkillHistory::signal_skill_changed (void)
-{
-  return this->sig_skill_changed;
-}
-
-inline void
-GtkSkillDetails::set_character (ApiCharSheetPtr character)
-{
-  this->charsheet = character;
-}
-
-inline
-GuiPlannerSkillCols::GuiPlannerSkillCols (void)
-{
-  this->add(this->name);
-  this->add(this->icon);
-  this->add(this->skill);
-}
 
 #endif /* GUI_SKILL_PLANNER_HEADER */

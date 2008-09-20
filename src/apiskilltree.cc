@@ -43,7 +43,7 @@ ApiSkillTree::refresh (void)
   filenames.push_back("SkillTree.xml");
   filenames.push_back(Config::get_conf_dir() + "/SkillTree.xml");
 
-  std::cout << "Searching XML: SkillTree.xml ...";
+  std::cout << "Seeking XML: SkillTree.xml ...";
   std::cout.flush();
 
   std::string content;
@@ -340,6 +340,24 @@ ApiSkillTree::get_attrib_name (ApiAttrib const& attrib)
   }
 
   return "Unknown";
+}
+
+/* ---------------------------------------------------------------- */
+
+char const*
+ApiSkillTree::get_attrib_short_name (ApiAttrib const& attrib)
+{
+  switch (attrib)
+  {
+    case API_ATTRIB_INTELLIGENCE: return "Int";
+    case API_ATTRIB_MEMORY: return "Mem";
+    case API_ATTRIB_CHARISMA: return "Cha";
+    case API_ATTRIB_PERCEPTION: return "Per";
+    case API_ATTRIB_WILLPOWER: return "Wil";
+    default: break;
+  }
+
+  return "???";
 }
 
 /* ---------------------------------------------------------------- */

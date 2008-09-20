@@ -73,6 +73,8 @@ class ConfSection
     void add (const std::string& key, ConfValuePtr value);
     ConfSectionPtr get_section (const std::string& key);
     ConfValuePtr get_value (const std::string& key);
+    void remove_section (std::string const& key);
+    void remove_value (std::string const& key);
 
     /* Iteration. */
     conf_values_t::iterator values_begin (void);

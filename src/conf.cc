@@ -175,6 +175,22 @@ ConfSection::get_value (const std::string& key)
 /* ---------------------------------------------------------------- */
 
 void
+ConfSection::remove_section (std::string const& key)
+{
+  this->sections.erase(key);
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+ConfSection::remove_value (std::string const& key)
+{
+  this->values.erase(key);
+}
+
+/* ---------------------------------------------------------------- */
+
+void
 ConfSection::to_stream (std::ostream& outstr, std::string prefix)
 {
   if (this->do_stream == false)
@@ -285,15 +301,18 @@ Conf::get_or_create_section (const std::string& key)
   {
     /* Try to get parent section. */
     ConfSectionPtr parent;
+    std::string parent_name = key.substr(0, dot_pos);
+    std::string section_name = key.substr(dot_pos + 1);
     try
     {
-      parent = this->root->get_section(key.substr(0, dot_pos));
+      parent = this->get_or_create_section(parent_name);
       ConfSectionPtr new_section = ConfSection::create();
-      parent->add(key.substr(dot_pos + 1), new_section);
+      parent->add(section_name, new_section);
       return new_section;
     }
     catch (Exception& e)
     {
+      /* Parent section not found. */
       throw Exception("Semantic error: Parent section not found");
     }
   }

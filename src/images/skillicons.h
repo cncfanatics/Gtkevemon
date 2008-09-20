@@ -7,5 +7,6 @@
 #include "img_skillicons_train.h"
 #include "img_skillicons_done.h"
 #include "img_skillicons_part.h"
+#include "img_skillicons_faded.h"
 
 #endif /* SKILL_ICONS_IMAGE */

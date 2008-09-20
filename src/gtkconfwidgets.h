@@ -17,6 +17,8 @@
 #include <gtkmm/filechooserbutton.h>
 #include <gtkmm/checkbutton.h>
 #include <gtkmm/entry.h>
+#include <gtkmm/combobox.h>
+#include <gtkmm/liststore.h>
 #include <gtkmm/comboboxtext.h>
 
 #include "config.h"
@@ -74,5 +76,43 @@ class GtkConfComboBox : public Gtk::ComboBoxText
     void append_conf_row (const std::string& text, const std::string& value);
 };
 
+/* ---------------------------------------------------------------- */
+
+class GtkConfSectionSelection : public Gtk::ComboBox
+{
+  private:
+    struct GtkConfSelectionCols : public Gtk::TreeModelColumnRecord
+    {
+      Gtk::TreeModelColumn<Glib::ustring> name;
+      Gtk::TreeModelColumn<ConfSectionPtr> section;
+      GtkConfSelectionCols (void)
+      { this->add(name); this->add(section); }
+    } selection_cols;
+
+  private:
+    ConfSectionPtr parent_section;
+
+    sigc::connection changed_conn;
+    Glib::RefPtr<Gtk::ListStore> selection_store;
+    sigc::signal<void, ConfSectionPtr> sig_conf_section_changed;
+
+  protected:
+    void on_combo_entry_changed (void);
+    void update_selection_store (std::string const& select = "");
+
+  public:
+    GtkConfSectionSelection (void);
+    void set_parent_config_section (std::string const& section,
+        std::string const& select = "");
+
+    ConfSectionPtr create_new_section (std::string const& name);
+    ConfSectionPtr get_active_section (void);
+    Glib::ustring get_active_name (void);
+    void set_active_section (std::string const& name);
+    void delete_section (std::string const& name);
+    void rename_section (std::string const& from, std::string const& to);
+
+    sigc::signal<void, ConfSectionPtr>& signal_conf_section_changed (void);
+};
 
 #endif /* GTK_CONF_WIDGETS_HEADER */

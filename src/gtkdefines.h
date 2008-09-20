@@ -31,5 +31,6 @@
 #define MK_NOTEBOOK Gtk::manage(new Gtk::Notebook)
 #define MK_ENTRY Gtk::manage(new Gtk::Entry);
 #define MK_IMG(id,size) Gtk::manage(new Gtk::Image(id, size))
+#define MK_TABLE(rows,cols) Gtk::manage(new Gtk::Table(rows, cols, false))
 
 #endif /* GTK_DEFINES_HEADER */

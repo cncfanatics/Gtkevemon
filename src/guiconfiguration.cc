@@ -57,7 +57,8 @@ GuiConfiguration::GuiConfiguration (void)
   /* The LAUNCHER notebook tab. */
   Gtk::Label* launch_info_label = MK_LABEL("You can define up to "
       "five EVE commands to launch EVE online. If you specify more than "
-      "one command, GtkEveMon will prompt for the command to be started.");
+      "one command, GtkEveMon will prompt for the command to be started.\n"
+      "Note that \"~\" will not work as home directory.");
   launch_info_label->property_xalign() = 0.0f;
   launch_info_label->set_line_wrap(true);
 
@@ -160,6 +161,14 @@ GuiConfiguration::GuiConfiguration (void)
 
   GtkConfTextEntry* time_format_entry = Gtk::manage
       (new GtkConfTextEntry("evetime.time_format"));
+
+  Gtk::Label* time_info_label3 = MK_LABEL
+      ("The default short time format is: %m-%d %H:%M");
+  time_info_label3->property_xalign() = 0.0f;
+  time_info_label3->set_selectable(true);
+
+  GtkConfTextEntry* time_short_format_entry = Gtk::manage
+      (new GtkConfTextEntry("evetime.time_short_format"));
 
   Glib::RefPtr<Gtk::TextBuffer> time_helptextbuf = Gtk::TextBuffer::create();
   Gtk::TextView* time_helptext = Gtk::manage
@@ -418,6 +427,8 @@ GuiConfiguration::GuiConfiguration (void)
   page_timeformat->pack_start(*time_info_label, false, false, 0);
   page_timeformat->pack_start(*time_info_label2, false, false, 0);
   page_timeformat->pack_start(*time_format_entry, false, false, 0);
+  page_timeformat->pack_start(*time_info_label3, false, false, 0);
+  page_timeformat->pack_start(*time_short_format_entry, false, false, 0);
   page_timeformat->pack_start(*time_example_hbox, false, false, 0);
   page_timeformat->pack_start(*time_scwin, true, true, 0);
 

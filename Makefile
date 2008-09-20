@@ -1,10 +1,13 @@
 INSTALL_BIN = /usr/local/bin
 
 all:
-	make -C src
+	$(MAKE) -C src
+
+multicore:
+	$(MAKE) -C src multicore
 
 clean:
-	make -C src clean
+	$(MAKE) -C src clean
 
 install:
 	mkdir -p ${INSTALL_BIN}
