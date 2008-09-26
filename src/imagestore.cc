@@ -16,7 +16,7 @@ Glib::RefPtr<Gdk::Pixbuf> ImageStore::skill;
 Glib::RefPtr<Gdk::Pixbuf> ImageStore::applogo;
 Glib::RefPtr<Gdk::Pixbuf> ImageStore::aboutlogo;
 Glib::RefPtr<Gdk::Pixbuf> ImageStore::eveportrait;
-Glib::RefPtr<Gdk::Pixbuf> ImageStore::columnconf;
+Glib::RefPtr<Gdk::Pixbuf> ImageStore::columnconf[2];
 Glib::RefPtr<Gdk::Pixbuf> ImageStore::skillicons[6];
 Glib::RefPtr<Gdk::Pixbuf> ImageStore::skillstatus[8];
 Glib::RefPtr<Gdk::Pixbuf> ImageStore::skilldeps[3];
@@ -36,8 +36,10 @@ ImageStore::init (void)
       (img_aboutlogo_xpm);
   ImageStore::eveportrait = Gdk::Pixbuf::create_from_xpm_data
       (img_eveportrait_xpm);
-  ImageStore::columnconf = Gdk::Pixbuf::create_from_inline
-      (-1, img_columnconf_png, false);
+  ImageStore::columnconf[0] = Gdk::Pixbuf::create_from_inline
+      (-1, img_columnconf, false);
+  ImageStore::columnconf[1] = Gdk::Pixbuf::create_from_inline
+      (-1, img_columnconf_faded, false);
 
   ImageStore::skillicons[0] = Gdk::Pixbuf::create_from_inline
       (-1, img_skillicons_group, false);

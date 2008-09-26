@@ -162,6 +162,10 @@ GtkSkillList::calc_details (void)
   time_t now_eve = EveTime::get_eve_time();
   time_t duration = 0;
 
+  /* Attribute values. */
+  unsigned int training_level = this->charsheet->get_level_for_skill(3374);
+  ApiCharAttribs attribs = this->charsheet->total;
+
   /* Go through list and do mighty things. Caching the cskill variable
    * will greatly reduce relookup of the charsheet skill. */
   ApiCharSheetSkill* cskill = 0;
@@ -173,6 +177,15 @@ GtkSkillList::calc_details (void)
     /* Only relookup the character skill if we really need to. */
     if (cskill == 0 || skill->id != cskill->id)
       cskill = this->charsheet->get_skill_for_id(skill->id);
+
+    /* If the current skill is a training skill not already known,
+     * it has impact on the SP/h. Apply this impact. */
+    if (cskill == 0 || cskill->level < info.plan_level)
+    {
+      this->apply_attributes(skill, attribs, training_level);
+      if (skill->id == 3374)
+        training_level += 1;
+    }
 
     /* Update the skill icon. */
     if (skill->id == train_skill && info.plan_level == train_level)
@@ -190,7 +203,7 @@ GtkSkillList::calc_details (void)
     bool active = (skill->id == train_skill && info.plan_level == train_level);
 
     /* SP per second. */
-    double spps = this->charsheet->get_sppm_for_skill(skill) / 60.0;
+    double spps = this->charsheet->get_sppm_for_skill(skill, attribs) / 60.0;
 
     /* Start SP, dest SP and current SP. */
     int ssp = this->charsheet->calc_start_sp(info.plan_level - 1, skill->rank);
@@ -214,6 +227,7 @@ GtkSkillList::calc_details (void)
     info.train_duration = duration + timediff;
     info.skill_duration = timediff;
     info.completed = (double)(csp - ssp) / (double)(dsp - ssp);
+    info.spph = (int)(spps * 3600.0);
 
     duration += timediff;
   }
@@ -351,6 +365,35 @@ GtkSkillList::is_dependency (unsigned int index)
   return false;
 }
 
+/* ---------------------------------------------------------------- */
+
+void
+GtkSkillList::apply_attributes (ApiSkill const* skill, ApiCharAttribs& attribs,
+    unsigned int training_level)
+{
+  double factor = 1 + training_level * 0.02;
+
+  if (skill->id == 3377 || skill->id == 12376)
+    attribs.intl += factor;
+  else if (skill->id == 3379 || skill->id == 12387)
+    attribs.per += factor;
+  else if (skill->id == 3376 || skill->id == 12383)
+    attribs.cha += factor;
+  else if (skill->id == 3378 || skill->id == 12385)
+    attribs.mem += factor;
+  else if (skill->id == 3375 || skill->id == 12386)
+    attribs.wil += factor;
+  else if (skill->id == 3374)
+  {
+    double rescale = (1 + (training_level + 1) * 0.02) / factor;
+    attribs.intl *= rescale;
+    attribs.per *= rescale;
+    attribs.cha *= rescale;
+    attribs.mem *= rescale;
+    attribs.wil *= rescale;
+  }
+}
+
 /* ================================================================ */
 
 GtkTreeModelColumns::GtkTreeModelColumns (void)
@@ -393,7 +436,7 @@ GtkTreeViewColumns::GtkTreeViewColumns (Gtk::TreeView* view,
   objective_col->property_activatable() = true;
 
   this->append_column(&this->objective, GtkColumnOptions
-      (false, true, false, ImageStore::columnconf));
+      (false, true, false, ImageStore::columnconf[1]));
   this->append_column(&this->skill_name,
       GtkColumnOptions(false, true, true));
   this->append_column(&this->train_duration,
@@ -446,6 +489,7 @@ GtkTrainingPlan::GtkTrainingPlan (void)
 
   this->clean_plan_but.set_image(*MK_IMG
       (Gtk::Stock::CLEAR, Gtk::ICON_SIZE_MENU));
+  this->column_conf_but.set_image(*MK_IMG_PB(ImageStore::columnconf[0]));
 
   this->total_time.set_text("n/a");
   this->total_time.property_xalign() = 0.0f;
@@ -468,6 +512,7 @@ GtkTrainingPlan::GtkTrainingPlan (void)
   /* Create GUI. */
   Gtk::HBox* button_box = MK_HBOX;
   button_box->pack_start(this->clean_plan_but, false, false, 0);
+  button_box->pack_start(this->column_conf_but, false, false, 0);
   Gtk::VBox* button_vbox = MK_VBOX;
   button_vbox->pack_end(*button_box, false, false, 0);
 
@@ -502,6 +547,7 @@ GtkTrainingPlan::GtkTrainingPlan (void)
   this->tooltips.set_tip(this->create_plan_but, "Create a new plan");
   this->tooltips.set_tip(this->rename_plan_but, "Rename the current plan");
   this->tooltips.set_tip(this->clean_plan_but, "Remove finished skills");
+  this->tooltips.set_tip(this->column_conf_but, "Configure list columns");
 
   this->pack_start(*gui_table, false, false, 0);
   this->pack_start(*scwin, true, true, 0);
@@ -517,6 +563,8 @@ GtkTrainingPlan::GtkTrainingPlan (void)
       (sigc::mem_fun(*this, &GtkTrainingPlan::on_rename_skill_plan));
   this->clean_plan_but.signal_clicked().connect
       (sigc::mem_fun(*this, &GtkTrainingPlan::on_cleanup_skill_plan));
+  this->column_conf_but.signal_clicked().connect(sigc::mem_fun
+      (this->viewcols, &GtkColumnsBase::toggle_edit_context));
 
   this->liststore->signal_row_inserted().connect
       (sigc::mem_fun(*this, &GtkTrainingPlan::on_row_inserted));
@@ -684,14 +732,12 @@ GtkTrainingPlan::update_plan (bool rebuild)
     }
 
     /* The following cells are always updated. */
-    int spph = (int)(this->charsheet->get_sppm_for_skill(skill) * 60.0);
-
     Glib::ustring completed = Helpers::get_string_from_double
         (info.completed * 100.0, info.completed == 1.0 ? 0 : 1) + "%";
 
     (*iter)[this->cols.skill_icon] = ImageStore::skillplan[info.skill_icon];
     (*iter)[this->cols.completed] = completed;
-    (*iter)[this->cols.spph] = spph;
+    (*iter)[this->cols.spph] = info.spph;
     (*iter)[this->cols.train_duration]
         = EveTime::get_string_for_timediff(info.train_duration, true);
     (*iter)[this->cols.skill_duration]

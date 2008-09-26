@@ -295,15 +295,15 @@ GtkCharPage::update_charsheet_details (void)
         + " at V)");
 
     this->attr_cha_label.set_text(Helpers::get_string_from_double
-        (this->sheet->total_cha, 2));
+        (this->sheet->total.cha, 2));
     this->attr_int_label.set_text(Helpers::get_string_from_double
-        (this->sheet->total_int, 2));
+        (this->sheet->total.intl, 2));
     this->attr_per_label.set_text(Helpers::get_string_from_double
-        (this->sheet->total_per, 2));
+        (this->sheet->total.per, 2));
     this->attr_mem_label.set_text(Helpers::get_string_from_double
-        (this->sheet->total_mem, 2));
+        (this->sheet->total.mem, 2));
     this->attr_wil_label.set_text(Helpers::get_string_from_double
-        (this->sheet->total_wil, 2));
+        (this->sheet->total.wil, 2));
   }
 
   this->update_skill_list();

@@ -61,7 +61,7 @@ GuiAboutDialog::GuiAboutDialog (void)
       "You will never miss to train your next skill!\n"
       "\n"
       "Homepage: http://gtkevemon.battleclinic.com\n"
-      "Forum: http://www.battleclinic.com/forum/index.php#43\n"
+      "Forum: http://www.battleclinic.com/forum/index.php#c43\n"
       "\n"
       "<i>Simon Fuhrmann &lt;SimonFuhrmann@gmx.de&gt;</i>");
   info_label->set_use_markup(true);

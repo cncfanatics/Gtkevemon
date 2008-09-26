@@ -17,11 +17,11 @@ ApiCharSheet::set_api_data (EveApiData const& data)
   this->ApiBase::set_api_data(data);
 
   /* Reset values. */
-  this->implant_int = 0;
-  this->implant_mem = 0;
-  this->implant_cha = 0;
-  this->implant_per = 0;
-  this->implant_wil = 0;
+  this->implant.intl = 0;
+  this->implant.mem = 0;
+  this->implant.cha = 0;
+  this->implant.per = 0;
+  this->implant.wil = 0;
 
   /* Parse the data. */
   this->parse_xml();
@@ -48,36 +48,36 @@ ApiCharSheet::set_api_data (EveApiData const& data)
   int learning = this->get_level_for_skill(3374);
   double factor = (double)learning * 0.02f;
 
-  this->skill_int = this->get_level_for_skill(3377);
-  this->skill_int += this->get_level_for_skill(12376);
-  this->skill_int += (this->base_int
-      + this->skill_int + this->implant_int) * factor;
+  this->skill.intl = this->get_level_for_skill(3377);
+  this->skill.intl += this->get_level_for_skill(12376);
+  this->skill.intl += (this->base.intl
+      + this->skill.intl + this->implant.intl) * factor;
 
-  this->skill_per = this->get_level_for_skill(3379);
-  this->skill_per += this->get_level_for_skill(12387);
-  this->skill_per += (this->base_per
-      + this->skill_per + this->implant_per) * factor;
+  this->skill.per = this->get_level_for_skill(3379);
+  this->skill.per += this->get_level_for_skill(12387);
+  this->skill.per += (this->base.per
+      + this->skill.per + this->implant.per) * factor;
 
-  this->skill_cha = this->get_level_for_skill(3376);
-  this->skill_cha += this->get_level_for_skill(12383);
-  this->skill_cha += (this->base_cha
-      + this->skill_cha + this->implant_cha) * factor;
+  this->skill.cha = this->get_level_for_skill(3376);
+  this->skill.cha += this->get_level_for_skill(12383);
+  this->skill.cha += (this->base.cha
+      + this->skill.cha + this->implant.cha) * factor;
 
-  this->skill_mem = this->get_level_for_skill(3378);
-  this->skill_mem += this->get_level_for_skill(12385);
-  this->skill_mem += (this->base_mem
-      + this->skill_mem + this->implant_mem) * factor;
+  this->skill.mem = this->get_level_for_skill(3378);
+  this->skill.mem += this->get_level_for_skill(12385);
+  this->skill.mem += (this->base.mem
+      + this->skill.mem + this->implant.mem) * factor;
 
-  this->skill_wil = this->get_level_for_skill(3375);
-  this->skill_wil += this->get_level_for_skill(12386);
-  this->skill_wil += (this->base_wil
-      + this->skill_wil + this->implant_wil) * factor;
+  this->skill.wil = this->get_level_for_skill(3375);
+  this->skill.wil += this->get_level_for_skill(12386);
+  this->skill.wil += (this->base.wil
+      + this->skill.wil + this->implant.wil) * factor;
 
-  this->total_int = this->base_int + this->implant_int + this->skill_int;
-  this->total_mem = this->base_mem + this->implant_mem + this->skill_mem;
-  this->total_cha = this->base_cha + this->implant_cha + this->skill_cha;
-  this->total_per = this->base_per + this->implant_per + this->skill_per;
-  this->total_wil = this->base_wil + this->implant_wil + this->skill_wil;
+  this->total.intl = this->base.intl + this->implant.intl + this->skill.intl;
+  this->total.mem = this->base.mem + this->implant.mem + this->skill.mem;
+  this->total.cha = this->base.cha + this->implant.cha + this->skill.cha;
+  this->total.per = this->base.per + this->implant.per + this->skill.per;
+  this->total.wil = this->base.wil + this->implant.wil + this->skill.wil;
 
   /* Calculate start SP, destination SP and completed. */
   ApiSkillTreePtr tree = ApiSkillTree::request();
@@ -166,11 +166,11 @@ ApiCharSheet::parse_recursive (xmlNodePtr node)
         }
       }
 
-      this->find_implant_bonus(node, "memoryBonus", this->implant_mem);
-      this->find_implant_bonus(node, "willpowerBonus", this->implant_wil);
-      this->find_implant_bonus(node, "perceptionBonus", this->implant_per);
-      this->find_implant_bonus(node, "intelligenceBonus", this->implant_int);
-      this->find_implant_bonus(node, "charismaBonus", this->implant_cha);
+      this->find_implant_bonus(node, "memoryBonus", this->implant.mem);
+      this->find_implant_bonus(node, "willpowerBonus", this->implant.wil);
+      this->find_implant_bonus(node, "perceptionBonus", this->implant.per);
+      this->find_implant_bonus(node, "intelligenceBonus", this->implant.intl);
+      this->find_implant_bonus(node, "charismaBonus", this->implant.cha);
 
       this->set_string_if_node_text(node, "characterID", this->char_id);
       this->set_string_if_node_text(node, "name", this->name);
@@ -180,11 +180,11 @@ ApiCharSheet::parse_recursive (xmlNodePtr node)
       this->set_string_if_node_text(node, "corporationName", this->corp);
       this->set_string_if_node_text(node, "balance", this->balance);
 
-      this->set_int_if_node_text(node, "intelligence", this->base_int);
-      this->set_int_if_node_text(node, "memory", this->base_mem);
-      this->set_int_if_node_text(node, "charisma", this->base_cha);
-      this->set_int_if_node_text(node, "perception", this->base_per);
-      this->set_int_if_node_text(node, "willpower", this->base_wil);
+      this->set_double_if_node_text(node, "intelligence", this->base.intl);
+      this->set_double_if_node_text(node, "memory", this->base.mem);
+      this->set_double_if_node_text(node, "charisma", this->base.cha);
+      this->set_double_if_node_text(node, "perception", this->base.per);
+      this->set_double_if_node_text(node, "willpower", this->base.wil);
     }
 
     if (recurse_node)
@@ -197,14 +197,14 @@ ApiCharSheet::parse_recursive (xmlNodePtr node)
 /* ---------------------------------------------------------------- */
 
 void
-ApiCharSheet::find_implant_bonus (xmlNodePtr node, char const* name, int& var)
+ApiCharSheet::find_implant_bonus (xmlNodePtr node, char const* name, double& v)
 {
   if (!xmlStrcmp(node->name, (xmlChar const*)name))
   {
     node = node->children;
     while (node != 0)
     {
-      this->set_int_if_node_text(node, "augmentatorValue", var);
+      this->set_double_if_node_text(node, "augmentatorValue", v);
       node = node->next;
     }
   }
@@ -260,28 +260,29 @@ ApiCharSheet::calc_dest_sp (int level, int rank)
 /* ---------------------------------------------------------------- */
 
 double
-ApiCharSheet::get_sppm_for_skill (ApiSkill const* skill)
+ApiCharSheet::get_sppm_for_skill (ApiSkill const* skill,
+    ApiCharAttribs const& attribs)
 {
   double pri;
   double sec;
 
   switch (skill->primary)
   {
-    case API_ATTRIB_INTELLIGENCE: pri = this->total_int; break;
-    case API_ATTRIB_MEMORY:       pri = this->total_mem; break;
-    case API_ATTRIB_CHARISMA:     pri = this->total_cha; break;
-    case API_ATTRIB_PERCEPTION:   pri = this->total_per; break;
-    case API_ATTRIB_WILLPOWER:    pri = this->total_wil; break;
+    case API_ATTRIB_INTELLIGENCE: pri = attribs.intl; break;
+    case API_ATTRIB_MEMORY:       pri = attribs.mem; break;
+    case API_ATTRIB_CHARISMA:     pri = attribs.cha; break;
+    case API_ATTRIB_PERCEPTION:   pri = attribs.per; break;
+    case API_ATTRIB_WILLPOWER:    pri = attribs.wil; break;
     default: pri = 0.0;
   }
 
   switch (skill->secondary)
   {
-    case API_ATTRIB_INTELLIGENCE: sec = this->total_int; break;
-    case API_ATTRIB_MEMORY:       sec = this->total_mem; break;
-    case API_ATTRIB_CHARISMA:     sec = this->total_cha; break;
-    case API_ATTRIB_PERCEPTION:   sec = this->total_per; break;
-    case API_ATTRIB_WILLPOWER:    sec = this->total_wil; break;
+    case API_ATTRIB_INTELLIGENCE: sec = attribs.intl; break;
+    case API_ATTRIB_MEMORY:       sec = attribs.mem; break;
+    case API_ATTRIB_CHARISMA:     sec = attribs.cha; break;
+    case API_ATTRIB_PERCEPTION:   sec = attribs.per; break;
+    case API_ATTRIB_WILLPOWER:    sec = attribs.wil; break;
     default: sec = 0.0;
   }
 

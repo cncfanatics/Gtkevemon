@@ -57,6 +57,17 @@ Helpers::get_int_from_string (std::string const& value)
 
 /* ---------------------------------------------------------------- */
 
+double
+Helpers::get_double_from_string (std::string const& value)
+{
+  std::stringstream ss(value);
+  double ret;
+  ss >> ret;
+  return ret;
+}
+
+/* ---------------------------------------------------------------- */
+
 std::string
 Helpers::get_roman_from_int (int value)
 {

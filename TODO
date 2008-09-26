@@ -9,17 +9,11 @@ User interface
 
 Skill Browser / Planner
 -----------------------
- - Notebook page with training queue
- - Context menu for training in the browser
- - TODO: Total time, Completed %, Anderes Icon für Skill in training
-
- - Training queue has:
-   - TreeView with skills (and levels) to train
-   - Name, Group, Training Time, Earliest Start/End, Priority
-   - Double click opens details for that skill
-   - Right click -> Priority -> 0 - 10?
+ - Add "Skill Group" column?
+ - Priorities?
+ - Export/Import of training plans
+ - Move multiple skills at once!
 
  - Optional:
    - Subplan
-   - Training priorities
-   - Enabled skilles through training
+   - Enabled skills through training

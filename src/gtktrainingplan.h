@@ -51,6 +51,7 @@ struct GtkSkillInfo
   time_t finish_time;
   time_t start_time;
   double completed;
+  int spph;
   GtkSkillIcon skill_icon;
 };
 
@@ -62,6 +63,8 @@ class GtkSkillList : public std::vector<GtkSkillInfo>
 
   protected:
     void append_skill (ApiSkill const* skill, int level, bool objective);
+    void apply_attributes (ApiSkill const* skill, ApiCharAttribs& attribs,
+        unsigned int training_level);
 
   public:
     GtkSkillList (void);
@@ -141,6 +144,7 @@ class GtkTrainingPlan : public Gtk::VBox
     Gtk::Button create_plan_but;
     Gtk::Button rename_plan_but;
     Gtk::Button clean_plan_but;
+    Gtk::Button column_conf_but;
     Gtk::Label total_time;
     Gtk::Tooltips tooltips;
 

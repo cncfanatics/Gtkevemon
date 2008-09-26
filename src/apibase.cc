@@ -80,6 +80,16 @@ ApiBase::set_int_if_node_text (xmlNodePtr node, char const* node_name,
 /* ---------------------------------------------------------------- */
 
 void
+ApiBase::set_double_if_node_text (xmlNodePtr node, char const* node_name,
+    double& target)
+{
+  if (!xmlStrcmp(node->name, (xmlChar const*)node_name))
+    target = Helpers::get_double_from_string(this->get_node_text(node));
+}
+
+/* ---------------------------------------------------------------- */
+
+void
 ApiBase::set_bool_if_node_text (xmlNodePtr node, char const* node_name,
     bool& target)
 {
