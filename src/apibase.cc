@@ -24,10 +24,20 @@ ApiBase::check_node (xmlNodePtr node)
 
   if (!xmlStrcmp(node->name, (xmlChar const*)"error"))
   {
-    std::string error = this->get_property(node, "code");
-    std::string text = this->get_node_text(node);
-    throw Exception("Error document received. Code: " + error + "\n"
-        + text);
+    std::string error;
+    std::string text;
+
+    try
+    { error = this->get_property(node, "code"); }
+    catch (...)
+    { error = "<unknown>"; }
+
+    try
+    { text = this->get_node_text(node); }
+    catch (...)
+    { text = "<unknown>"; }
+
+    throw Exception("Error document received. Code: " + error + "\n" + text);
   }
 }
 
