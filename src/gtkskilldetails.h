@@ -85,6 +85,8 @@ class GtkSkillDetails : public Gtk::VBox
     void on_skill_selected (Gtk::TreeModel::Path const& path,
         Gtk::TreeViewColumn* col);
     void on_view_button_pressed (GdkEventButton* event);
+    bool on_query_skillview_tooltip (int x, int y, bool key,
+        Glib::RefPtr<Gtk::Tooltip> const& tooltip);
 
   public:
     GtkSkillDetails (void);

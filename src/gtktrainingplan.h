@@ -177,6 +177,8 @@ class GtkTrainingPlan : public Gtk::VBox
     void on_row_activated (Gtk::TreeModel::Path const& path,
         Gtk::TreeViewColumn* column);
     bool on_update_skill_time (void);
+    bool on_query_skillview_tooltip (int x, int y, bool key,
+        Glib::RefPtr<Gtk::Tooltip> const& tooltip);
 
   public:
     GtkTrainingPlan (void);

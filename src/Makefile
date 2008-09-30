@@ -7,7 +7,7 @@ SOURCES = maingui.cc guiuserdata.cc guiconfiguration.cc guiaboutdialog.cc \
           guiskill.cc guiskillplanner.cc guixmlsource.cc guievelauncher.cc \
           gtkevemon.cc gtkserver.cc gtkconfwidgets.cc gtkcharpage.cc \
           gtkportrait.cc gtkinfodisplay.cc gtkplannerbase.cc \
-	  gtkcolumnsbase.cc \
+	  gtkcolumnsbase.cc gtkhelpers.cc \
 	  gtktrainingplan.cc gtkskilldetails.cc imagestore.cc \
           server.cc serverlist.cc helpers.cc conf.cc config.cc \
           xml.cc evetime.cc bgprocess.cc \
@@ -26,10 +26,13 @@ XML_FLAGS = $(shell pkg-config --cflags libxml-2.0)
 XML_LIBS = $(shell pkg-config --libs libxml-2.0)
 
 gtkevemon: ${OBJECTS}
-	${COMPILER} -o ${BINARY} ${OBJECTS} ${GCC_FLAGS} ${GTK_LIBS} ${PTH_LIBS} ${XML_LIBS}
+	${COMPILER} -o ${BINARY} ${OBJECTS} ${GTK_LIBS} ${PTH_LIBS} ${XML_LIBS}
 
 multicore:
 	$(MAKE) -j${CORES} gtkevemon
+
+depend:
+	${COMPILER} -MM ${SOURCES} > Makefile.dep
 
 %.o: %.cc
 	${COMPILER} -c -o $@ $< ${GCC_FLAGS} ${GTK_FLAGS} ${XML_FLAGS}
@@ -38,3 +41,5 @@ clean: FORCE
 	rm -f ${BINARY} ${OBJECTS}
 
 FORCE:
+
+include Makefile.dep

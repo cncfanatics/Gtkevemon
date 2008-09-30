@@ -21,6 +21,7 @@
 #include "apiskilltree.h"
 #include "imagestore.h"
 #include "gtkdefines.h"
+#include "gtkhelpers.h"
 #include "guiskill.h"
 #include "guiskillplanner.h"
 #include "guixmlsource.h"
@@ -915,7 +916,6 @@ GtkCharPage::on_close_clicked (void)
 }
 
 /* ---------------------------------------------------------------- */
-/* FIXME This leaks somehow... Might be GTKs problem. */
 
 bool
 GtkCharPage::on_query_skillview_tooltip (int x, int y, bool key,
@@ -935,46 +935,11 @@ GtkCharPage::on_query_skillview_tooltip (int x, int y, bool key,
   int skill_id = (*iter)[this->skill_cols.id];
   ApiCharSheetSkill* cskill = (*iter)[this->skill_cols.skill];
 
-  if (skill_id < 0)
+  if (skill_id < 0 || cskill == 0)
     return false;
 
-  try
-  {
-    ApiSkillTreePtr tree = ApiSkillTree::request();
-    ApiSkill const* skill = cskill->details;
-    tooltip->set_icon(ImageStore::skill);
-
-    std::stringstream ss;
-    ss << "Name: " << skill->name << "\n"
-        << "Attributes: " << ApiSkillTree::get_attrib_name(skill->primary)
-        << " / " << ApiSkillTree::get_attrib_name(skill->secondary) << "\n";
-
-    if (cskill->level != 5)
-    {
-      int sp_to_go = cskill->points_dest - cskill->points;
-      double sppm = this->sheet->get_sppm_for_skill(skill);
-      time_t secs_next_level = (time_t)(60.0 * (double)sp_to_go / sppm);
-      std::string next_level_str = EveTime::get_string_for_timediff
-          (secs_next_level, false);
-      if (cskill->completed != 0.0)
-        next_level_str += " (" + Helpers::get_string_from_double
-            (cskill->completed * 100.0, 0) + "% completed)";
-      ss << "SP per hour: " << (int)(sppm * 60.0) << "\n"
-          << "Destination SP: "
-          << Helpers::get_dotted_str_from_int(cskill->points_dest) << "\n"
-          << "Training time: " << next_level_str << "\n";
-    }
-
-    ss  << "\n" << skill->desc;
-    tooltip->set_text(ss.str());
-
-    return true;
-  }
-  catch (...)
-  {
-  }
-
-  return false;
+  GtkHelpers::create_tooltip(tooltip, cskill->details, cskill, this->sheet);
+  return true;
 }
 
 /* ---------------------------------------------------------------- */

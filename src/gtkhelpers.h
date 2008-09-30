@@ -10,9 +10,21 @@
  * along with GtkEveMon. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DEFINES_HEADER
-#define DEFINES_HEADER
+#ifndef GTK_HELPERS_HEADER
+#define GTK_HELPERS_HEADER
 
-#define GTKEVEMON_VERSION_STR "Revision 1.3-61"
+#include <gtkmm/tooltips.h>
+#include <gtkmm/tooltip.h>
 
-#endif /* DEFINES_HEADER */
+#include "apiskilltree.h"
+#include "apicharsheet.h"
+
+class GtkHelpers
+{
+  public:
+    static void create_tooltip (Glib::RefPtr<Gtk::Tooltip> const& tooltip,
+        ApiSkill const* skill, ApiCharSheetSkill* cskill = 0,
+        ApiCharSheetPtr sheet = ApiCharSheetPtr());
+};
+
+#endif /* GTK_HELPERS_HEADER */

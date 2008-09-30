@@ -9,6 +9,7 @@
 #include "evetime.h"
 #include "gtkcolumnsbase.h"
 #include "gtkportrait.h"
+#include "gtkhelpers.h"
 #include "gtkconfwidgets.h"
 #include "gtkdefines.h"
 #include "imagestore.h"
@@ -577,6 +578,9 @@ GtkTrainingPlan::GtkTrainingPlan (void)
   dynamic_cast<Gtk::CellRendererToggle*>(this->viewcols.objective
       .get_first_cell_renderer())->signal_toggled().connect(sigc::mem_fun
       (*this, &GtkTrainingPlan::on_objective_toggled));
+  this->treeview.signal_query_tooltip().connect(sigc::mem_fun
+      (*this, &GtkTrainingPlan::on_query_skillview_tooltip));
+  this->treeview.set_has_tooltip(true);
 
   Glib::signal_timeout().connect(sigc::mem_fun(*this,
       &GtkTrainingPlan::on_update_skill_time), PLANNER_SKILL_TIME_UPDATE);
@@ -1039,3 +1043,29 @@ GtkTrainingPlan::on_update_skill_time (void)
   return true;
 }
 
+/* ---------------------------------------------------------------- */
+
+bool
+GtkTrainingPlan::on_query_skillview_tooltip (int x, int y, bool key,
+    Glib::RefPtr<Gtk::Tooltip> const& tooltip)
+{
+  key = false;
+
+  Gtk::TreeModel::Path path;
+  Gtk::TreeViewDropPosition pos;
+
+  bool exists = this->treeview.get_dest_row_at_pos(x, y, path, pos);
+
+  if (!exists)
+    return false;
+
+  Gtk::TreeIter iter = this->liststore->get_iter(path);
+  unsigned int index = (*iter)[this->cols.skill_index];
+  ApiSkill const* skill = this->skills[index].skill;
+
+  if (skill == 0)
+    return false;
+
+  GtkHelpers::create_tooltip(tooltip, skill);
+  return true;
+}

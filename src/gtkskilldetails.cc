@@ -8,6 +8,7 @@
 #include "evetime.h"
 #include "imagestore.h"
 #include "gtkdefines.h"
+#include "gtkhelpers.h"
 #include "gtkskilldetails.h"
 
 GtkSkillHistory::GtkSkillHistory (void)
@@ -234,6 +235,9 @@ GtkSkillDetails::GtkSkillDetails (void)
       (sigc::mem_fun(*this, &GtkSkillDetails::on_skill_selected));
   this->deps_view.signal_button_press_myevent().connect(sigc::mem_fun
       (*this, &GtkSkillDetails::on_view_button_pressed));
+  this->deps_view.signal_query_tooltip().connect(sigc::mem_fun
+      (*this, &GtkSkillDetails::on_query_skillview_tooltip));
+  this->deps_view.set_has_tooltip(true);
 }
 
 /* ---------------------------------------------------------------- */
@@ -382,3 +386,28 @@ GtkSkillDetails::on_view_button_pressed (GdkEventButton* event)
   return;
 }
 
+/* ---------------------------------------------------------------- */
+
+bool
+GtkSkillDetails::on_query_skillview_tooltip (int x, int y, bool key,
+    Glib::RefPtr<Gtk::Tooltip> const& tooltip)
+{
+  key = false;
+
+  Gtk::TreeModel::Path path;
+  Gtk::TreeViewDropPosition pos;
+
+  bool exists = this->deps_view.get_dest_row_at_pos(x, y, path, pos);
+
+  if (!exists)
+    return false;
+
+  Gtk::TreeIter iter = this->deps_store->get_iter(path);
+  ApiSkill const* skill = (*iter)[this->deps_cols.skill];
+
+  if (skill == 0)
+    return false;
+
+  GtkHelpers::create_tooltip(tooltip, skill);
+  return true;
+}
