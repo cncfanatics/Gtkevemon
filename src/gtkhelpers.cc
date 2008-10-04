@@ -1,3 +1,4 @@
+#include <sstream>
 #include <gtkmm/image.h>
 
 #include "evetime.h"
