@@ -33,7 +33,6 @@ class BGProcess : public Thread
     std::string chdir;
 
     void* run (void);
-    char** create_argv (std::vector<std::string> const& cmd);
 
   public:
     BGProcess (std::vector<std::string>& cmd, std::string const& chdir = "");

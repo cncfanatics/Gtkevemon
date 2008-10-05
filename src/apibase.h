@@ -45,6 +45,7 @@ class ApiBase
         bool& target);
 
   public:
+    virtual ~ApiBase (void);
     virtual void set_api_data (EveApiData const& data);
 
     bool is_locally_cached (void) const;
@@ -54,6 +55,11 @@ class ApiBase
 };
 
 /* ---------------------------------------------------------------- */
+
+inline
+ApiBase::~ApiBase (void)
+{
+}
 
 inline void
 ApiBase::set_api_data (EveApiData const& data)

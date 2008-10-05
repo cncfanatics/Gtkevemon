@@ -10,9 +10,16 @@
  * along with GtkEveMon. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DEFINES_HEADER
-#define DEFINES_HEADER
+#ifndef MAILER_HEADER
+#define MAILER_HEADER
 
-#define GTKEVEMON_VERSION_STR "Revision 1.3-63"
+#include <string>
 
-#endif /* DEFINES_HEADER */
+class Mailer
+{
+  public:
+    static int send (std::string const& address, std::string const& subject,
+        std::string const& message);
+};
+
+#endif /* MAILER_HEADER */

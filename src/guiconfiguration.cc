@@ -45,14 +45,17 @@ GuiConfiguration::GuiConfiguration (void)
       (new GtkConfCheckButton("Show training info in window title",
       false, "settings.verbose_wintitle"));
 
+  Gtk::VBox* misc_cb_box = MK_VBOX0;
+  misc_cb_box->pack_start(*misc_min_on_close_cb, false, false, 0);
+  misc_cb_box->pack_start(*misc_detailed_tray_tt_cb, false, false, 0);
+  misc_cb_box->pack_start(*misc_autoupdate_sheets_cb, false, false, 0);
+  misc_cb_box->pack_start(*misc_versionchecking_cb, false, false, 0);
+  misc_cb_box->pack_start(*misc_verbose_wintitle_cb, false, false, 0);
+
   Gtk::VBox* page_misc = MK_VBOX;
   page_misc->set_border_width(5);
   page_misc->pack_start(*misc_tray_box, false, false, 0);
-  page_misc->pack_start(*misc_min_on_close_cb, false, false, 0);
-  page_misc->pack_start(*misc_detailed_tray_tt_cb, false, false, 0);
-  page_misc->pack_start(*misc_autoupdate_sheets_cb, false, false, 0);
-  page_misc->pack_start(*misc_versionchecking_cb, false, false, 0);
-  page_misc->pack_start(*misc_verbose_wintitle_cb, false, false, 0);
+  page_misc->pack_start(*misc_cb_box, false, false, 0);
 
   /* The LAUNCHER notebook tab. */
   Gtk::Label* launch_info_label = MK_LABEL("You can define up to "
@@ -141,12 +144,50 @@ GuiConfiguration::GuiConfiguration (void)
       (new GtkConfCheckButton("Show information bar", false,
       "notifications.show_info_bar"));
 
+  Gtk::VBox* notify_cb_box = MK_VBOX0;
+  notify_cb_box->pack_start(*notify_with_popup, false, false, 0);
+  notify_cb_box->pack_start(*notify_with_tray, false, false, 0);
+  notify_cb_box->pack_start(*notify_with_info_bar, false, false, 0);
+
+  Gtk::Label* notify_info2_label = MK_LABEL("See the forums for details "
+      "on how to configure your system to send emails. This is not an "
+      "easy task!");
+  notify_info2_label->property_xalign() = 0.0f;
+  notify_info2_label->set_line_wrap(true);
+
+  GtkConfCheckButton* notify_with_email = Gtk::manage
+      (new GtkConfCheckButton("Enable email notifications", false,
+      "notifications.send_email"));
+  GtkConfTextEntry* notify_address_entry = Gtk::manage
+      (new GtkConfTextEntry("notifications.mail_address"));
+  GtkConfTextEntry* notify_min_sp_entry = Gtk::manage
+      (new GtkConfTextEntry("notifications.minimum_sp"));
+
+  Gtk::Label* notify_email_addr_label = MK_LABEL("Email address:");
+  notify_email_addr_label->property_xalign() = 0.0;
+  Gtk::Label* notify_email_minsp_label = MK_LABEL("Minimum skill SP:");
+  notify_email_minsp_label->property_xalign() = 0.0;
+
+  Gtk::Table* notify_email_table = Gtk::manage(new Gtk::Table(3, 2));
+  notify_email_table->set_row_spacings(1);
+  notify_email_table->set_col_spacings(5);
+  notify_email_table->attach(*notify_with_email, 0, 2, 0, 1,
+      Gtk::EXPAND | Gtk::FILL);
+  notify_email_table->attach(*notify_email_addr_label, 0, 1, 1, 2,
+      Gtk::SHRINK | Gtk::FILL);
+  notify_email_table->attach(*notify_email_minsp_label, 0, 1, 2, 3,
+      Gtk::SHRINK | Gtk::FILL);
+  notify_email_table->attach(*notify_address_entry, 1, 2, 1, 2,
+      Gtk::EXPAND | Gtk::FILL);
+  notify_email_table->attach(*notify_min_sp_entry, 1, 2, 2, 3,
+      Gtk::EXPAND | Gtk::FILL);
+
   Gtk::VBox* page_notifications = MK_VBOX;
   page_notifications->set_border_width(5);
   page_notifications->pack_start(*notify_info_label, false, false, 0);
-  page_notifications->pack_start(*notify_with_popup, false, false, 0);
-  page_notifications->pack_start(*notify_with_tray, false, false, 0);
-  page_notifications->pack_start(*notify_with_info_bar, false, false, 0);
+  page_notifications->pack_start(*notify_cb_box, false, false, 0);
+  page_notifications->pack_start(*notify_info2_label, false, false, 0);
+  page_notifications->pack_start(*notify_email_table, false, false, 0);
 
   /* The TIME_FORMAT notebook tab. */
   Gtk::Label* time_info_label = MK_LABEL

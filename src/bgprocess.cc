@@ -7,6 +7,7 @@
 #include <sys/wait.h>
 
 #include "exception.h"
+#include "helpers.h"
 #include "bgprocess.h"
 
 BGProcess::BGProcess (std::vector<std::string>& cmd, std::string const& chdir)
@@ -51,7 +52,7 @@ BGProcess::run (void)
          std::cout << "Cannot set PWD: " << ::strerror(errno) << std::endl;
 
     /* Let the utils build an arguemnt array for the new process. */
-    char** args = this->create_argv(this->cmd);
+    char** args = Helpers::create_argv(this->cmd);
 
     /* Try to execute the command. */
     ::execvp(args[0], args);
@@ -74,21 +75,4 @@ BGProcess::run (void)
   /* Destory the thread object and exit thread. */
   delete this;
   return 0;
-}
-
-/* ---------------------------------------------------------------- */
-
-char**
-BGProcess::create_argv (std::vector<std::string> const& cmd)
-{
-  char** args = new char*[cmd.size() + 1];
-  for (unsigned int i = 0; i < cmd.size(); ++i)
-  {
-    char* cmd_cstr = new char[cmd[i].size() + 1];
-    ::strcpy(cmd_cstr, cmd[i].c_str());
-    args[i] = cmd_cstr;
-    //std::cout << "Arg" << i << ": " << args[i] << std::endl;
-  }
-  args[cmd.size()] = 0;
-  return args;
 }

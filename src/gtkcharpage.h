@@ -140,6 +140,8 @@ class GtkCharPage : public Gtk::VBox
     void on_skilltree_error (std::string const& e);
     void on_charsheet_error (std::string const& e, bool cached = false);
     void on_intraining_error (std::string const& e, bool cached = false);
+    void popup_error_dialog (std::string const& title,
+        std::string const& heading, std::string const& message);
 
     /* Misc GUI stuff. */
     bool update_remaining (void);
@@ -147,6 +149,7 @@ class GtkCharPage : public Gtk::VBox
     void api_info_changed (void);
     void remove_tray_notify (void);
     void create_tray_notify (void);
+    void send_notification_mail (void);
     void on_skill_completed (void);
     void on_close_clicked (void);
     void on_info_clicked (void);

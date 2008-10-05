@@ -1,6 +1,6 @@
 #include <iomanip>
 #include <sstream>
-#include <locale>
+#include <cstring>
 
 #include "helpers.h"
 
@@ -192,4 +192,20 @@ Helpers::tokenize_cmd (std::string const& str)
   result.push_back(token);
 
   return result;
+}
+
+/* ---------------------------------------------------------------- */
+
+char**
+Helpers::create_argv (const std::vector<std::string>& cmd)
+{
+  char** args = new char*[cmd.size() + 1];
+  for (unsigned int i = 0; i < cmd.size(); ++i)
+  {
+    char* cmd_cstr = new char[cmd[i].size() + 1];
+    ::strcpy(cmd_cstr, cmd[i].c_str());
+    args[i] = cmd_cstr;
+  }
+  args[cmd.size()] = 0;
+  return args;
 }

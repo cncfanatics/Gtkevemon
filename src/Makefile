@@ -10,8 +10,8 @@ SOURCES = maingui.cc guiuserdata.cc guiconfiguration.cc guiaboutdialog.cc \
 	  gtkcolumnsbase.cc gtkhelpers.cc \
 	  gtktrainingplan.cc gtkskilldetails.cc imagestore.cc \
           server.cc serverlist.cc helpers.cc conf.cc config.cc \
-          xml.cc evetime.cc bgprocess.cc \
-          http.cc asynchttp.cc eveapi.cc versionchecker.cc \
+          xml.cc evetime.cc bgprocess.cc pipedexec.cc mailer.cc \
+          http.cc asynchttp.cc eveapi.cc versionchecker.cc\
           apibase.cc apicharlist.cc apicharsheet.cc apiintraining.cc \
           apiskilltree.cc argumentsettings.cc
 

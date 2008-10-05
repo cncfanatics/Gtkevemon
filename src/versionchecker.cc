@@ -98,7 +98,7 @@ VersionChecker::handle_result (AsyncHttpData result)
         "Your local version is: " + cur_version + "\n"
         "The latest version is: " + svn_version + "\n\n"
         "Take a look at the forums for further information:\n"
-        "http://www.battleclinic.com/forum/index.php#43");
+        "http://www.battleclinic.com/forum/index.php#c43");
   }
   else
   {
@@ -109,7 +109,7 @@ VersionChecker::handle_result (AsyncHttpData result)
         "Your local version is: " + cur_version + "\n"
         "The latest version is: " + svn_version + "\n\n"
         "Take a look at the forums for further information:\n"
-        "http://www.battleclinic.com/forum/index.php#43");
+        "http://www.battleclinic.com/forum/index.php#c43");
     md.set_title("Version check - GtkEveMon");
     if (this->parent_window != 0)
       md.set_transient_for(*this->parent_window);
