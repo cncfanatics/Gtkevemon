@@ -10,16 +10,22 @@
  * along with GtkEveMon. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MAILER_HEADER
-#define MAILER_HEADER
+#ifndef NOTIFIER_HEADER
+#define NOTIFIER_HEADER
 
 #include <string>
 
-class Mailer
+#include "apicharsheet.h"
+#include "apiintraining.h"
+
+/* This class handles the notification to external applications. */
+class Notifier
 {
+  private:
+    static void replace (std::string& subject, std::string const& find,
+        std::string const& replace);
   public:
-    static int send (std::string const& address, std::string const& subject,
-        std::string const& message);
+    static int exec (ApiCharSheetPtr sheet, ApiInTrainingPtr training);
 };
 
-#endif /* MAILER_HEADER */
+#endif /* NOTIFIER_HEADER */

@@ -149,37 +149,44 @@ GuiConfiguration::GuiConfiguration (void)
   notify_cb_box->pack_start(*notify_with_tray, false, false, 0);
   notify_cb_box->pack_start(*notify_with_info_bar, false, false, 0);
 
-  Gtk::Label* notify_info2_label = MK_LABEL("See the forums for details "
-      "on how to configure your system to send emails. This is not an "
-      "easy task!");
+  Gtk::Label* notify_info2_label = MK_LABEL("See the forums for "
+      "how to send emails with this handler.");
   notify_info2_label->property_xalign() = 0.0f;
   notify_info2_label->set_line_wrap(true);
 
-  GtkConfCheckButton* notify_with_email = Gtk::manage
-      (new GtkConfCheckButton("Enable email notifications", false,
-      "notifications.send_email"));
-  GtkConfTextEntry* notify_address_entry = Gtk::manage
-      (new GtkConfTextEntry("notifications.mail_address"));
+  GtkConfCheckButton* notify_handler_enabled = Gtk::manage
+      (new GtkConfCheckButton("Enable notification handler", false,
+      "notifications.exec_handler"));
+  GtkConfTextEntry* notify_command_entry = Gtk::manage
+      (new GtkConfTextEntry("notifications.exec_command"));
+  GtkConfTextEntry* notify_data_entry = Gtk::manage
+      (new GtkConfTextEntry("notifications.exec_data"));
   GtkConfTextEntry* notify_min_sp_entry = Gtk::manage
       (new GtkConfTextEntry("notifications.minimum_sp"));
 
-  Gtk::Label* notify_email_addr_label = MK_LABEL("Email address:");
-  notify_email_addr_label->property_xalign() = 0.0;
-  Gtk::Label* notify_email_minsp_label = MK_LABEL("Minimum skill SP:");
-  notify_email_minsp_label->property_xalign() = 0.0;
+  Gtk::Label* notify_command_label = MK_LABEL("Command to execute:");
+  notify_command_label->property_xalign() = 0.0;
+  Gtk::Label* notify_data_label = MK_LABEL("Data to send (stdin):");
+  notify_data_label->property_xalign() = 0.0;
+  Gtk::Label* notify_minsp_label = MK_LABEL("Minimum skill SP:");
+  notify_minsp_label->property_xalign() = 0.0;
 
-  Gtk::Table* notify_email_table = Gtk::manage(new Gtk::Table(3, 2));
-  notify_email_table->set_row_spacings(1);
-  notify_email_table->set_col_spacings(5);
-  notify_email_table->attach(*notify_with_email, 0, 2, 0, 1,
+  Gtk::Table* notify_handler_table = Gtk::manage(new Gtk::Table(4, 2));
+  notify_handler_table->set_row_spacings(1);
+  notify_handler_table->set_col_spacings(5);
+  notify_handler_table->attach(*notify_handler_enabled, 0, 2, 0, 1,
       Gtk::EXPAND | Gtk::FILL);
-  notify_email_table->attach(*notify_email_addr_label, 0, 1, 1, 2,
+  notify_handler_table->attach(*notify_command_label, 0, 1, 1, 2,
       Gtk::SHRINK | Gtk::FILL);
-  notify_email_table->attach(*notify_email_minsp_label, 0, 1, 2, 3,
+  notify_handler_table->attach(*notify_data_label, 0, 1, 2, 3,
       Gtk::SHRINK | Gtk::FILL);
-  notify_email_table->attach(*notify_address_entry, 1, 2, 1, 2,
+  notify_handler_table->attach(*notify_minsp_label, 0, 1, 3, 4,
+      Gtk::SHRINK | Gtk::FILL);
+  notify_handler_table->attach(*notify_command_entry, 1, 2, 1, 2,
       Gtk::EXPAND | Gtk::FILL);
-  notify_email_table->attach(*notify_min_sp_entry, 1, 2, 2, 3,
+  notify_handler_table->attach(*notify_data_entry, 1, 2, 2, 3,
+      Gtk::EXPAND | Gtk::FILL);
+  notify_handler_table->attach(*notify_min_sp_entry, 1, 2, 3, 4,
       Gtk::EXPAND | Gtk::FILL);
 
   Gtk::VBox* page_notifications = MK_VBOX;
@@ -187,7 +194,7 @@ GuiConfiguration::GuiConfiguration (void)
   page_notifications->pack_start(*notify_info_label, false, false, 0);
   page_notifications->pack_start(*notify_cb_box, false, false, 0);
   page_notifications->pack_start(*notify_info2_label, false, false, 0);
-  page_notifications->pack_start(*notify_email_table, false, false, 0);
+  page_notifications->pack_start(*notify_handler_table, false, false, 0);
 
   /* The TIME_FORMAT notebook tab. */
   Gtk::Label* time_info_label = MK_LABEL

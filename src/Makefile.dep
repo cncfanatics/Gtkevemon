@@ -37,8 +37,8 @@ gtkserver.o: gtkserver.cc exception.h serverlist.h server.h helpers.h \
 gtkconfwidgets.o: gtkconfwidgets.cc gtkportrait.h asynchttp.h http.h \
   ref_ptr.h thread.h exception.h config.h conf.h gtkconfwidgets.h
 gtkcharpage.o: gtkcharpage.cc config.h conf.h ref_ptr.h evetime.h \
-  helpers.h mailer.h exception.h apiintraining.h http.h apibase.h \
-  eveapi.h asynchttp.h thread.h apicharsheet.h apiskilltree.h \
+  helpers.h notifier.h apicharsheet.h http.h apibase.h eveapi.h \
+  asynchttp.h thread.h exception.h apiskilltree.h apiintraining.h \
   imagestore.h gtkdefines.h gtkhelpers.h guiskill.h winbase.h \
   guiskillplanner.h gtkplannerbase.h gtkskilldetails.h gtktrainingplan.h \
   gtkportrait.h gtkcolumnsbase.h gtkconfwidgets.h guixmlsource.h \
@@ -94,7 +94,10 @@ xml.o: xml.cc exception.h xml.h ref_ptr.h
 evetime.o: evetime.cc evetime.h config.h conf.h ref_ptr.h
 bgprocess.o: bgprocess.cc exception.h helpers.h bgprocess.h thread.h
 pipedexec.o: pipedexec.cc helpers.h exception.h pipedexec.h
-mailer.o: mailer.cc pipedexec.h helpers.h mailer.h
+notifier.o: notifier.cc config.h conf.h ref_ptr.h evetime.h \
+  apiskilltree.h http.h apibase.h eveapi.h asynchttp.h thread.h \
+  exception.h pipedexec.h helpers.h notifier.h apicharsheet.h \
+  apiintraining.h
 http.o: http.cc exception.h http.h ref_ptr.h
 asynchttp.o: asynchttp.cc asynchttp.h http.h ref_ptr.h thread.h \
   exception.h

@@ -149,7 +149,7 @@ class GtkCharPage : public Gtk::VBox
     void api_info_changed (void);
     void remove_tray_notify (void);
     void create_tray_notify (void);
-    void send_notification_mail (void);
+    void exec_notification_handler (void);
     void on_skill_completed (void);
     void on_close_clicked (void);
     void on_info_clicked (void);
