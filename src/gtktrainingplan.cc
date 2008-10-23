@@ -495,6 +495,7 @@ GtkTrainingPlan::GtkTrainingPlan (void)
   this->total_time.set_text("n/a");
   this->total_time.property_xalign() = 0.0f;
 
+  this->reorder_new_index = -1;
   //this->clean_plan_but.set_label("Clean up");
 
   /* Setup treeview. */
@@ -999,10 +1000,12 @@ void
 GtkTrainingPlan::on_row_inserted (Gtk::TreePath const& path,
     Gtk::TreeModel::iterator const& iter)
 {
-  if (this->updating_liststore)
+  this->reorder_new_index = -1;
+
+  if (this->updating_liststore || path.size() <= 0)
     return;
 
-  if (iter){} // Prevent warnings
+  if (iter) {} // Prevent warnings
 
   /* Remember the new position. Move the skill in the delete event. */
   this->reorder_new_index = path[0];
@@ -1013,12 +1016,17 @@ GtkTrainingPlan::on_row_inserted (Gtk::TreePath const& path,
 void
 GtkTrainingPlan::on_row_deleted (Gtk::TreePath const& path)
 {
-  if (this->updating_liststore)
+  if (this->updating_liststore || path.size() <= 0)
+    return;
+
+  if (this->reorder_new_index < 0)
     return;
 
   /* Pass old and new position and let the skill list do the work. */
   this->skills.move_skill(path[0], this->reorder_new_index);
   this->update_plan(true);
+
+  this->reorder_new_index = -1;
 }
 
 /* ---------------------------------------------------------------- */

@@ -67,7 +67,7 @@ Notifier::exec (ApiCharSheetPtr sheet, ApiInTrainingPtr training)
   std::string start_sp_str = Helpers::get_dotted_str_from_int(start_sp);
   std::string dest_sp_str = Helpers::get_dotted_str_from_int(dest_sp);
   std::string new_sp_str = Helpers::get_dotted_str_from_int(diff_sp);
-  std::string spph_str = Helpers::get_dotted_str_from_int(spph);
+  std::string spph_str = Helpers::get_string_from_int(spph);
   std::string train_time = EveTime::get_string_for_timediff
       ((time_t)(diff_sp / spps), false);
   std::string eve_time = EveTime::get_eve_time_string();
