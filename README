@@ -13,10 +13,13 @@ GtkEveMon comes in form of source code. You can take a look at the
 code, it's all located in the "src/" directory. In order to execute
 it, it needs to be build.
 
-Execute the following commands:
+Execute the following command:
 
-$ make clean
-$ make
+$ make multicore
+
+The "multicore" argument is for faster compilation on multicore
+machines but it should also work if you don't have a multicore CPU.
+If it does not work, simply call "make" without arguments.
 
 
 STEP 2: RUNNING
@@ -24,7 +27,7 @@ STEP 2: RUNNING
 
 Note that you DO NOT NEED to install GtkEveMon in order to use it.
 If you don't want to install GtkEveMon, issue the following commands,
-relative to this file:
+relative to this README file:
 
 $ cd src
 $ ./gtkevemon

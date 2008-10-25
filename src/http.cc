@@ -1,6 +1,8 @@
 #include <netdb.h>
 #include <arpa/inet.h>
+#include <sys/types.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
 #include <cmath>
 #include <cerrno>
 #include <cstring>
@@ -39,7 +41,7 @@ GetHostByName::GetHostByName (char const* host)
 {
   this->strange_data = 0;
 
-#ifdef _GNU_SOURCE
+#if defined(_GNU_SOURCE) || defined(__FreeBSD__)
 
   /* If this is compiled as GNU source, assume that
    * gethostbyname_r is available. */
