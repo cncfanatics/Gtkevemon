@@ -16,7 +16,9 @@
 
 GuiSkillPlanner::GuiSkillPlanner (void)
   : skill_store(Gtk::TreeStore::create(skill_cols)),
-    skill_view(skill_store)
+    skill_view(skill_store),
+    filter_unknown("Only unknown"),
+    filter_trainable("Only trainable")
 {
   this->skill_store->set_sort_column
       (this->skill_cols.name, Gtk::SORT_ASCENDING);
@@ -43,8 +45,13 @@ GuiSkillPlanner::GuiSkillPlanner (void)
   filter_box->pack_start(this->filter_entry, true, true, 0);
   filter_box->pack_start(*clear_filter_but, false, false, 0);
 
+  Gtk::HBox* filter_cb_box = MK_HBOX;
+  filter_cb_box->pack_start(this->filter_unknown, false, false, 0);
+  filter_cb_box->pack_start(this->filter_trainable, false, false, 0);
+
   Gtk::VBox* skill_panechild = MK_VBOX;
   skill_panechild->pack_start(*filter_box, false, false, 0);
+  skill_panechild->pack_start(*filter_cb_box, false, false, 0);
   skill_panechild->pack_start(*skill_scwin, true, true, 0);
   skill_panechild->set_size_request(250, -1);
 
@@ -85,6 +92,10 @@ GuiSkillPlanner::GuiSkillPlanner (void)
       (sigc::mem_fun(*this, &GuiSkillPlanner::skill_row_activated));
   close_but->signal_clicked().connect(sigc::mem_fun(*this, &WinBase::close));
   this->filter_entry.signal_activate().connect(sigc::mem_fun
+      (*this, &GuiSkillPlanner::fill_skill_store));
+  this->filter_unknown.signal_clicked().connect(sigc::mem_fun
+      (*this, &GuiSkillPlanner::fill_skill_store));
+  this->filter_trainable.signal_clicked().connect(sigc::mem_fun
       (*this, &GuiSkillPlanner::fill_skill_store));
   clear_filter_but->signal_clicked().connect(sigc::mem_fun
       (*this, &GuiSkillPlanner::clear_filter));
@@ -148,6 +159,8 @@ GuiSkillPlanner::fill_skill_store (void)
 {
   this->skill_store->clear();
   Glib::ustring filter = this->filter_entry.get_text();
+  bool only_unknown = this->filter_unknown.get_active();
+  bool only_trainable = this->filter_trainable.get_active();
 
   ApiSkillTreePtr tree = ApiSkillTree::request();
   ApiSkillMap& skills = tree->skills;
@@ -175,7 +188,7 @@ GuiSkillPlanner::fill_skill_store (void)
   {
     ApiSkill& skill = iter->second;
 
-    /* Apply filter. */
+    /* Apply string filter. */
     if (Glib::ustring(skill.name).casefold()
         .find(filter.casefold()) == Glib::ustring::npos)
       continue;
@@ -187,12 +200,6 @@ GuiSkillPlanner::fill_skill_store (void)
       continue;
     }
 
-    Gtk::TreeModel::iterator siter = this->skill_store->append
-        (giter->second.first->children());
-    (*siter)[this->skill_cols.name] = skill.name + " ("
-        + Helpers::get_string_from_int(skill.rank) + ")";
-    (*siter)[this->skill_cols.skill] = &skill;
-
     ApiCharSheetSkill* cskill = this->charsheet->get_skill_for_id(skill.id);
     Glib::RefPtr<Gdk::Pixbuf> skill_icon;
 
@@ -201,11 +208,18 @@ GuiSkillPlanner::fill_skill_store (void)
       if (this->have_prerequisites_for_skill(&skill))
         skill_icon = ImageStore::skillstatus[1];
       else
+      {
+        if (only_trainable)
+          continue;
         skill_icon = ImageStore::skillstatus[0];
+      }
 
     }
     else
     {
+      if (only_unknown)
+        continue;
+
       switch (cskill->level)
       {
         case 0: skill_icon = ImageStore::skillstatus[2]; break;
@@ -213,10 +227,21 @@ GuiSkillPlanner::fill_skill_store (void)
         case 2: skill_icon = ImageStore::skillstatus[4]; break;
         case 3: skill_icon = ImageStore::skillstatus[5]; break;
         case 4: skill_icon = ImageStore::skillstatus[6]; break;
-        case 5: skill_icon = ImageStore::skillstatus[7]; break;
+        case 5:
+          skill_icon = ImageStore::skillstatus[7];
+          if (only_trainable)
+            continue;
+          break;
         default: skill_icon = ImageStore::skillstatus[0]; break;
       }
     }
+
+    /* Finally append the skill. */
+    Gtk::TreeModel::iterator siter = this->skill_store->append
+        (giter->second.first->children());
+    (*siter)[this->skill_cols.name] = skill.name + " ("
+        + Helpers::get_string_from_int(skill.rank) + ")";
+    (*siter)[this->skill_cols.skill] = &skill;
 
     (*siter)[this->skill_cols.icon] = skill_icon;
 
@@ -231,7 +256,7 @@ GuiSkillPlanner::fill_skill_store (void)
       this->skill_store->erase(iter->second.first);
   }
 
-  if (!filter.empty())
+  if (!filter.empty() || only_unknown || only_trainable)
     this->skill_view.expand_all();
 }
 
