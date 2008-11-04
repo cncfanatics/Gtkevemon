@@ -6,6 +6,7 @@
 #include "argumentsettings.h"
 
 bool ArgumentSettings::start_minimized = false;
+std::string ArgumentSettings::config_dir = "";
 
 /* ---------------------------------------------------------------- */
 
@@ -14,8 +15,10 @@ ArgumentSettings::show_help (void)
 {
   std::cout << "Usage: gtkevemon [ options ]" << std::endl
       << "Options:" << std::endl
-      << "    -h, --help               Display this text" << std::endl
-      << "    -m, --start-minimized    Start gtkevemon minimized" << std::endl;
+      << "  -c DIR, --config-dir DIR  Use DIR as config directory" << std::endl
+      << "  -h, --help                Display this helpful text" << std::endl
+      << "  -m, --start-minimized     Start gtkevemon minimized" << std::endl
+      << "  -v, --version             Display version and exit" << std::endl;
 }
 
 /* ---------------------------------------------------------------- */
@@ -42,6 +45,19 @@ ArgumentSettings::init (int argc, char** argv)
     {
       std::cout << "GtkEveMon Version: " GTKEVEMON_VERSION_STR << std::endl;
       ::exit(0);
+    }
+    else if (sw == "-c" || sw == "--config-dir")
+    {
+      if (argc <= optind + 1 || argv[optind + 1][0] == '\0'
+          || argv[optind + 1][0] == '-')
+      {
+        std::cout << sw << ": Expecting directory argument" << std::endl;
+      }
+      else
+      {
+        ArgumentSettings::config_dir = argv[optind + 1];
+        optind += 1;
+      }
     }
     else
     {

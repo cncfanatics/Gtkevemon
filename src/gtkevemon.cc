@@ -22,16 +22,18 @@ signal_received (int signum)
 int
 main (int argc, char* argv[])
 {
-  Config::init_defaults();
-  Config::init_user_config();
+  Gtk::Main kit(&argc, &argv);
 
   ::signal(SIGINT, signal_received);
   ::signal(SIGTERM, signal_received);
 
+  ArgumentSettings::init(argc, argv);
+
+  Config::init_defaults();
+  Config::init_user_config();
+
   ServerList::init_from_config();
   EveTime::init_from_config();
-  Gtk::Main kit(&argc, &argv);
-  ArgumentSettings::init(argc, argv);
   ImageStore::init();
 
   {

@@ -89,7 +89,7 @@ serverlist.o: serverlist.cc config.h conf.h ref_ptr.h exception.h \
   thread.h serverlist.h server.h
 helpers.o: helpers.cc helpers.h
 conf.o: conf.cc exception.h conf.h ref_ptr.h
-config.o: config.cc config.h conf.h ref_ptr.h
+config.o: config.cc argumentsettings.h config.h conf.h ref_ptr.h
 xml.o: xml.cc exception.h xml.h ref_ptr.h
 evetime.o: evetime.cc evetime.h config.h conf.h ref_ptr.h
 bgprocess.o: bgprocess.cc exception.h helpers.h bgprocess.h thread.h

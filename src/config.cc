@@ -4,6 +4,8 @@
 #include <pwd.h>
 #include <iostream>
 #include <string>
+
+#include "argumentsettings.h"
 #include "config.h"
 
 #define CONF_HOME_DIR ".gtkevemon"
@@ -83,6 +85,7 @@ Config::init_user_config (void)
    * If there is no home directory or any other error occures,
    * the current directory or even worse, /tmp is used. */
   std::string user_conf_dir;
+  if (ArgumentSettings::config_dir.empty())
   {
     uid_t user_id = ::geteuid();
     struct passwd* user_info = ::getpwuid(user_id);
@@ -96,7 +99,7 @@ Config::init_user_config (void)
         user_conf_dir = buffer;
       else
       {
-        std::cout << "Warning: Couldn't determine CWD!" << std::endl;
+        std::cout << "Warning: Couldn't even determine CWD!" << std::endl;
         user_conf_dir = "/tmp";
       }
     }
@@ -106,6 +109,10 @@ Config::init_user_config (void)
       user_conf_dir += "/";
       user_conf_dir += CONF_HOME_DIR;
     }
+  }
+  else
+  {
+    user_conf_dir = ArgumentSettings::config_dir;
   }
 
   //std::cout << "Resolved config directory to: " << user_conf_dir << std::endl;

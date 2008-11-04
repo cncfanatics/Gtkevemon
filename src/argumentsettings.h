@@ -20,6 +20,7 @@ class ArgumentSettings
 
   public:
     static bool start_minimized;
+    static std::string config_dir;
 
   public:
     static void init (int argc, char** argv);
