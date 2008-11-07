@@ -179,15 +179,6 @@ GtkSkillList::calc_details (void)
     if (cskill == 0 || skill->id != cskill->id)
       cskill = this->charsheet->get_skill_for_id(skill->id);
 
-    /* If the current skill is a training skill not already known,
-     * it has impact on the SP/h. Apply this impact. */
-    if (cskill == 0 || cskill->level < info.plan_level)
-    {
-      this->apply_attributes(skill, attribs, training_level);
-      if (skill->id == 3374)
-        training_level += 1;
-    }
-
     /* Update the skill icon. */
     if (skill->id == train_skill && info.plan_level == train_level)
       this->at(i).skill_icon = SKILL_STATUS_TRAINING;
@@ -231,6 +222,15 @@ GtkSkillList::calc_details (void)
     info.spph = (int)(spps * 3600.0);
 
     duration += timediff;
+
+    /* If the current skill is a training skill not already known,
+     * it has impact on the SP/h. Apply this impact. */
+    if (cskill == 0 || cskill->level < info.plan_level)
+    {
+      this->apply_attributes(skill, attribs, training_level);
+      if (skill->id == 3374)
+        training_level += 1;
+    }
   }
 }
 
@@ -596,6 +596,7 @@ GtkTrainingPlan::~GtkTrainingPlan (void)
 {
   this->save_current_plan();
   this->store_to_config();
+  Config::save_to_file();
 }
 
 /* ---------------------------------------------------------------- */
