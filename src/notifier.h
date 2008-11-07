@@ -24,6 +24,7 @@ class Notifier
   private:
     static void replace (std::string& subject, std::string const& find,
         std::string const& replace);
+
   public:
     static int exec (ApiCharSheetPtr sheet, ApiInTrainingPtr training);
 };

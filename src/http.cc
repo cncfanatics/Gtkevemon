@@ -202,6 +202,7 @@ Http::request (void)
   headers << "User-Agent: " << this->agent << "\n";
   headers << "Connection: close\n";
 
+  /* Append additional headers specified from the outside. */
   for (unsigned int i = 0; i < this->headers.size(); ++i)
     headers << this->headers[i] << "\n";
 
@@ -330,6 +331,12 @@ Http::data_readline (std::string& dest,
 
   for (size_t iter = pos; true; ++iter)
   {
+    if (iter >= data.size())
+      return iter;
+
+    if (data[iter] == '\0')
+      return iter;
+
     if (data[iter] == '\r')
       return iter + 2;
 
