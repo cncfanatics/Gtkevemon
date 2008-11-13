@@ -84,8 +84,16 @@ ApiCharSheet::set_api_data (EveApiData const& data)
   for (unsigned int i = 0; i < this->skills.size(); ++i)
   {
     ApiSkill const* skill = tree->get_skill_for_id(skills[i].id);
-    skills[i].details = skill;
+    if (skill == 0)
+    {
+      std::cout << "Warning: Ignoring unknown skill (ID " << skills[i].id
+          << "). Update GtkEveMon or SkillTree.xml." << std::endl;
+      this->skills.erase(this->skills.begin() + i);
+      i -= 1;
+      continue;
+    }
 
+    skills[i].details = skill;
     skills[i].points_start = ApiCharSheet::calc_start_sp
         (skills[i].level, skill->rank);
     skills[i].points_dest = ApiCharSheet::calc_dest_sp
