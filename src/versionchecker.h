@@ -19,16 +19,19 @@
 #include "asynchttp.h"
 
 /* This is the amount of milli seconds between version checks. */
-#define VERSION_CHECK_INTERVAL 3600000
+#define VERSION_CHECK_INTERVAL 7200000 /* Every 2 hours. */
 
 class VersionChecker
 {
   private:
     Gtk::Window* parent_window;
     GtkInfoDisplay* info_display;
-    sigc::connection request_conn;
 
-    void handle_result (AsyncHttpData result);
+    sigc::connection request_svn_conn;
+    void handle_svn_result (AsyncHttpData result);
+
+    sigc::connection request_data_conn;
+    void handle_data_result (AsyncHttpData result);
 
   public:
     VersionChecker (void);
@@ -36,7 +39,7 @@ class VersionChecker
 
     void set_info_display (GtkInfoDisplay* disp);
     void set_parent_window (Gtk::Window* disp);
-    bool request_version (void);
+    bool request_versions (void);
 };
 
 /* ---------------------------------------------------------------- */

@@ -12,6 +12,7 @@
 #include <gtkmm/textview.h>
 #include <gtkmm/notebook.h>
 
+#include "defines.h"
 #include "helpers.h"
 #include "gtkdefines.h"
 #include "imagestore.h"
@@ -38,9 +39,14 @@ GuiConfiguration::GuiConfiguration (void)
   GtkConfCheckButton* misc_autoupdate_sheets_cb = Gtk::manage
       (new GtkConfCheckButton("Automatically update character status",
       false, "settings.auto_update_sheets"));
-  GtkConfCheckButton* misc_versionchecking_cb = Gtk::manage
-      (new GtkConfCheckButton("Online version checking",
-      false, "versionchecker.enabled"));
+  GtkConfCheckButton* misc_svn_versioncheck_cb = Gtk::manage
+      (new GtkConfCheckButton("Notify about new GtkEveMon SVN versions",
+      false, "versionchecker.svn_check"));
+  /*
+  GtkConfCheckButton* misc_data_versioncheck_cb = Gtk::manage
+      (new GtkConfCheckButton("Notify about new data file versions",
+      false, "versionchecker.data_check"));
+  */
   GtkConfCheckButton* misc_verbose_wintitle_cb = Gtk::manage
       (new GtkConfCheckButton("Show training info in window title",
       false, "settings.verbose_wintitle"));
@@ -49,7 +55,8 @@ GuiConfiguration::GuiConfiguration (void)
   misc_cb_box->pack_start(*misc_min_on_close_cb, false, false, 0);
   misc_cb_box->pack_start(*misc_detailed_tray_tt_cb, false, false, 0);
   misc_cb_box->pack_start(*misc_autoupdate_sheets_cb, false, false, 0);
-  misc_cb_box->pack_start(*misc_versionchecking_cb, false, false, 0);
+  misc_cb_box->pack_start(*misc_svn_versioncheck_cb, false, false, 0);
+  //misc_cb_box->pack_start(*misc_data_versioncheck_cb, false, false, 0);
   misc_cb_box->pack_start(*misc_verbose_wintitle_cb, false, false, 0);
 
   Gtk::VBox* page_misc = MK_VBOX;
@@ -65,14 +72,12 @@ GuiConfiguration::GuiConfiguration (void)
   launch_info_label->property_xalign() = 0.0f;
   launch_info_label->set_line_wrap(true);
 
-  #define EVE_CMD_AMOUNT 5
-
   Gtk::Table* launch_table = Gtk::manage(new Gtk::Table
-      (EVE_CMD_AMOUNT, 2, false));
+      (LAUNCHER_CMD_AMOUNT, 2, false));
   launch_table->set_col_spacings(5);
   launch_table->set_row_spacings(1);
 
-  for (unsigned int i = 0; i < EVE_CMD_AMOUNT; ++i)
+  for (unsigned int i = 0; i < LAUNCHER_CMD_AMOUNT; ++i)
   {
     std::string key;
     if (i == 0)

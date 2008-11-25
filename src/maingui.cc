@@ -27,7 +27,7 @@
 #include "maingui.h"
 
 MainGui::MainGui (void)
-  : info_display(INFO_STYLE_FRAMED)
+  : info_display(INFO_STYLE_FRAMED), iconified(false)
 {
   this->conf_windowtitle = Config::conf.get_value("settings.verbose_wintitle");
   this->notebook.set_scrollable(true);
@@ -198,7 +198,7 @@ MainGui::MainGui (void)
 
   this->update_time();
   this->init_from_config();
-  this->versionchecker.request_version();
+  this->versionchecker.request_versions();
 }
 
 /* ---------------------------------------------------------------- */
@@ -430,6 +430,7 @@ MainGui::on_window_state_event (GdkEventWindowState* event)
 {
   ConfValuePtr value = Config::conf.get_value("settings.tray_usage");
 
+  /* Manage the tray icon. */
   if (**value == "minimize")
   {
     if (event->new_window_state & GDK_WINDOW_STATE_ICONIFIED)
@@ -448,29 +449,22 @@ MainGui::on_window_state_event (GdkEventWindowState* event)
       this->destroy_tray_icon();
   }
 
-  if (event->new_window_state & GDK_WINDOW_STATE_ICONIFIED
-      && **value != "never")
-    this->set_skip_taskbar_hint(true);
+  /* Manage window state. */
+  if (event->new_window_state & GDK_WINDOW_STATE_ICONIFIED)
+  {
+    this->iconified = true;
+
+    if (**value != "never")
+      this->set_skip_taskbar_hint(true);
+  }
   else
+  {
+    this->iconified = false;
     this->set_skip_taskbar_hint(false);
+  }
 
   while (Gtk::Main::events_pending())
     Gtk::Main::iteration();
-
-  return true;
-}
-
-/* ---------------------------------------------------------------- */
-
-bool
-MainGui::on_delete_event (GdkEventAny* event)
-{
-  event = 0;
-
-  if (Config::conf.get_value("settings.minimize_on_close")->get_bool())
-    this->iconify();
-  else
-    this->close();
 
   return true;
 }
@@ -486,10 +480,32 @@ MainGui::on_tray_icon_clicked (void)
 
   //std::cout << "Tray clicked. Taskbar hint is: " << this->get_skip_taskbar_hint() << std::endl;
 
-  if (this->get_skip_taskbar_hint())
+  if (this->iconified)
+  {
+    this->set_skip_taskbar_hint(false);
     this->deiconify();
+    this->iconified = false;
+  }
   else
+  {
     this->iconify();
+    this->iconified = true;
+  }
+}
+
+/* ---------------------------------------------------------------- */
+
+bool
+MainGui::on_delete_event (GdkEventAny* event)
+{
+  event = 0;
+
+  if (Config::conf.get_value("settings.minimize_on_close")->get_bool())
+    this->iconify();
+  else
+    this->close();
+
+  return true;
 }
 
 /* ---------------------------------------------------------------- */

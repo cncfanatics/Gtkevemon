@@ -11,32 +11,49 @@ VersionChecker::VersionChecker (void)
   this->info_display = 0;
   this->parent_window = 0;
   Glib::signal_timeout().connect(sigc::mem_fun
-      (*this, &VersionChecker::request_version), VERSION_CHECK_INTERVAL);
+      (*this, &VersionChecker::request_versions), VERSION_CHECK_INTERVAL);
 }
 
 /* ---------------------------------------------------------------- */
 
 VersionChecker::~VersionChecker (void)
 {
-  this->request_conn.disconnect();
+  this->request_svn_conn.disconnect();
+  this->request_data_conn.disconnect();
 }
 
 /* ---------------------------------------------------------------- */
 
 bool
-VersionChecker::request_version (void)
+VersionChecker::request_versions (void)
 {
-  ConfValuePtr check = Config::conf.get_value("versionchecker.enabled");
-  if (!check->get_bool())
-    return true;
+  /* Request SVN version. */
+  ConfValuePtr check = Config::conf.get_value("versionchecker.svn_check");
+  if (check->get_bool())
+  {
+    AsyncHttp* http = AsyncHttp::create();
+    http->set_host("gtkevemon.battleclinic.com");
+    http->set_path("/svn_version.txt");
+    http->set_agent("GtkEveMon");
+    this->request_svn_conn = http->signal_done().connect(sigc::mem_fun
+        (*this, &VersionChecker::handle_svn_result));
+    http->async_request();
+  }
 
-  AsyncHttp* http = AsyncHttp::create();
-  http->set_host("gtkevemon.battleclinic.com");
-  http->set_path("/svn_version.txt");
-  http->set_agent("GtkEveMon");
-  this->request_conn = http->signal_done().connect(sigc::mem_fun
-      (*this, &VersionChecker::handle_result));
-  http->async_request();
+  #if 0
+  /* Request data versions. */
+  check = Config::conf.get_value("versionchecker.data_check");
+  if (check->get_bool())
+  {
+    AsyncHttp* http = AsyncHttp::create();
+    http->set_host("gtkevemon.battleclinic.com");
+    http->set_path("/data/versions.txt");
+    http->set_agent("GtkEveMon");
+    this->request_data_conn = http->signal_done().connect(sigc::mem_fun
+        (*this, &VersionChecker::handle_data_result));
+    http->async_request();
+  }
+  #endif
 
   return true;
 }
@@ -44,11 +61,11 @@ VersionChecker::request_version (void)
 /* ---------------------------------------------------------------- */
 
 void
-VersionChecker::handle_result (AsyncHttpData result)
+VersionChecker::handle_svn_result (AsyncHttpData result)
 {
   if (result.data.get() == 0)
   {
-    std::cout << "Unable to perform version check: "
+    std::cout << "Unable to perform SVN version check: "
         << result.exception << std::endl;
     return;
   }
@@ -81,7 +98,9 @@ VersionChecker::handle_result (AsyncHttpData result)
   if (svn_version == cur_version)
     return;
 
-  ConfValuePtr last_seen = Config::conf.get_value("versionchecker.last_seen");
+  ConfValuePtr last_seen = Config::conf.get_value
+      ("versionchecker.svn_last_seen");
+
   if (svn_version == **last_seen)
     return;
 
@@ -114,5 +133,23 @@ VersionChecker::handle_result (AsyncHttpData result)
     if (this->parent_window != 0)
       md.set_transient_for(*this->parent_window);
     md.run();
+  }
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+VersionChecker::handle_data_result (AsyncHttpData result)
+{
+  std::cout << "Received data versions:" << std::endl;
+  if (result.data.get() == 0)
+  {
+    std::cout << "Error requesting data: " << result.exception << std::endl;
+  }
+  else
+  {
+    std::cout << "Received response: " << result.data->data << std::endl;
+    for (unsigned int i = 0; i < result.data->headers.size(); ++i)
+      std::cout << "  headers: " << result.data->headers[i] << std::endl;
   }
 }

@@ -198,7 +198,10 @@ GtkPortrait::on_button_press_myevent (GdkEventButton* event)
       false, Gtk::MESSAGE_INFO, Gtk::BUTTONS_OK);
   md.set_secondary_text("A new portrait has been requested from the "
       "EVE image server. If you can only see a \"!\" as portrait, "
-      "the image server most likely does not have the portrait.\n\n"
+      "the image server most likely does not have the portrait. This "
+      "happens to new players or after a portrait server reset.\n\n"
+      "If you can see a \"!\" and the text \"GtkEveMon fallback\", the "
+      "portrait couldn't be requested and a local fallback is used.\n\n"
       "Image URL: http://img.eve.is/serv.asp?s=256&c=" + this->char_id);
   md.set_title("Portrait re-request - GtkEveMon");
   md.set_transient_for(*toplevel);

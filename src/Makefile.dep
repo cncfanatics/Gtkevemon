@@ -8,7 +8,7 @@ maingui.o: maingui.cc argumentsettings.h helpers.h evetime.h eveapi.h \
 guiuserdata.o: guiuserdata.cc gtkdefines.h exception.h apicharlist.h \
   ref_ptr.h http.h apibase.h eveapi.h asynchttp.h thread.h config.h \
   conf.h guiuserdata.h winbase.h
-guiconfiguration.o: guiconfiguration.cc helpers.h gtkdefines.h \
+guiconfiguration.o: guiconfiguration.cc defines.h helpers.h gtkdefines.h \
   imagestore.h guiconfiguration.h winbase.h gtkconfwidgets.h config.h \
   conf.h ref_ptr.h
 guiaboutdialog.o: guiaboutdialog.cc asynchttp.h http.h ref_ptr.h thread.h \
@@ -25,9 +25,9 @@ guiskillplanner.o: guiskillplanner.cc helpers.h imagestore.h \
   winbase.h
 guixmlsource.o: guixmlsource.cc gtkdefines.h guixmlsource.h winbase.h \
   http.h ref_ptr.h
-guievelauncher.o: guievelauncher.cc gtkdefines.h exception.h helpers.h \
-  bgprocess.h thread.h config.h conf.h ref_ptr.h guievelauncher.h \
-  winbase.h
+guievelauncher.o: guievelauncher.cc defines.h gtkdefines.h exception.h \
+  helpers.h bgprocess.h thread.h config.h conf.h ref_ptr.h \
+  guievelauncher.h winbase.h
 gtkevemon.o: gtkevemon.cc argumentsettings.h evetime.h config.h conf.h \
   ref_ptr.h serverlist.h server.h imagestore.h maingui.h gtkinfodisplay.h \
   winbase.h versionchecker.h asynchttp.h http.h thread.h exception.h \

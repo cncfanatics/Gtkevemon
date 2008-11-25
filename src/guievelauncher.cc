@@ -11,6 +11,7 @@
 #include <gtkmm/frame.h>
 #include <gtkmm/messagedialog.h>
 
+#include "defines.h"
 #include "gtkdefines.h"
 #include "exception.h"
 #include "helpers.h"
@@ -18,13 +19,11 @@
 #include "config.h"
 #include "guievelauncher.h"
 
-#define EVE_CMD_AMOUNT 5
-
 Gtk::Window*
 GuiEveLauncher::launch_eve (void)
 {
   std::vector<std::string> commands;
-  for (unsigned int i = 0; i < EVE_CMD_AMOUNT; ++i)
+  for (unsigned int i = 0; i < LAUNCHER_CMD_AMOUNT; ++i)
   {
     std::string key;
     if (i == 0)
@@ -57,7 +56,7 @@ GuiEveLauncher::launch_eve (void)
 GuiEveLauncher::GuiEveLauncher (std::vector<std::string> const& cmds)
 {
   Gtk::Table* launch_table = Gtk::manage(new Gtk::Table
-      (EVE_CMD_AMOUNT, 3, false));
+      (LAUNCHER_CMD_AMOUNT, 3, false));
   launch_table->set_col_spacings(5);
   launch_table->set_row_spacings(1);
   launch_table->set_border_width(5);

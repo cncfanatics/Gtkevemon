@@ -49,6 +49,7 @@ class MainGui : public Gtk::Window
     Gtk::Label evetime_label;
     Gtk::Label localtime_label;
     GtkInfoDisplay info_display;
+    bool iconified;
 
     void init_from_config (void);
     bool update_servers (void);
@@ -64,8 +65,8 @@ class MainGui : public Gtk::Window
     void launch_eve (void);
     void close (void);
     bool on_window_state_event (GdkEventWindowState* event);
-    bool on_delete_event (GdkEventAny* event);
     void on_tray_icon_clicked (void);
+    bool on_delete_event (GdkEventAny* event);
     void on_pages_changed (Gtk::Widget* widget, guint pnum);
     void on_pages_switched (GtkNotebookPage* page, guint pnum);
     void tray_popup_menu (guint button, guint32 activate_time);
