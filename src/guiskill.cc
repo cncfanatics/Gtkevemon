@@ -18,18 +18,18 @@ GuiSkill::GuiSkill (void)
   this->skill_desc.set_wrap_mode(Gtk::WRAP_WORD);
   this->skill_desc.set_editable(false);
   this->skill_name.set_selectable(true);
-  this->skill_name.property_xalign() = 0.0f;
+  this->skill_name.set_alignment(Gtk::ALIGN_LEFT);
   this->group_name.set_selectable(true);
-  this->group_name.property_xalign() = 0.0f;
+  this->group_name.set_alignment(Gtk::ALIGN_LEFT);
   this->skill_attribs.set_selectable(true);
-  this->skill_attribs.property_xalign() = 0.0f;
+  this->skill_attribs.set_alignment(Gtk::ALIGN_LEFT);
 
   Gtk::Label* skill_name_desc = MK_LABEL("Skill name:");
   Gtk::Label* group_name_desc = MK_LABEL("Skill group:");
   Gtk::Label* skill_attribs_desc = MK_LABEL("Attributes:");
-  skill_name_desc->property_xalign() = 0.0f;
-  group_name_desc->property_xalign() = 0.0f;
-  skill_attribs_desc->property_xalign() = 0.0f;
+  skill_name_desc->set_alignment(Gtk::ALIGN_LEFT);
+  group_name_desc->set_alignment(Gtk::ALIGN_LEFT);
+  skill_attribs_desc->set_alignment(Gtk::ALIGN_LEFT);
 
   Gtk::Table* info_table = Gtk::manage(new Gtk::Table(3, 2, false));
   info_table->set_col_spacings(5);

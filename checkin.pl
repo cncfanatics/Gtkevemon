@@ -23,7 +23,7 @@ print("Current revision: $current_rev\n");
 print("New revision: $new_rev\n");
 
 my $look_for = ".*GTKEVEMON_VERSION_STR.*";
-my $subst = "#define GTKEVEMON_VERSION_STR \"Revision 1.4-$new_rev\"";
+my $subst = "#define GTKEVEMON_VERSION_STR \"Revision 1.5-$new_rev\"";
 
 open FILE, "src/defines.h" or die("Cannot open defines.h (reading)");
 

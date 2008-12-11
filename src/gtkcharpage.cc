@@ -45,10 +45,15 @@ GtkCharPage::GtkCharPage (void)
   Gtk::TreeViewColumn* name_column = Gtk::manage(new Gtk::TreeViewColumn);
   name_column->set_title("Skill name (rank)");
   name_column->pack_start(this->skill_cols.icon, false);
+  #ifdef GLIBMM_PROPERTIES_ENABLED
   Gtk::CellRendererText* name_renderer = Gtk::manage(new Gtk::CellRendererText);
   name_column->pack_start(*name_renderer, true);
   name_column->add_attribute(name_renderer->property_markup(),
       this->skill_cols.name);
+  #else
+  /* FIXME: Activate markup here. */
+  name_column->pack_start(this->skill_cols.name);
+  #endif
 
   this->skill_store = Gtk::TreeStore::create(this->skill_cols);
   this->skill_store->set_sort_column
@@ -59,8 +64,8 @@ GtkCharPage::GtkCharPage (void)
   this->skill_view.append_column("Points", this->skill_cols.points);
   this->skill_view.append_column("Level", this->skill_cols.level);
   this->skill_view.get_column(0)->set_expand(true);
-  this->skill_view.get_column(1)->get_first_cell_renderer
-      ()->property_xalign() = 1.0f;
+  this->skill_view.get_column(1)->get_first_cell_renderer()
+      ->set_property("xalign", 1.0f);
 
   this->refresh_but.set_image(*Gtk::manage(new Gtk::Image
       (Gtk::Stock::REFRESH, Gtk::ICON_SIZE_MENU)));
@@ -69,26 +74,26 @@ GtkCharPage::GtkCharPage (void)
       (Gtk::Stock::INFO, Gtk::ICON_SIZE_MENU)));
   this->info_but.set_relief(Gtk::RELIEF_NONE);
 
-  this->char_name_label.property_xalign() = 0.0f;
-  this->char_info_label.property_xalign() = 0.0f;
-  this->corp_label.property_xalign() = 0.0f;
-  this->balance_label.property_xalign() = 0.0f;
-  this->skill_points_label.property_xalign() = 0.0f;
-  this->known_skills_label.property_xalign() = 0.0f;
-  this->attr_cha_label.property_xalign() = 0.0f;
-  this->attr_int_label.property_xalign() = 0.0f;
-  this->attr_per_label.property_xalign() = 0.0f;
-  this->attr_mem_label.property_xalign() = 0.0f;
-  this->attr_wil_label.property_xalign() = 0.0f;
-  this->training_label.property_xalign() = 0.0f;
-  this->remaining_label.property_xalign() = 0.0f;
-  this->finish_eve_label.property_xalign() = 0.0f;
-  this->finish_local_label.property_xalign() = 0.0f;
-  this->spph_label.property_xalign() = 1.0f;
-  this->live_sp_label.property_xalign() = 1.0f;
+  this->char_name_label.set_alignment(Gtk::ALIGN_LEFT);
+  this->char_info_label.set_alignment(Gtk::ALIGN_LEFT);
+  this->corp_label.set_alignment(Gtk::ALIGN_LEFT);
+  this->balance_label.set_alignment(Gtk::ALIGN_LEFT);
+  this->skill_points_label.set_alignment(Gtk::ALIGN_LEFT);
+  this->known_skills_label.set_alignment(Gtk::ALIGN_LEFT);
+  this->attr_cha_label.set_alignment(Gtk::ALIGN_LEFT);
+  this->attr_int_label.set_alignment(Gtk::ALIGN_LEFT);
+  this->attr_per_label.set_alignment(Gtk::ALIGN_LEFT);
+  this->attr_mem_label.set_alignment(Gtk::ALIGN_LEFT);
+  this->attr_wil_label.set_alignment(Gtk::ALIGN_LEFT);
+  this->training_label.set_alignment(Gtk::ALIGN_LEFT);
+  this->remaining_label.set_alignment(Gtk::ALIGN_LEFT);
+  this->finish_eve_label.set_alignment(Gtk::ALIGN_LEFT);
+  this->finish_local_label.set_alignment(Gtk::ALIGN_LEFT);
+  this->spph_label.set_alignment(Gtk::ALIGN_RIGHT);
+  this->live_sp_label.set_alignment(Gtk::ALIGN_RIGHT);
 
-  this->charsheet_info_label.property_xalign() = 1.0f;
-  this->trainsheet_info_label.property_xalign() = 1.0f;
+  this->charsheet_info_label.set_alignment(Gtk::ALIGN_RIGHT);
+  this->trainsheet_info_label.set_alignment(Gtk::ALIGN_RIGHT);
 
   Gtk::ScrolledWindow* scwin = Gtk::manage(new Gtk::ScrolledWindow);
   scwin->set_shadow_type(Gtk::SHADOW_ETCHED_IN);
@@ -107,15 +112,15 @@ GtkCharPage::GtkCharPage (void)
   Gtk::Label* attr_perception_desc = MK_LABEL("Perception:");
   Gtk::Label* attr_memory_desc = MK_LABEL("Memory:");
   Gtk::Label* attr_willpower_desc = MK_LABEL("Willpower:");
-  corp_desc->property_xalign() = 0.0f;
-  isk_desc->property_xalign() = 0.0f;
-  skillpoints_desc->property_xalign() = 0.0f;
-  knownskills_desc->property_xalign() = 0.0f;
-  attr_charisma_desc->property_xalign() = 0.0f;
-  attr_intelligence_desc->property_xalign() = 0.0f;
-  attr_perception_desc->property_xalign() = 0.0f;
-  attr_memory_desc->property_xalign() = 0.0f;
-  attr_willpower_desc->property_xalign() = 0.0f;
+  corp_desc->set_alignment(Gtk::ALIGN_LEFT);
+  isk_desc->set_alignment(Gtk::ALIGN_LEFT);
+  skillpoints_desc->set_alignment(Gtk::ALIGN_LEFT);
+  knownskills_desc->set_alignment(Gtk::ALIGN_LEFT);
+  attr_charisma_desc->set_alignment(Gtk::ALIGN_LEFT);
+  attr_intelligence_desc->set_alignment(Gtk::ALIGN_LEFT);
+  attr_perception_desc->set_alignment(Gtk::ALIGN_LEFT);
+  attr_memory_desc->set_alignment(Gtk::ALIGN_LEFT);
+  attr_willpower_desc->set_alignment(Gtk::ALIGN_LEFT);
 
   Gtk::Button* close_but = MK_BUT0;
   close_but->set_relief(Gtk::RELIEF_NONE);
@@ -163,10 +168,10 @@ GtkCharPage::GtkCharPage (void)
   Gtk::Label* finish_eve_desc = MK_LABEL("Finish (EVE):");
   Gtk::Label* finish_local_desc = MK_LABEL("Finish (local):");
   train_desc->set_use_markup(true);
-  train_desc->property_xalign() = 0.0f;
-  remain_desc->property_xalign() = 0.0f;
-  finish_eve_desc->property_xalign() = 0.0f;
-  finish_local_desc->property_xalign() = 0.0f;
+  train_desc->set_alignment(Gtk::ALIGN_LEFT);
+  remain_desc->set_alignment(Gtk::ALIGN_LEFT);
+  finish_eve_desc->set_alignment(Gtk::ALIGN_LEFT);
+  finish_local_desc->set_alignment(Gtk::ALIGN_LEFT);
 
   Gtk::Label* charsheet_info_desc = MK_LABEL("Character sheet:");
   Gtk::Label* trainsheet_info_desc = MK_LABEL("Training sheet:");

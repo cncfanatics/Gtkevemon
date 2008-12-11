@@ -434,7 +434,7 @@ GtkTreeViewColumns::GtkTreeViewColumns (Gtk::TreeView* view,
   this->objective.set_resizable(false);
   Gtk::CellRendererToggle* objective_col = dynamic_cast
       <Gtk::CellRendererToggle*>(this->objective.get_first_cell_renderer());
-  objective_col->property_activatable() = true;
+  objective_col->set_property("activatable", true);
 
   this->append_column(&this->objective, GtkColumnOptions
       (false, true, false, ImageStore::columnconf[1]));
@@ -461,12 +461,12 @@ GtkTreeViewColumns::GtkTreeViewColumns (Gtk::TreeView* view,
   this->train_duration.set_resizable(false);
   this->skill_duration.set_resizable(false);
   this->completed.set_resizable(false);
-  this->completed.get_first_cell_renderer()->property_xalign() = 1.0;
+  this->completed.get_first_cell_renderer()->set_property("xalign", 1.0f);
   this->attributes.set_resizable(false);
   this->est_start.set_resizable(false);
   this->est_finish.set_resizable(false);
   this->spph.set_resizable(false);
-  this->spph.get_first_cell_renderer()->property_xalign() = 1.0;
+  this->spph.get_first_cell_renderer()->set_property("xalign", 1.0);
 }
 
 /* ================================================================ */
@@ -493,7 +493,7 @@ GtkTrainingPlan::GtkTrainingPlan (void)
   this->column_conf_but.set_image(*MK_IMG_PB(ImageStore::columnconf[0]));
 
   this->total_time.set_text("n/a");
-  this->total_time.property_xalign() = 0.0f;
+  this->total_time.set_alignment(Gtk::ALIGN_LEFT);
 
   this->reorder_new_index = -1;
   //this->clean_plan_but.set_label("Clean up");
@@ -526,8 +526,8 @@ GtkTrainingPlan::GtkTrainingPlan (void)
 
   Gtk::Label* select_label = MK_LABEL("Training plan:");
   Gtk::Label* time_label = MK_LABEL("Total time:");
-  select_label->property_xalign() = 0.0f;
-  time_label->property_xalign() = 0.0f;
+  select_label->set_alignment(Gtk::ALIGN_LEFT);
+  time_label->set_alignment(Gtk::ALIGN_LEFT);
 
   Gtk::Table* gui_table = MK_TABLE(3, 3);
   gui_table->set_col_spacings(5);
@@ -1025,9 +1025,9 @@ GtkTrainingPlan::on_row_deleted (Gtk::TreePath const& path)
 
   /* Pass old and new position and let the skill list do the work. */
   this->skills.move_skill(path[0], this->reorder_new_index);
-  this->update_plan(true);
-
   this->reorder_new_index = -1;
+
+  this->update_plan(true);
 }
 
 /* ---------------------------------------------------------------- */

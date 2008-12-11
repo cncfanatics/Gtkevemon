@@ -17,6 +17,9 @@
 
 class ImageStore
 {
+  private:
+    static Glib::RefPtr<Gdk::Pixbuf> create_from_inline (guint8 const* data);
+
   public:
     static Glib::RefPtr<Gdk::Pixbuf> skill;
     static Glib::RefPtr<Gdk::Pixbuf> applogo;

@@ -38,3 +38,24 @@ GtkHelpers::create_tooltip (Glib::RefPtr<Gtk::Tooltip> const& tooltip,
   ss  << "\n" << skill->desc;
   tooltip->set_text(ss.str());
 }
+
+/* ---------------------------------------------------------------- */
+
+std::string
+GtkHelpers::locale_to_utf8 (Glib::ustring const& opsys_string)
+{
+  /* We don't throw the error further away, we'll handle it here. */
+  #define LOCALE_TO_UTF8_ERROR "Error converting string to UTF-8!"
+  #ifdef GLIBMM_EXCEPTIONS_ENABLED
+  try
+  { return Glib::locale_to_utf8(opsys_string); }
+  catch (...)
+  { return LOCALE_TO_UTF8_ERROR; }
+  #else
+  std::auto_ptr<Glib::Error> error;
+  std::string ret = Glib::locale_to_utf8(opsys_string, error);
+  if (error)
+    return LOCALE_TO_UTF8_ERROR;
+  return ret;
+  #endif
+}

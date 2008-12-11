@@ -16,7 +16,6 @@
 #include <string>
 #include <map>
 
-#include "http.h"
 #include "ref_ptr.h"
 #include "apibase.h"
 
@@ -83,11 +82,13 @@ class ApiSkillTree : public ApiBase
     void set_attribute (ApiAttrib& var, std::string const& str);
 
   public:
-    static ApiSkillTreePtr request (void);
-    void refresh (void);
-
     ApiSkillMap skills;
     ApiSkillGroupMap groups;
+    int version;
+
+  public:
+    static ApiSkillTreePtr request (void);
+    void refresh (void);
 
     ApiSkill const* get_skill_for_id (int id) const;
     ApiSkillGroup const* get_group_for_id (int id) const;

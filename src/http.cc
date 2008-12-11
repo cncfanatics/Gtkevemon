@@ -86,32 +86,78 @@ GetHostByName::~GetHostByName (void)
   ::free(this->strange_data);
 }
 
-/* ---------------------------------------------------------------- */
+/* ================================================================ */
 
 Http::Http (void)
 {
-  this->method = HTTP_METHOD_GET;
-  this->port = 80;
-  this->agent = "VerySimpleHttpRequester";
-  this->proxy_port = 80;
+  this->initialize_defaults();
 }
 
 /* ---------------------------------------------------------------- */
 
 Http::Http (std::string const& host, std::string const& path)
 {
-  this->method = HTTP_METHOD_GET;
-  this->port = 80;
   this->host = host;
   this->path = path;
+  this->initialize_defaults();
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+Http::initialize_defaults (void)
+{
+  this->method = HTTP_METHOD_GET;
+  this->port = 80;
   this->agent = "VerySimpleHttpRequester";
   this->proxy_port = 80;
+  this->http_state = HTTP_STATE_READY;
+  this->bytes_read = 0;
+  this->bytes_total = 0;
 }
 
 /* ---------------------------------------------------------------- */
 
 HttpDataPtr
 Http::request (void)
+{
+  this->bytes_read = 0;
+  this->bytes_total = 0;
+
+  int sock = -1;
+  try
+  {
+    /* Initialize a valid HTTP connection. */
+    this->http_state = HTTP_STATE_CONNECTING;
+    sock = this->initialize_connection();
+
+    /* Successful connect. Start building the request. */
+    this->http_state = HTTP_STATE_REQUESTING;
+    this->send_http_headers(sock);
+
+    /* Request has been sent. Read reply. */
+    this->http_state = HTTP_STATE_RECEIVING;
+    HttpDataPtr result = this->read_http_reply(sock);
+
+    /* Done reading the reply. */
+    this->http_state = HTTP_STATE_DONE;
+    ::close(sock);
+    return result;
+  }
+  catch (Exception& e)
+  {
+    this->http_state = HTTP_STATE_ERROR;
+    if (sock >= 0)
+      ::close(sock);
+    throw e;
+  }
+}
+
+/* ---------------------------------------------------------------- */
+
+/* Initializes a valid HTTP connection or throws an exception. */
+int
+Http::initialize_connection (void)
 {
   /* Some error checking. */
   if (this->host.size() == 0)
@@ -134,16 +180,6 @@ Http::request (void)
     try
     {
       GetHostByName hn(this->host.c_str());
-
-      //char address[INET_ADDRSTRLEN];
-      //if(!::inet_ntop(AF_INET, hn.result.h_addr, address, INET_ADDRSTRLEN))
-      //{
-      //  ::close(sock);
-      //  throw Exception(std::string("inet_ntop() failed: ")
-      //      + ::strerror(errno));
-      //}
-      //std::cout << "Resolved " << this->host << ": " << address << std::endl;
-
       remote.sin_family = AF_INET;
       remote.sin_port = htons(this->port);
       remote.sin_addr.s_addr = *(uint32_t*)hn.result.h_addr;
@@ -151,7 +187,7 @@ Http::request (void)
     catch (Exception& e)
     {
       ::close(sock);
-      throw e;
+      throw Exception(e);
     }
   }
   else
@@ -175,6 +211,14 @@ Http::request (void)
     throw Exception(std::string("connect() failed: ") + ::strerror(errno));
   }
 
+  return sock;
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+Http::send_http_headers (int sock)
+{
   std::string request_path;
   if (this->proxy.empty())
   {
@@ -224,133 +268,93 @@ Http::request (void)
   /* Send the headers. */
   ssize_t nbytes = ::write(sock, header_str.c_str(), header_str.size());
   if (nbytes < 0)
-  {
-    ::close(sock);
     throw Exception(std::string("write() failed: ") + ::strerror(errno));
-  }
+}
 
-  /* Read reply into the data array. */
-  std::vector<char> data;
-  size_t dpos = 0;
+/* ---------------------------------------------------------------- */
 
-  while (true)
-  {
-    data.resize(dpos + 512, '\0');
-    char* buffer = &data[dpos];
-    nbytes = ::read(sock, buffer, 512);
-
-    if (nbytes < 0)
-    {
-      ::close(sock);
-      throw Exception(std::string("read() failed: ") + ::strerror(errno));
-    }
-
-    if (nbytes == 0)
-      break;
-
-    dpos = dpos + nbytes;
-  }
-
-  /* Ok, we're done with the connection. */
-  ::close(sock);
-
-  /* Create the result, thats the return value. */
+HttpDataPtr
+Http::read_http_reply (int sock)
+{
   HttpDataPtr result = HttpData::create();
-
-  /* Now strip the headers from the body and copy to result. */
   bool chunked_read = false;
-  size_t pos = 0;
+
+  /* Read the headers. */
   while (true)
   {
-    std::string line;
-    pos = this->data_readline(line, data, pos);
+    char* line;
+    int ret = this->socket_read_line(sock, &line);
 
-    if (!line.empty())
-    {
-      result->headers.push_back(line);
-
-      if (line == "Transfer-Encoding: chunked")
-        chunked_read = true;
-    }
-    else
-    {
-      /* Empty header line. Content starts now. */
+    /* Exit loop if we read an empty line. */
+    if (ret == 0)
       break;
-    }
+
+    std::string sline(line);
+    result->headers.push_back(sline);
+    if (sline == "Transfer-Encoding: chunked")
+      chunked_read = true;
+    else if (sline.substr(0, 16) == "Content-Length: ")
+      this->bytes_total = (size_t)this->get_uint_from_str(sline.substr(16));
   }
+
+  if (!chunked_read && this->bytes_total == 0)
+    throw Exception("Neither Transfer-Encoding nor Content-Length specified");
 
   if (chunked_read)
   {
     /* Deal with chunks *sigh*. */
+    unsigned int size = 512;
+    unsigned int pos = 0;
+    char* buffer = (char*)::malloc(size);
 
-    /* Alloc the full size ignoring chunk space, this is a bit to much,
-     * but it doesn't matter. But the size member is still precise!. */
-    result->alloc(dpos - pos + 1);
-    result->size = 0;
-    ::memset(result->data, '\0', dpos - pos + 1);
     while (true)
     {
-      std::string line;
-      pos = this->data_readline(line, data, pos);
-      unsigned int bytes = this->get_int_from_hex(line);
-      if (bytes == 0)
+      /* Read line with chunk size information. */
+      char* line;
+      int ret = this->socket_read_line(sock, &line);
+      if (ret == 0)
         break;
-      ::memcpy(&result->data[result->size], &data[pos], bytes);
-      pos += bytes;
-      result->size += bytes;
+
+      /* Convert to number of bytes to be read. */
+      unsigned int chunk_size = this->get_uint_from_hex(line);
+      if (chunk_size == 0)
+        break;
+
+      /* Grow buffer if we run out of space. */
+      while (pos + chunk_size >= size)
+      {
+        size *= 2;
+        buffer = (char*)::realloc(buffer, size);
+      }
+
+      /* Read bytes. */
+      ssize_t nbytes = this->http_data_read(sock, buffer + pos, chunk_size);
+      pos += nbytes;
+      if (nbytes != (ssize_t)chunk_size)
+        break;
     }
+
+    result->data = buffer;
+    result->size = pos;
   }
   else
   {
     /* Simply copy the buffer to the result. Allocating one more byte and
      * setting the memory to '\0' makes it safe for use as string. But
      * the size member is still precise and does not include the '\0'. */
-    result->alloc(dpos - pos + 1);
-    result->size = dpos - pos;
-    ::memset(result->data, '\0', dpos - pos + 1);
-    ::memcpy(result->data, &data[pos], dpos - pos);
+    result->alloc(this->bytes_total + 1);
+    result->size = this->bytes_total;
+    ::memset(result->data, '\0', this->bytes_total + 1);
+    this->http_data_read(sock, result->data, this->bytes_total);
   }
-
-  /*
-  std::cout << "Received Headers:" << std::endl;
-  for (unsigned int i = 0; i < result->headers.size(); ++i)
-    std::cout << "  " << result->headers[i] << std::endl;
-  std::cout << "Reply size: " << result->size << std::endl;
-  */
 
   return result;
 }
 
 /* ---------------------------------------------------------------- */
 
-size_t
-Http::data_readline (std::string& dest,
-    std::vector<char> const& data, size_t pos)
-{
-  dest.clear();
-
-  for (size_t iter = pos; true; ++iter)
-  {
-    if (iter >= data.size())
-      return iter;
-
-    if (data[iter] == '\0')
-      return iter;
-
-    if (data[iter] == '\r')
-      return iter + 2;
-
-    if (data[iter] == '\n')
-      return iter + 1;
-
-    dest.push_back(data[iter]);
-  }
-}
-
-/* ---------------------------------------------------------------- */
-
 unsigned int
-Http::get_int_from_hex (std::string const& str)
+Http::get_uint_from_hex (std::string const& str)
 {
   if (str.empty())
     return 0;
@@ -362,7 +366,6 @@ Http::get_int_from_hex (std::string const& str)
   {
     switch (str[i])
     {
-      default:
       case '0': break;
       case '1': v += 1 * mult; break;
       case '2': v += 2 * mult; break;
@@ -379,9 +382,94 @@ Http::get_int_from_hex (std::string const& str)
       case 'D': case 'd': v += 13 * mult; break;
       case 'E': case 'e': v += 14 * mult; break;
       case 'F': case 'f': v += 15 * mult; break;
+      default: throw Exception("Invalid HEX character");
     }
     mult = mult * 16;
   }
 
   return v;
+}
+
+/* ---------------------------------------------------------------- */
+
+unsigned int
+Http::get_uint_from_str (std::string const& str)
+{
+  std::stringstream ss(str);
+  int ret;
+  ss >> ret;
+  return ret;
+}
+
+/* ---------------------------------------------------------------- */
+
+ssize_t
+Http::socket_read_line (int sock, char** line)
+{
+  int size = 256;
+  ssize_t i = 0;
+  /* whether the previous char was a \r */
+  bool cr = false;
+  char ch;
+
+  /* Result, grows as we need it to. */
+  *line = (char*)::malloc(size);
+
+  while (true)
+  {
+    /* Read a character. */
+    ssize_t ret = ::read(sock, &ch, 1);
+    if (ret < 0)
+      throw Exception(::strerror(errno));
+    else if (ret == 0)
+      break;
+
+    /* Grow result if we're running out of space. */
+    if (i >= size)
+    {
+      size *= 2;
+      *line = (char*)::realloc(*line, size);
+    }
+
+    /* Check for newlines. */
+    if (ch == '\n')
+    {
+      /* If preceded by a \r, overwrite it. */
+      if (cr)
+        i -= 1;
+
+      (*line)[i] = '\0';
+      break;
+    }
+    else
+    {
+      cr = (ch == '\r');
+      (*line)[i] = ch;
+    }
+
+    i += 1;
+  }
+
+  return i;
+}
+
+/* ---------------------------------------------------------------- */
+
+ssize_t
+Http::http_data_read (int sock, char* buf, size_t size)
+{
+  ssize_t ret = 0;
+  while (ret < (ssize_t)size)
+  {
+    ssize_t new_read = ::read(sock, buf + ret, size - ret);
+    if (new_read < 0) /* Error */
+      throw Exception(::strerror(errno));
+    else if (new_read == 0) /* EOF */
+      break;
+    ret += new_read;
+
+    this->bytes_read += new_read;
+  }
+
+  return ret;
 }

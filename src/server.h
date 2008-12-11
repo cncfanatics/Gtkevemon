@@ -14,6 +14,7 @@
 #define SERVER_HEADER
 
 #include <string>
+#include <stdint.h>
 
 /* Amount of seconds until server is declared as offline. */
 #define SERVER_TIMEOUT 5

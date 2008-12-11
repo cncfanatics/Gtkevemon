@@ -11,9 +11,9 @@ SOURCES = maingui.cc guiuserdata.cc guiconfiguration.cc guiaboutdialog.cc \
 	  gtktrainingplan.cc gtkskilldetails.cc imagestore.cc \
           server.cc serverlist.cc helpers.cc conf.cc config.cc \
           xml.cc evetime.cc bgprocess.cc pipedexec.cc notifier.cc \
-          http.cc asynchttp.cc eveapi.cc versionchecker.cc\
+          http.cc asynchttp.cc eveapi.cc versionchecker.cc \
           apibase.cc apicharlist.cc apicharsheet.cc apiintraining.cc \
-          apiskilltree.cc argumentsettings.cc
+          apiskilltree.cc apiitemtree.cc argumentsettings.cc
 
 OBJECTS = $(foreach file,$(SOURCES),$(subst .cc,.o,$(file)))
 BINARY = gtkevemon

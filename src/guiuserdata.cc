@@ -11,6 +11,7 @@
 #include <gtkmm/messagedialog.h>
 
 #include "gtkdefines.h"
+#include "gtkhelpers.h"
 #include "exception.h"
 #include "apicharlist.h"
 #include "config.h"
@@ -53,9 +54,9 @@ GuiUserData::GuiUserData (void)
       "You can get the information at:");
   info1_label->set_width_chars(50);
   info1_label->set_line_wrap(true);
-  info1_label->property_xalign() = 0.0f;
+  info1_label->set_alignment(Gtk::ALIGN_LEFT);
   Gtk::Label* info1b_label = MK_LABEL("http://myeve.eve-online.com/api");
-  info1b_label->property_xalign() = 0.0f;
+  info1b_label->set_alignment(Gtk::ALIGN_LEFT);
   info1b_label->set_selectable(true);
   Gtk::VBox* info1_vbox = MK_VBOX0;
   info1_vbox->pack_start(*info1_label, false, false, 0);
@@ -67,8 +68,8 @@ GuiUserData::GuiUserData (void)
   data_table->set_col_spacings(5);
   Gtk::Label* userid_label = MK_LABEL("User ID:");
   Gtk::Label* apikey_label = MK_LABEL("API Key:");
-  userid_label->property_xalign() = 0.0f;
-  apikey_label->property_xalign() = 0.0f;
+  userid_label->set_alignment(Gtk::ALIGN_LEFT);
+  apikey_label->set_alignment(Gtk::ALIGN_LEFT);
   data_table->attach(*userid_label, 0, 1, 0, 1, Gtk::FILL, Gtk::FILL);
   data_table->attach(*apikey_label, 0, 1, 1, 2, Gtk::FILL, Gtk::FILL);
   data_table->attach(this->userid_entry, 1, 2, 0, 1,
@@ -87,7 +88,7 @@ GuiUserData::GuiUserData (void)
       "If you entered your user information, click the button above "
       "to load the character list. Select the characters for which you "
       "want observation through GtkEveMon.");
-  info2_label->property_xalign() = 0.0f;
+  info2_label->set_alignment(Gtk::ALIGN_LEFT);
   info2_label->set_line_wrap(true);
   info2_hbox->pack_start(*info2_label, true, true, 0);
 
@@ -254,7 +255,7 @@ GuiUserData::print_error (std::string const& error, bool cached)
   md.set_secondary_text("There was an error while requesting the character "
       "list from the EVE API. The EVE API is either offline, or the "
       "requested document is not understood by GtkEveMon. "
-      "The error message is:\n\n" + Glib::locale_to_utf8(error));
+      "The error message is:\n\n" + GtkHelpers::locale_to_utf8(error));
   md.set_title("Error - GtkEveMon");
   md.run();
 }

@@ -69,7 +69,7 @@ GuiConfiguration::GuiConfiguration (void)
       "five EVE commands to launch EVE online. If you specify more than "
       "one command, GtkEveMon will prompt for the command to be started.\n"
       "Note that \"~\" will not work as home directory.");
-  launch_info_label->property_xalign() = 0.0f;
+  launch_info_label->set_alignment(Gtk::ALIGN_LEFT);
   launch_info_label->set_line_wrap(true);
 
   Gtk::Table* launch_table = Gtk::manage(new Gtk::Table
@@ -87,7 +87,6 @@ GuiConfiguration::GuiConfiguration (void)
 
     Gtk::Label* eve_cmd_label = MK_LABEL("Command "
         + Helpers::get_string_from_uint(i + 1) + ":");
-    eve_cmd_label->property_xalign() = 0.0f;
 
     GtkConfTextEntry* eve_cmd_entry = Gtk::manage
         (new GtkConfTextEntry("settings." + key));
@@ -106,7 +105,7 @@ GuiConfiguration::GuiConfiguration (void)
       "over the HTTP protocol. If you're behind a restricting firewall, "
       "or just want to stay anonymous, you can use a HTTP proxy server. "
       "Note that the server monitor doesn't use the proxy.");
-  net_info_label->property_xalign() = 0.0f;
+  net_info_label->set_alignment(Gtk::ALIGN_LEFT);
   net_info_label->set_line_wrap(true);
 
   GtkConfCheckButton* use_proxy_cb = Gtk::manage(new GtkConfCheckButton
@@ -136,7 +135,7 @@ GuiConfiguration::GuiConfiguration (void)
   Gtk::Label* notify_info_label = MK_LABEL("Check the notification "
       "options in order to choose how GtkEveMon will notify you "
       "if the skill training is complete.");
-  notify_info_label->property_xalign() = 0.0f;
+  notify_info_label->set_alignment(Gtk::ALIGN_LEFT);
   notify_info_label->set_line_wrap(true);
 
   GtkConfCheckButton* notify_with_popup = Gtk::manage
@@ -156,7 +155,7 @@ GuiConfiguration::GuiConfiguration (void)
 
   Gtk::Label* notify_info2_label = MK_LABEL("See the forums for "
       "how to send emails with this handler.");
-  notify_info2_label->property_xalign() = 0.0f;
+  notify_info2_label->set_alignment(Gtk::ALIGN_LEFT);
   notify_info2_label->set_line_wrap(true);
 
   GtkConfCheckButton* notify_handler_enabled = Gtk::manage
@@ -170,11 +169,11 @@ GuiConfiguration::GuiConfiguration (void)
       (new GtkConfTextEntry("notifications.minimum_sp"));
 
   Gtk::Label* notify_command_label = MK_LABEL("Command to execute:");
-  notify_command_label->property_xalign() = 0.0;
+  notify_command_label->set_alignment(Gtk::ALIGN_LEFT);
   Gtk::Label* notify_data_label = MK_LABEL("Data to send (stdin):");
-  notify_data_label->property_xalign() = 0.0;
+  notify_data_label->set_alignment(Gtk::ALIGN_LEFT);
   Gtk::Label* notify_minsp_label = MK_LABEL("Minimum skill SP:");
-  notify_minsp_label->property_xalign() = 0.0;
+  notify_minsp_label->set_alignment(Gtk::ALIGN_LEFT);
 
   Gtk::Table* notify_handler_table = Gtk::manage(new Gtk::Table(4, 2));
   notify_handler_table->set_row_spacings(1);
@@ -204,12 +203,12 @@ GuiConfiguration::GuiConfiguration (void)
   /* The TIME_FORMAT notebook tab. */
   Gtk::Label* time_info_label = MK_LABEL
       ("Enter your desired time format here.");
-  time_info_label->property_xalign() = 0.0f;
+  time_info_label->set_alignment(Gtk::ALIGN_LEFT);
   time_info_label->set_line_wrap(true);
 
   Gtk::Label* time_info_label2 = MK_LABEL
       ("The default time format is: %Y-%m-%d %H:%M:%S");
-  time_info_label2->property_xalign() = 0.0f;
+  time_info_label2->set_alignment(Gtk::ALIGN_LEFT);
   time_info_label2->set_selectable(true);
 
   GtkConfTextEntry* time_format_entry = Gtk::manage
@@ -217,7 +216,7 @@ GuiConfiguration::GuiConfiguration (void)
 
   Gtk::Label* time_info_label3 = MK_LABEL
       ("The default short time format is: %m-%d %H:%M");
-  time_info_label3->property_xalign() = 0.0f;
+  time_info_label3->set_alignment(Gtk::ALIGN_LEFT);
   time_info_label3->set_selectable(true);
 
   GtkConfTextEntry* time_short_format_entry = Gtk::manage

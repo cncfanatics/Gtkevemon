@@ -60,11 +60,11 @@ GtkServer::GtkServer (Server& server)
 
   Gtk::Label* label_server = Gtk::manage(new Gtk::Label("Server:"));
 
-  label_server->property_xalign() = 0.0f;
-  this->status_desc.property_xalign() = 0.0f;
+  label_server->set_alignment(Gtk::ALIGN_LEFT);
+  this->status_desc.set_alignment(Gtk::ALIGN_LEFT);
 
-  this->name.property_xalign() = 1.0f;
-  this->status.property_xalign() = 1.0f;
+  this->name.set_alignment(Gtk::ALIGN_RIGHT);
+  this->status.set_alignment(Gtk::ALIGN_RIGHT);
 
   this->name.set_text(server.get_name());
 

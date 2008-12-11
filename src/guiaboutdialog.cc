@@ -29,10 +29,10 @@ GuiAboutDialog::GuiAboutDialog (void)
   Gtk::Label* local_label_val = MK_LABEL(GTKEVEMON_VERSION_STR);
   this->version_label.set_text("Requesting version...");
 
-  local_label->property_xalign() = 0.0f;
-  current_label->property_xalign() = 0.0f;
-  local_label_val->property_xalign() = 0.0f;
-  this->version_label.property_xalign() = 0.0f;
+  local_label->set_alignment(Gtk::ALIGN_LEFT);
+  current_label->set_alignment(Gtk::ALIGN_LEFT);
+  local_label_val->set_alignment(Gtk::ALIGN_LEFT);
+  this->version_label.set_alignment(Gtk::ALIGN_LEFT);
 
   Gtk::Table* version_table = Gtk::manage(new Gtk::Table(2, 3));
   version_table->set_col_spacings(5);
@@ -44,15 +44,14 @@ GuiAboutDialog::GuiAboutDialog (void)
   version_table->attach(this->version_label, 2, 3, 1, 2, Gtk::SHRINK|Gtk::FILL);
 
   Gtk::Label* title_label = MK_LABEL0;
-  title_label->set_justify(Gtk::JUSTIFY_LEFT);
-  title_label->property_xalign() = 0.0f;
+  title_label->set_alignment(Gtk::ALIGN_LEFT);
   title_label->set_text("<b>GtkEveMon - a skill monitor for Linux</b>");
   title_label->set_use_markup(true);
 
   Gtk::Label* info_label = MK_LABEL0;
   info_label->set_line_wrap(true);
   info_label->set_justify(Gtk::JUSTIFY_LEFT);
-  info_label->property_xalign() = 0.0f;
+  info_label->set_alignment(Gtk::ALIGN_LEFT);
   info_label->set_text(
       "GtkEveMon is a skill monitoring standalone\n"
       "application for GNU/Linux systems. With GtkEveMon\n"

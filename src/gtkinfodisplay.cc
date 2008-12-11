@@ -7,12 +7,13 @@
 #include "evetime.h"
 #include "exception.h"
 #include "gtkdefines.h"
+#include "gtkhelpers.h"
 #include "gtkinfodisplay.h"
 
 GtkInfoDisplay::GtkInfoDisplay (InfoDisplayStyle style)
   : Gtk::VBox(false, 0)
 {
-  this->text.property_xalign() = 0.0f;
+  this->text.set_alignment(Gtk::ALIGN_LEFT);
 
   this->info_but.set_image(*Gtk::manage(new Gtk::Image
         (Gtk::Stock::FIND, Gtk::ICON_SIZE_MENU)));
@@ -63,7 +64,7 @@ GtkInfoDisplay::GtkInfoDisplay (InfoDisplayStyle style)
 void
 GtkInfoDisplay::append (InfoItem const& item)
 {
-  this->text.set_text(Glib::locale_to_utf8(item.message));
+  this->text.set_text(GtkHelpers::locale_to_utf8(item.message));
   this->text.set_use_markup(true);
 
   switch (item.type)
@@ -127,7 +128,7 @@ GuiInfoDisplayLog::GuiInfoDisplayLog (std::vector<InfoItem> const& log)
   scwin->add(this->text_view);
   scwin->set_shadow_type(Gtk::SHADOW_ETCHED_IN);
 
-  this->message.property_xalign() = 0.0f;
+  this->message.set_alignment(Gtk::ALIGN_LEFT);
   this->text_view.set_editable(false);
   this->text_view.set_wrap_mode(Gtk::WRAP_WORD);
 
@@ -162,11 +163,12 @@ GuiInfoDisplayLog::GuiInfoDisplayLog (std::vector<InfoItem> const& log)
 void
 GuiInfoDisplayLog::show_info_item (InfoItem const& item)
 {
-  this->message.set_text("<b>" + Glib::locale_to_utf8(item.message) + "</b>");
+  this->message.set_text("<b>"
+      + GtkHelpers::locale_to_utf8(item.message) + "</b>");
   this->message.set_use_markup(true);
   this->text_buffer->set_text("Event time: "
       + EveTime::get_local_time_string(item.time, false)
-      + "\n\n" + Glib::locale_to_utf8(item.details));
+      + "\n\n" + GtkHelpers::locale_to_utf8(item.details));
 }
 
 /* ---------------------------------------------------------------- */

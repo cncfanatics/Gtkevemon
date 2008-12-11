@@ -26,7 +26,7 @@
 #include "eveapi.h"
 
 /* Refresh the list of servers every this milli seconds. */
-#define MAINGUI_SERVER_REFRESH 300000
+#define MAINGUI_SERVER_REFRESH 600000
 /* Update the list of servers in the GUI this milli seconds. */
 #define MAINGUI_SERVER_UPDATE 5000
 /* Update the EVE time and the local time this milli seconds. */

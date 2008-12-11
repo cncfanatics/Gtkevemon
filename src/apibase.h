@@ -33,6 +33,7 @@ class ApiBase
 
     /* Some helper functions. */
     std::string get_property (xmlNodePtr node, char const* name);
+    int get_property_int (xmlNodePtr node, char const* name);
     std::string get_node_text (xmlNodePtr node);
 
     void set_string_if_node_text (xmlNodePtr node, char const* node_name,

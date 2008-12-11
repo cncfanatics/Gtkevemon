@@ -25,6 +25,7 @@ class GtkHelpers
     static void create_tooltip (Glib::RefPtr<Gtk::Tooltip> const& tooltip,
         ApiSkill const* skill, ApiCharSheetSkill* cskill = 0,
         ApiCharSheetPtr sheet = ApiCharSheetPtr());
+    static std::string locale_to_utf8 (Glib::ustring const& opsys_string);
 };
 
 #endif /* GTK_HELPERS_HEADER */

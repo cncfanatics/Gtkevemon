@@ -39,6 +39,11 @@ class GtkPortrait : public Gtk::EventBox
 
     void cache_portrait (Glib::RefPtr<Gdk::Pixbuf> portrait);
 
+  private:
+    static Glib::RefPtr<Gdk::Pixbuf> create_from_file (std::string const& fn);
+    static void save_to_file (Glib::RefPtr<Gdk::Pixbuf> pixbuf,
+        std::string const& fn);
+
   public:
     GtkPortrait (void);
     GtkPortrait (std::string const& charid);

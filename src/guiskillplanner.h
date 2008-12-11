@@ -36,7 +36,6 @@ class GuiSkillPlanner : public WinBase
     /* Character stuff. */
     ApiCharSheetPtr charsheet;
     ApiInTrainingPtr training;
-    //Gtk::Label character_label;
 
     /* Skill list. */
     GuiPlannerSkillCols skill_cols;

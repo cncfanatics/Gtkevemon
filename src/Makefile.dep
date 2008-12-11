@@ -5,17 +5,17 @@ maingui.o: maingui.cc argumentsettings.h helpers.h evetime.h eveapi.h \
   winbase.h versionchecker.h config.h conf.h guiuserdata.h \
   guiconfiguration.h gtkconfwidgets.h guiaboutdialog.h guievelauncher.h \
   maingui.h
-guiuserdata.o: guiuserdata.cc gtkdefines.h exception.h apicharlist.h \
-  ref_ptr.h http.h apibase.h eveapi.h asynchttp.h thread.h config.h \
-  conf.h guiuserdata.h winbase.h
+guiuserdata.o: guiuserdata.cc gtkdefines.h gtkhelpers.h apiskilltree.h \
+  ref_ptr.h apibase.h eveapi.h asynchttp.h http.h thread.h exception.h \
+  apicharsheet.h apicharlist.h config.h conf.h guiuserdata.h winbase.h
 guiconfiguration.o: guiconfiguration.cc defines.h helpers.h gtkdefines.h \
   imagestore.h guiconfiguration.h winbase.h gtkconfwidgets.h config.h \
   conf.h ref_ptr.h
 guiaboutdialog.o: guiaboutdialog.cc asynchttp.h http.h ref_ptr.h thread.h \
   exception.h defines.h gtkdefines.h imagestore.h guiaboutdialog.h \
   winbase.h
-guiskill.o: guiskill.cc apiskilltree.h http.h ref_ptr.h apibase.h \
-  eveapi.h asynchttp.h thread.h exception.h helpers.h gtkdefines.h \
+guiskill.o: guiskill.cc apiskilltree.h ref_ptr.h apibase.h eveapi.h \
+  asynchttp.h http.h thread.h exception.h helpers.h gtkdefines.h \
   guiskill.h winbase.h
 guiskillplanner.o: guiskillplanner.cc helpers.h imagestore.h \
   gtkportrait.h asynchttp.h http.h ref_ptr.h thread.h exception.h \
@@ -46,14 +46,15 @@ gtkcharpage.o: gtkcharpage.cc config.h conf.h ref_ptr.h evetime.h \
 gtkportrait.o: gtkportrait.cc http.h ref_ptr.h imagestore.h config.h \
   conf.h gtkportrait.h asynchttp.h thread.h exception.h
 gtkinfodisplay.o: gtkinfodisplay.cc evetime.h exception.h gtkdefines.h \
-  gtkinfodisplay.h winbase.h
+  gtkhelpers.h apiskilltree.h ref_ptr.h apibase.h eveapi.h asynchttp.h \
+  http.h thread.h apicharsheet.h gtkinfodisplay.h winbase.h
 gtkplannerbase.o: gtkplannerbase.cc imagestore.h helpers.h \
-  gtkplannerbase.h apiskilltree.h http.h ref_ptr.h apibase.h eveapi.h \
-  asynchttp.h thread.h exception.h
+  gtkplannerbase.h apiskilltree.h ref_ptr.h apibase.h eveapi.h \
+  asynchttp.h http.h thread.h exception.h
 gtkcolumnsbase.o: gtkcolumnsbase.cc exception.h helpers.h \
   gtkcolumnsbase.h
 gtkhelpers.o: gtkhelpers.cc evetime.h imagestore.h helpers.h gtkhelpers.h \
-  apiskilltree.h http.h ref_ptr.h apibase.h eveapi.h asynchttp.h thread.h \
+  apiskilltree.h ref_ptr.h apibase.h eveapi.h asynchttp.h http.h thread.h \
   exception.h apicharsheet.h
 gtktrainingplan.o: gtktrainingplan.cc helpers.h evetime.h \
   gtkcolumnsbase.h gtkportrait.h asynchttp.h http.h ref_ptr.h thread.h \
@@ -61,8 +62,8 @@ gtktrainingplan.o: gtktrainingplan.cc helpers.h evetime.h \
   apicharsheet.h gtkconfwidgets.h config.h conf.h gtkdefines.h \
   imagestore.h gtktrainingplan.h apiintraining.h
 gtkskilldetails.o: gtkskilldetails.cc helpers.h evetime.h imagestore.h \
-  gtkdefines.h gtkhelpers.h apiskilltree.h http.h ref_ptr.h apibase.h \
-  eveapi.h asynchttp.h thread.h exception.h apicharsheet.h \
+  gtkdefines.h gtkhelpers.h apiskilltree.h ref_ptr.h apibase.h eveapi.h \
+  asynchttp.h http.h thread.h exception.h apicharsheet.h \
   gtkskilldetails.h gtkplannerbase.h
 imagestore.o: imagestore.cc images/skill.h images/img_skill.h \
   images/skillstatus.h images/img_skillstatus_at0.xpm \
@@ -83,7 +84,7 @@ imagestore.o: imagestore.cc images/skill.h images/img_skill.h \
   images/aboutlogo.h images/img_aboutlogo.xpm images/menuicons.h \
   images/img_menu_evemon.xpm images/img_menu_char.xpm \
   images/img_menu_help.xpm images/guiimages.h images/img_columnconf.h \
-  images/img_columnconf_faded.h imagestore.h
+  images/img_columnconf_faded.h exception.h imagestore.h
 server.o: server.cc exception.h server.h
 serverlist.o: serverlist.cc config.h conf.h ref_ptr.h exception.h \
   thread.h serverlist.h server.h
@@ -95,7 +96,7 @@ evetime.o: evetime.cc evetime.h config.h conf.h ref_ptr.h
 bgprocess.o: bgprocess.cc exception.h helpers.h bgprocess.h thread.h
 pipedexec.o: pipedexec.cc helpers.h exception.h pipedexec.h
 notifier.o: notifier.cc config.h conf.h ref_ptr.h evetime.h \
-  apiskilltree.h http.h apibase.h eveapi.h asynchttp.h thread.h \
+  apiskilltree.h apibase.h eveapi.h asynchttp.h http.h thread.h \
   exception.h pipedexec.h helpers.h notifier.h apicharsheet.h \
   apiintraining.h
 http.o: http.cc exception.h http.h ref_ptr.h
@@ -116,7 +117,10 @@ apicharsheet.o: apicharsheet.cc exception.h helpers.h xml.h ref_ptr.h \
 apiintraining.o: apiintraining.cc xml.h ref_ptr.h evetime.h \
   apiintraining.h http.h apibase.h eveapi.h asynchttp.h thread.h \
   exception.h
-apiskilltree.o: apiskilltree.cc config.h conf.h ref_ptr.h exception.h \
-  xml.h helpers.h skilltree.xml.h apiskilltree.h http.h apibase.h \
-  eveapi.h asynchttp.h thread.h
+apiskilltree.o: apiskilltree.cc xml.h ref_ptr.h config.h conf.h helpers.h \
+  exception.h skilltree.xml.h apiskilltree.h apibase.h eveapi.h \
+  asynchttp.h http.h thread.h
+apiitemtree.o: apiitemtree.cc xml.h ref_ptr.h config.h conf.h helpers.h \
+  exception.h apiitemtree.h apibase.h eveapi.h asynchttp.h http.h \
+  thread.h
 argumentsettings.o: argumentsettings.cc defines.h argumentsettings.h

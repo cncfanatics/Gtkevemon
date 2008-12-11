@@ -69,6 +69,15 @@ ApiBase::get_property (xmlNodePtr node, char const* name)
 
 /* ---------------------------------------------------------------- */
 
+int
+ApiBase::get_property_int (xmlNodePtr node, char const* name)
+{
+  std::string prop_str = this->get_property(node, name);
+  return Helpers::get_int_from_string(prop_str);
+}
+
+/* ---------------------------------------------------------------- */
+
 void
 ApiBase::set_string_if_node_text (xmlNodePtr node, char const* node_name,
     std::string& target)

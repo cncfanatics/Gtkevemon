@@ -1,4 +1,5 @@
 #include <sys/stat.h>
+#include <stdint.h>
 #include <cerrno>
 #include <cstring>
 #include <fstream>

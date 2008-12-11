@@ -15,6 +15,8 @@
 
 #include <vector>
 #include <string>
+#include <stdint.h>
+
 #include "ref_ptr.h"
 
 enum HttpMethod
@@ -49,10 +51,23 @@ class HttpData
 
 /* ---------------------------------------------------------------- */
 
+enum HttpState
+{
+  HTTP_STATE_READY,
+  HTTP_STATE_CONNECTING,
+  HTTP_STATE_REQUESTING,
+  HTTP_STATE_RECEIVING,
+  HTTP_STATE_DONE,
+  HTTP_STATE_ERROR
+};
+
+/* ---------------------------------------------------------------- */
+
 /* Class for very simple requesting of documents over HTTP. */
 class Http
 {
   private:
+    /* User specified connection information. */
     HttpMethod method;
     std::string data;
     std::string host;
@@ -60,13 +75,27 @@ class Http
     std::string agent;
     uint16_t port;
     std::vector<std::string> headers;
-
     std::string proxy;
     uint16_t proxy_port;
 
-    unsigned int get_int_from_hex (std::string const& str);
-    size_t data_readline (std::string& dest,
-        std::vector<char> const& data, size_t pos);
+    /* Tracking the HTTP state. */
+    HttpState http_state;
+    size_t bytes_read;
+    size_t bytes_total;
+
+  private:
+    void initialize_defaults (void);
+
+    /* Stages of the HTTP request. */
+    int initialize_connection (void);
+    void send_http_headers (int sock);
+    HttpDataPtr read_http_reply (int sock);
+
+    /* Helpers. */
+    unsigned int get_uint_from_hex (std::string const& str);
+    unsigned int get_uint_from_str (std::string const& str);
+    ssize_t socket_read_line (int sock, char** line);
+    ssize_t http_data_read (int sock, char* buf, size_t size);
 
   public:
     Http (void);

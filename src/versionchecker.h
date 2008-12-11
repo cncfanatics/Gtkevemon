@@ -21,6 +21,10 @@
 /* This is the amount of milli seconds between version checks. */
 #define VERSION_CHECK_INTERVAL 7200000 /* Every 2 hours. */
 
+/* If this class is created, it requests the version regularly.
+ * When the timer expires, the version is requested for the first time,
+ * not directly after creating this class.
+ */
 class VersionChecker
 {
   private:
@@ -28,9 +32,12 @@ class VersionChecker
     GtkInfoDisplay* info_display;
 
     sigc::connection request_svn_conn;
-    void handle_svn_result (AsyncHttpData result);
-
     sigc::connection request_data_conn;
+
+  protected:
+    bool request_svn_version (void);
+    bool request_data_version (void);
+    void handle_svn_result (AsyncHttpData result);
     void handle_data_result (AsyncHttpData result);
 
   public:
@@ -39,7 +46,7 @@ class VersionChecker
 
     void set_info_display (GtkInfoDisplay* disp);
     void set_parent_window (Gtk::Window* disp);
-    bool request_versions (void);
+    void startup_check (void);
 };
 
 /* ---------------------------------------------------------------- */

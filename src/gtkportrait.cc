@@ -83,7 +83,7 @@ GtkPortrait::fetch_from_gtkevemon_cache (void)
     filename << portraitdir << "/" << this->char_id
         << "_" << PORTRAIT_SIZE << ".png";
 
-    Glib::RefPtr<Gdk::Pixbuf> portrait = Gdk::Pixbuf::create_from_file
+    Glib::RefPtr<Gdk::Pixbuf> portrait = GtkPortrait::create_from_file
         (filename.str());
     this->image.set(portrait);
     success = true;
@@ -141,7 +141,7 @@ GtkPortrait::set_from_eve_online (AsyncHttpData result)
     out.close();
 
     Glib::RefPtr<Gdk::Pixbuf> image
-        = Gdk::Pixbuf::create_from_file(jpg_name.str())
+        = GtkPortrait::create_from_file(jpg_name.str())
         ->scale_simple(PORTRAIT_SIZE, PORTRAIT_SIZE, Gdk::INTERP_BILINEAR);
 
     this->cache_portrait(image);
@@ -174,7 +174,7 @@ GtkPortrait::cache_portrait (Glib::RefPtr<Gdk::Pixbuf> portrait)
   try
   {
     std::string filename = this->get_portrait_file();
-    portrait->save(filename, "png");
+    GtkPortrait::save_to_file(portrait, filename);
   }
   catch (...)
   {
@@ -227,4 +227,36 @@ GtkPortrait::get_portrait_file (void)
   filename << this->get_portrait_dir();
   filename << "/" << this->char_id << "_" << PORTRAIT_SIZE << ".png";
   return filename.str();
+}
+
+/* ---------------------------------------------------------------- */
+
+Glib::RefPtr<Gdk::Pixbuf>
+GtkPortrait::create_from_file (std::string const& fn)
+{
+  #ifdef GLIBMM_EXCEPTIONS_ENABLED
+  return Gdk::Pixbuf::create_from_file(fn);
+  #else
+  std::auto_ptr<Glib::Error> error;
+  Glib::RefPtr<Gdk::Pixbuf ret = Gdk::Pixbuf::create_from_file(fn, error);
+  if (error)
+    throw error;
+  return ret;
+  #endif
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GtkPortrait::save_to_file (Glib::RefPtr<Gdk::Pixbuf> pixbuf,
+    std::string const& fn)
+{
+  #ifdef GLIBMM_EXCEPTIONS_ENABLED
+  pixbuf->save(fn, "png");
+  #else
+  std::auto_ptr<Glib::Error> error;
+  pixbuf->save(fn, "png", error);
+  if (error)
+    throw error;
+  #endif
 }

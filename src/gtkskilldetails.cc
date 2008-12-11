@@ -117,16 +117,15 @@ GtkSkillDetails::GtkSkillDetails (void)
   this->deps_view.set_enable_tree_lines(true);
 
   this->skill_group.set_text("No skill selected");
-  this->skill_group.property_xalign() = 0.0f;
-  this->skill_name.property_xalign() = 0.0f;
-  this->skill_primary.property_xalign() = 0.0f;
-  this->skill_secondary.property_xalign() = 0.0f;
+  this->skill_group.set_alignment(Gtk::ALIGN_LEFT);
+  this->skill_name.set_alignment(Gtk::ALIGN_LEFT);
+  this->skill_primary.set_alignment(Gtk::ALIGN_LEFT);
+  this->skill_secondary.set_alignment(Gtk::ALIGN_LEFT);
   for (unsigned int i = 0; i < 5; ++i)
   {
-    this->skill_level[i].property_xalign() = 0.0f;
+    this->skill_level[i].set_alignment(Gtk::ALIGN_LEFT, Gtk::ALIGN_TOP);
     this->skill_level[i].set_selectable(true);
   }
-  this->skill_level[4].property_yalign() = 0.0f;
 
   Gtk::VBox* details_skill_vbox = MK_VBOX0;
   details_skill_vbox->pack_start(this->skill_group, false, false, 0);
@@ -153,16 +152,15 @@ GtkSkillDetails::GtkSkillDetails (void)
 
   Gtk::Label* primary_label = MK_LABEL("Primary:");
   Gtk::Label* secondary_label = MK_LABEL("Secondary:");
-  primary_label->property_xalign() = 0.0;
-  secondary_label->property_xalign() = 0.0;
+  primary_label->set_alignment(Gtk::ALIGN_LEFT);
+  secondary_label->set_alignment(Gtk::ALIGN_LEFT);
   Gtk::Label* to_level_label[5];
   for (unsigned int i = 0; i < 5; ++i)
   {
     to_level_label[i] = Gtk::manage(new Gtk::Label);
     to_level_label[i]->set_text("To level "
         + Helpers::get_string_from_int(i + 1) + ":");
-    to_level_label[i]->property_xalign() = 0.0;
-    to_level_label[i]->property_yalign() = 0.0;
+    to_level_label[i]->set_alignment(Gtk::ALIGN_LEFT, Gtk::ALIGN_TOP);
   }
 
   Gtk::Table* details_table = Gtk::manage(new Gtk::Table(7, 3, false));

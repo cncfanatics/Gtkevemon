@@ -67,20 +67,12 @@ GuiSkillPlanner::GuiSkillPlanner (void)
   details_panechild->pack_start(this->notebook, true, true, 0);
   details_panechild->pack_start(*button_hbox, false, false, 0);
 
-  /*
-  Gtk::HBox* header_box = MK_HBOX;
-  header_box->pack_start(*MK_LABEL("Character:"), false, false, 0);
-  header_box->pack_start(this->character_label, false, false, 0);
-  header_box->pack_start(*MK_HSEP, true, true, 0);
-  */
-
   Gtk::HPaned* main_pane = MK_HPANED;
   main_pane->add1(*skill_panechild);
   main_pane->add2(*details_panechild);
 
   Gtk::VBox* main_vbox = MK_VBOX;
   main_vbox->set_border_width(5);
-  //main_vbox->pack_start(*header_box, false, false, 0);
   main_vbox->pack_start(*main_pane, true, true, 0);
 
   this->tooltips.set_tip(*clear_filter_but, "Clears the filter");
@@ -130,7 +122,6 @@ GuiSkillPlanner::set_character (ApiCharSheetPtr sheet)
   this->details_gui.set_character(sheet);
   this->plan_gui.set_character(sheet);
   this->fill_skill_store();
-  //this->character_label.set_text(this->charsheet->name);
   this->set_title(this->charsheet->name + " - GtkEveMon");
 }
 

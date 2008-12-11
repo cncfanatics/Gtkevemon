@@ -1,12 +1,11 @@
 #include <fstream>
 #include <iostream>
-#include <cstring>
-#include <cerrno>
+#include <vector>
 
-#include "config.h"
-#include "exception.h"
 #include "xml.h"
+#include "config.h"
 #include "helpers.h"
+#include "exception.h"
 #include "skilltree.xml.h"
 #include "apiskilltree.h"
 
@@ -30,6 +29,8 @@ ApiSkillTree::request (void)
 
 ApiSkillTree::ApiSkillTree (void)
 {
+  /* Default version is zero - means the data is not initialized. */
+  this->version = 0;
 }
 
 /* ---------------------------------------------------------------- */
@@ -71,9 +72,6 @@ ApiSkillTree::refresh (void)
     content = skilltree_string;
   }
 
-  //HttpDataPtr data = HttpData::create(content.size() + 1);
-  //::memcpy(data->data, &content[0], content.size() * 1);
-
   this->parse_xml(content);
 }
 
@@ -84,12 +82,25 @@ ApiSkillTree::parse_xml (std::string const& doc)
 {
   this->skills.clear();
   this->groups.clear();
+  this->version = 0;
 
-  std::cout << "Parsing XML: SkillTree.xml ..." << std::endl;
+  std::cout << "Parsing XML: SkillTree.xml ...";
+  std::cout.flush();
 
-  XmlDocumentPtr xml = XmlDocument::create(doc);
-  xmlNodePtr root = xml->get_root_element();
-  this->parse_eveapi_tag(root);
+  try
+  {
+    XmlDocumentPtr xml = XmlDocument::create(doc);
+    xmlNodePtr root = xml->get_root_element();
+    this->parse_eveapi_tag(root);
+  }
+  catch (Exception& e)
+  {
+    std::cout << std::endl << "Error: " << e << std::endl;
+  }
+
+  std::cout << " Version " << this->version
+      << (this->version == 0 ? " (not set)" : "")
+      << "." << std::endl;
 }
 
 /* ---------------------------------------------------------------- */
@@ -99,14 +110,18 @@ ApiSkillTree::parse_eveapi_tag (xmlNodePtr node)
 {
   if (node->type != XML_ELEMENT_NODE
       || xmlStrcmp(node->name, (xmlChar const*)"eveapi"))
-  {
-    std::cout << "Invalid tag. expecting <eveapi> node" << std::endl;
-    return;
-  }
+    throw Exception("Invalid tag. expecting <eveapi> node");
+
+  /* Try to get version information from the file. This will only
+   * work if it's a SkillTree.xml that is prepared for GtkEveMon. */
+  try
+  { this->version = this->get_property_int(node, "dataVersion"); }
+  catch (...)
+  { }
 
   node = node->children;
 
-  /* Look for the result tag. */
+  /* Look for the result and version tag. */
   while (node != 0)
   {
     if (node->type == XML_ELEMENT_NODE
@@ -115,6 +130,7 @@ ApiSkillTree::parse_eveapi_tag (xmlNodePtr node)
       //std::cout << "Found <result> tag" << std::endl;
       this->parse_result_tag(node->children);
     }
+
     node = node->next;
   }
 }
@@ -150,8 +166,7 @@ ApiSkillTree::parse_groups_rowset (xmlNodePtr node)
     {
       ApiSkillGroup group;
       group.name = this->get_property(node, "groupName");
-      std::string group_id_str = this->get_property(node, "groupID");
-      group.id = Helpers::get_int_from_string(group_id_str);
+      group.id = this->get_property_int(node, "groupID");
 
       //std::cout << "Inserting group: " << group.name << std::endl;
       this->groups.insert(std::make_pair(group.id, group));
@@ -193,10 +208,8 @@ ApiSkillTree::parse_skills_rowset (xmlNodePtr node)
     {
       ApiSkill skill;
       skill.name = this->get_property(node, "typeName");
-      std::string group_id_str = this->get_property(node, "groupID");
-      std::string skill_id_str = this->get_property(node, "typeID");
-      skill.id = Helpers::get_int_from_string(skill_id_str);
-      skill.group = Helpers::get_int_from_string(group_id_str);
+      skill.group = this->get_property_int(node, "groupID");
+      skill.id = this->get_property_int(node, "typeID");
 
       this->parse_skills_row(skill, node->children);
 
@@ -242,11 +255,9 @@ ApiSkillTree::parse_skill_requirements (ApiSkill& skill, xmlNodePtr node)
     {
       if (!xmlStrcmp(node->name, (xmlChar const*)"row"))
       {
-        std::string type_id = this->get_property(node, "typeID");
-        std::string level = this->get_property(node, "skillLevel");
-        skill.deps.push_back(std::make_pair
-            (Helpers::get_int_from_string(type_id),
-            Helpers::get_int_from_string(level)));
+        int type_id = this->get_property_int(node, "typeID");
+        int level = this->get_property_int(node, "skillLevel");
+        skill.deps.push_back(std::make_pair(type_id, level));
       }
     }
     node = node->next;
@@ -297,7 +308,7 @@ ApiSkillTree::set_attribute (ApiAttrib& var, std::string const& str)
   else if (str == "willpower")
     var = API_ATTRIB_WILLPOWER;
   else
-    std::cout << "Error finding attribute for " << str << std::endl;
+    throw Exception("Error finding attribute for " + str);
 }
 
 /* ---------------------------------------------------------------- */

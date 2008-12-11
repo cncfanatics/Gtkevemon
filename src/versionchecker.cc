@@ -10,8 +10,8 @@ VersionChecker::VersionChecker (void)
 {
   this->info_display = 0;
   this->parent_window = 0;
-  Glib::signal_timeout().connect(sigc::mem_fun
-      (*this, &VersionChecker::request_versions), VERSION_CHECK_INTERVAL);
+  Glib::signal_timeout().connect(sigc::mem_fun(*this,
+      &VersionChecker::request_svn_version), VERSION_CHECK_INTERVAL);
 }
 
 /* ---------------------------------------------------------------- */
@@ -25,7 +25,7 @@ VersionChecker::~VersionChecker (void)
 /* ---------------------------------------------------------------- */
 
 bool
-VersionChecker::request_versions (void)
+VersionChecker::request_svn_version (void)
 {
   /* Request SVN version. */
   ConfValuePtr check = Config::conf.get_value("versionchecker.svn_check");
@@ -40,9 +40,16 @@ VersionChecker::request_versions (void)
     http->async_request();
   }
 
-  #if 0
+  return true;
+}
+
+/* ---------------------------------------------------------------- */
+
+bool
+VersionChecker::request_data_version (void)
+{
   /* Request data versions. */
-  check = Config::conf.get_value("versionchecker.data_check");
+  ConfValuePtr check = Config::conf.get_value("versionchecker.data_check");
   if (check->get_bool())
   {
     AsyncHttp* http = AsyncHttp::create();
@@ -53,9 +60,17 @@ VersionChecker::request_versions (void)
         (*this, &VersionChecker::handle_data_result));
     http->async_request();
   }
-  #endif
 
   return true;
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+VersionChecker::startup_check (void)
+{
+  this->request_svn_version();
+  //this->request_data_version();
 }
 
 /* ---------------------------------------------------------------- */
@@ -141,15 +156,13 @@ VersionChecker::handle_svn_result (AsyncHttpData result)
 void
 VersionChecker::handle_data_result (AsyncHttpData result)
 {
-  std::cout << "Received data versions:" << std::endl;
   if (result.data.get() == 0)
   {
     std::cout << "Error requesting data: " << result.exception << std::endl;
+    return;
   }
-  else
-  {
-    std::cout << "Received response: " << result.data->data << std::endl;
-    for (unsigned int i = 0; i < result.data->headers.size(); ++i)
-      std::cout << "  headers: " << result.data->headers[i] << std::endl;
-  }
+
+  std::cout << "Received response: " << result.data->data << std::endl;
+  for (unsigned int i = 0; i < result.data->headers.size(); ++i)
+    std::cout << "  headers: " << result.data->headers[i] << std::endl;
 }

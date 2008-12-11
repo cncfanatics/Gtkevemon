@@ -10,6 +10,7 @@
 #include "images/menuicons.h"
 #include "images/guiimages.h"
 
+#include "exception.h"
 #include "imagestore.h"
 
 Glib::RefPtr<Gdk::Pixbuf> ImageStore::skill;
@@ -28,31 +29,32 @@ Glib::RefPtr<Gdk::Pixbuf> ImageStore::menuicons[3];
 void
 ImageStore::init (void)
 {
-  ImageStore::skill = Gdk::Pixbuf::create_from_inline
-      (-1, img_skill, false);
+  ImageStore::skill = ImageStore::create_from_inline(img_skill);
+
   ImageStore::applogo = Gdk::Pixbuf::create_from_xpm_data
       (img_applogo_xpm);
   ImageStore::aboutlogo = Gdk::Pixbuf::create_from_xpm_data
       (img_aboutlogo_xpm);
   ImageStore::eveportrait = Gdk::Pixbuf::create_from_xpm_data
       (img_eveportrait_xpm);
-  ImageStore::columnconf[0] = Gdk::Pixbuf::create_from_inline
-      (-1, img_columnconf, false);
-  ImageStore::columnconf[1] = Gdk::Pixbuf::create_from_inline
-      (-1, img_columnconf_faded, false);
 
-  ImageStore::skillicons[0] = Gdk::Pixbuf::create_from_inline
-      (-1, img_skillicons_group, false);
-  ImageStore::skillicons[1] = Gdk::Pixbuf::create_from_inline
-      (-1, img_skillicons_skill, false);
-  ImageStore::skillicons[2] = Gdk::Pixbuf::create_from_inline
-      (-1, img_skillicons_train, false);
-  ImageStore::skillicons[3] = Gdk::Pixbuf::create_from_inline
-      (-1, img_skillicons_done, false);
-  ImageStore::skillicons[4] = Gdk::Pixbuf::create_from_inline
-      (-1, img_skillicons_part, false);
-  ImageStore::skillicons[5] = Gdk::Pixbuf::create_from_inline
-      (-1, img_skillicons_faded, false);
+  ImageStore::columnconf[0] = ImageStore::create_from_inline
+      (img_columnconf);
+  ImageStore::columnconf[1] = ImageStore::create_from_inline
+      (img_columnconf_faded);
+
+  ImageStore::skillicons[0] = ImageStore::create_from_inline
+      (img_skillicons_group);
+  ImageStore::skillicons[1] = ImageStore::create_from_inline
+      (img_skillicons_skill);
+  ImageStore::skillicons[2] = ImageStore::create_from_inline
+      (img_skillicons_train);
+  ImageStore::skillicons[3] = ImageStore::create_from_inline
+      (img_skillicons_done);
+  ImageStore::skillicons[4] = ImageStore::create_from_inline
+      (img_skillicons_part);
+  ImageStore::skillicons[5] = ImageStore::create_from_inline
+      (img_skillicons_faded);
 
   ImageStore::skillstatus[0] = Gdk::Pixbuf::create_from_xpm_data
       (img_skillstatus_nopre_xpm);
@@ -71,23 +73,23 @@ ImageStore::init (void)
   ImageStore::skillstatus[7] = Gdk::Pixbuf::create_from_xpm_data
       (img_skillstatus_at5_xpm);
 
-  ImageStore::skilldeps[0] = Gdk::Pixbuf::create_from_inline
-      (-1, img_skilldeps_none, false);
-  ImageStore::skilldeps[1] = Gdk::Pixbuf::create_from_inline
-      (-1, img_skilldeps_partial, false);
-  ImageStore::skilldeps[2] = Gdk::Pixbuf::create_from_inline
-      (-1, img_skilldeps_have, false);
+  ImageStore::skilldeps[0] = ImageStore::create_from_inline
+      (img_skilldeps_none);
+  ImageStore::skilldeps[1] = ImageStore::create_from_inline
+      (img_skilldeps_partial);
+  ImageStore::skilldeps[2] = ImageStore::create_from_inline
+      (img_skilldeps_have);
 
-  ImageStore::skillplan[0] = Gdk::Pixbuf::create_from_inline
-      (-1, img_skillplan_trained, false);
-  ImageStore::skillplan[1] = Gdk::Pixbuf::create_from_inline
-      (-1, img_skillplan_training, false);
-  ImageStore::skillplan[2] = Gdk::Pixbuf::create_from_inline
-      (-1, img_skillplan_trainable, false);
-  ImageStore::skillplan[3] = Gdk::Pixbuf::create_from_inline
-      (-1, img_skillplan_untrainable, false);
-  ImageStore::skillplan[4] = Gdk::Pixbuf::create_from_inline
-      (-1, img_skillplan_deperror, false);
+  ImageStore::skillplan[0] = ImageStore::create_from_inline
+      (img_skillplan_trained);
+  ImageStore::skillplan[1] = ImageStore::create_from_inline
+      (img_skillplan_training);
+  ImageStore::skillplan[2] = ImageStore::create_from_inline
+      (img_skillplan_trainable);
+  ImageStore::skillplan[3] = ImageStore::create_from_inline
+      (img_skillplan_untrainable);
+  ImageStore::skillplan[4] = ImageStore::create_from_inline
+      (img_skillplan_deperror);
 
   ImageStore::menuicons[0] = Gdk::Pixbuf::create_from_xpm_data
       (img_menu_evemon_xpm);
@@ -127,4 +129,21 @@ ImageStore::skill_progress (unsigned int level, double completed)
 void
 ImageStore::unload (void)
 {
+}
+
+/* ---------------------------------------------------------------- */
+
+Glib::RefPtr<Gdk::Pixbuf>
+ImageStore::create_from_inline (guint8 const* data)
+{
+  #ifdef GLIBMM_EXCEPTIONS_ENABLED
+  return Gdk::Pixbuf::create_from_inline(-1, data, false);
+  #else
+  std::auto_ptr<Glib::Error> error;
+  Glib::RefPtr<Gdk::Pixbuf> ret = Gdk::Pixbuf::create_from_inline
+      (-1, data, false, error);
+  if (error)
+    throw error;
+  return ret;
+  #endif
 }

@@ -15,7 +15,7 @@
 
 char const* skilltree_string =
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-"<eveapi version=\"2\">\n"
+"<eveapi version=\"2\" dataVersion=\"1\">\n"
 "  <currentTime>2008-11-13 21:36:02</currentTime>\n"
 "  <result>\n"
 "    <rowset name=\"skillGroups\" key=\"groupID\" columns=\"groupName,groupID\">\n"

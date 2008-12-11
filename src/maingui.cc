@@ -91,7 +91,14 @@ MainGui::MainGui (void)
       "  </menubar>"
       "</ui>";
 
+  #ifdef GLIBMM_EXCEPTIONS_ENABLED
   this->uiman->add_ui_from_string(ui_string);
+  #else
+  std::auto_ptr<Glib::Error> dumberr;
+  this->uiman->add_ui_from_string(ui_string, error);
+  if (error)
+    throw error;
+  #endif
 
   Gtk::Widget* menu_bar = this->uiman->get_widget("/MenuBar");
 
@@ -116,7 +123,6 @@ MainGui::MainGui (void)
       ("/MenuBar/MenuCharacter/MenuCharXMLSource");
   tmp_item->set_image(*Gtk::manage(new Gtk::Image
       (Gtk::Stock::FIND, Gtk::ICON_SIZE_MENU)));
-
 
   /* Right-justify the help menu. */
   Gtk::MenuItem* help_menu = (Gtk::MenuItem*)this->uiman->get_widget
@@ -198,7 +204,7 @@ MainGui::MainGui (void)
 
   this->update_time();
   this->init_from_config();
-  this->versionchecker.request_versions();
+  this->versionchecker.startup_check();
 }
 
 /* ---------------------------------------------------------------- */
@@ -364,7 +370,7 @@ MainGui::check_if_no_pages (void)
     Gtk::HBox* info_hbox = Gtk::manage(new Gtk::HBox(false, 15));
     Gtk::Image* info_image = Gtk::manage(new Gtk::Image
         (Gtk::Stock::DIALOG_INFO, Gtk::ICON_SIZE_DIALOG));
-    info_image->property_xalign() = 1.0f;
+    info_image->set_alignment(Gtk::ALIGN_RIGHT);
     Gtk::Label* info_label = MK_LABEL
         ("GtkEveMon needs to connect to the EVE API in order to "
         "retrieve information about your character. "
@@ -372,7 +378,7 @@ MainGui::check_if_no_pages (void)
         "You also need to select some characters to be monitored. "
         "Go ahead and add some characters.");
     info_label->set_line_wrap(true);
-    info_label->property_xalign() = 0.0f;
+    info_label->set_alignment(Gtk::ALIGN_LEFT);
     info_hbox->pack_start(*info_image, true, true, 0);
     info_hbox->pack_start(*info_label, true, true, 0);
 
