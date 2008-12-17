@@ -360,6 +360,20 @@ ApiCharSheet::get_skill_for_id (int id)
 
 /* ---------------------------------------------------------------- */
 
+ApiCharSheetCert*
+ApiCharSheet::get_cert_for_id (int id)
+{
+  for (unsigned int i = 0; i < this->certs.size(); ++i)
+  {
+    if (this->certs[i].id == id)
+      return &this->certs[i];
+  }
+
+  return 0;
+}
+
+/* ---------------------------------------------------------------- */
+
 int
 ApiCharSheet::calc_start_sp (int level, int rank)
 {

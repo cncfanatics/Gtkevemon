@@ -105,6 +105,8 @@ class ApiCharSheet : public ApiBase
     int get_level_for_skill (int id);
     ApiCharSheetSkill* get_skill_for_id (int id);
 
+    ApiCharSheetCert* get_cert_for_id (int id);
+
     static int calc_start_sp (int level, int rank);
     static int calc_dest_sp (int level, int rank);
 
