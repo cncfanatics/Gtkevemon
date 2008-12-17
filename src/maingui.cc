@@ -94,9 +94,9 @@ MainGui::MainGui (void)
   #ifdef GLIBMM_EXCEPTIONS_ENABLED
   this->uiman->add_ui_from_string(ui_string);
   #else
-  std::auto_ptr<Glib::Error> dumberr;
+  std::auto_ptr<Glib::Error> error;
   this->uiman->add_ui_from_string(ui_string, error);
-  if (error)
+  if (error.get())
     throw error;
   #endif
 

@@ -238,8 +238,8 @@ GtkPortrait::create_from_file (std::string const& fn)
   return Gdk::Pixbuf::create_from_file(fn);
   #else
   std::auto_ptr<Glib::Error> error;
-  Glib::RefPtr<Gdk::Pixbuf ret = Gdk::Pixbuf::create_from_file(fn, error);
-  if (error)
+  Glib::RefPtr<Gdk::Pixbuf> ret = Gdk::Pixbuf::create_from_file(fn, error);
+  if (error.get())
     throw error;
   return ret;
   #endif
@@ -256,7 +256,7 @@ GtkPortrait::save_to_file (Glib::RefPtr<Gdk::Pixbuf> pixbuf,
   #else
   std::auto_ptr<Glib::Error> error;
   pixbuf->save(fn, "png", error);
-  if (error)
+  if (error.get())
     throw error;
   #endif
 }

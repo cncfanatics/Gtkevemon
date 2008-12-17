@@ -44,10 +44,14 @@ class GuiSkillPlanner : public WinBase
 
     /* Misc. */
     Gtk::Notebook notebook;
+    Gtk::Tooltips tooltips;
+
+    /* Filters */
     Gtk::Entry filter_entry;
     Gtk::CheckButton filter_unknown;
     Gtk::CheckButton filter_trainable;
-    Gtk::Tooltips tooltips;
+    Gtk::CheckButton filter_inchoate;
+    Gtk::CheckButton filter_trained;
 
     void fill_skill_store (void);
     void skill_selected (void);

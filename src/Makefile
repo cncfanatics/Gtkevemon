@@ -13,12 +13,12 @@ SOURCES = maingui.cc guiuserdata.cc guiconfiguration.cc guiaboutdialog.cc \
           xml.cc evetime.cc bgprocess.cc pipedexec.cc notifier.cc \
           http.cc asynchttp.cc eveapi.cc versionchecker.cc \
           apibase.cc apicharlist.cc apicharsheet.cc apiintraining.cc \
-          apiskilltree.cc apiitemtree.cc argumentsettings.cc
+          apiskilltree.cc apicerttree.cc apiitemtree.cc argumentsettings.cc
 
 OBJECTS = $(foreach file,$(SOURCES),$(subst .cc,.o,$(file)))
 BINARY = gtkevemon
 
-GCC_FLAGS = -Wall -W -ansi -pedantic -Wcast-align -Wcast-qual -Wpointer-arith -Wundef -Wconversion -g
+GCC_FLAGS = -Wall -W -ansi -Wcast-align -Wcast-qual -Wpointer-arith -Wundef -Wconversion -g # -pedantic
 GTK_FLAGS = $(shell pkg-config --cflags gtkmm-2.4)
 GTK_LIBS = $(shell pkg-config --libs gtkmm-2.4)
 PTH_LIBS = -lpthread

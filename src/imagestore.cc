@@ -142,7 +142,7 @@ ImageStore::create_from_inline (guint8 const* data)
   std::auto_ptr<Glib::Error> error;
   Glib::RefPtr<Gdk::Pixbuf> ret = Gdk::Pixbuf::create_from_inline
       (-1, data, false, error);
-  if (error)
+  if (error.get())
     throw error;
   return ret;
   #endif

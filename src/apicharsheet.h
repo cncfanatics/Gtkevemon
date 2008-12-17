@@ -21,6 +21,7 @@
 #include "http.h"
 #include "apibase.h"
 #include "apiskilltree.h"
+#include "apicerttree.h"
 
 struct ApiCharSheetSkill
 {
@@ -30,8 +31,15 @@ struct ApiCharSheetSkill
   int points_start;
   int points_dest;
   double completed;
-
   ApiSkill const* details;
+};
+
+/* ---------------------------------------------------------------- */
+
+struct ApiCharSheetCert
+{
+  int id;
+  ApiCert const* details;
 };
 
 /* ---------------------------------------------------------------- */
@@ -55,9 +63,17 @@ class ApiCharSheet : public ApiBase
   /* Some internal stuff. */
   protected:
     ApiCharSheet (void);
+
     void parse_xml (void);
-    void parse_recursive (xmlNodePtr node);
+    void parse_eveapi_tag (xmlNodePtr node);
+    void parse_result_tag (xmlNodePtr node);
+    void parse_attribute_tag (xmlNodePtr node);
+    void parse_attrib_enhancers_tag (xmlNodePtr node);
+    void parse_skills_tag (xmlNodePtr node);
+    void parse_certificates_tag (xmlNodePtr node);
+
     void find_implant_bonus (xmlNodePtr node, char const* name, double& var);
+    void debug_dump (void);
 
   /* Publicly available collection of gathered data. */
   public:
@@ -78,8 +94,9 @@ class ApiCharSheet : public ApiBase
     ApiCharAttribs skill;
     ApiCharAttribs total;
 
-    /* The vector of all known skills. */
+    /* The vector of all known skills and certs. */
     std::vector<ApiCharSheetSkill> skills;
+    std::vector<ApiCharSheetCert> certs;
 
   public:
     static ApiCharSheetPtr create (void);

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <gtkmm/table.h>
 #include <gtkmm/main.h>
 #include <gtkmm/box.h>
 #include <gtkmm/label.h>
@@ -18,7 +19,9 @@ GuiSkillPlanner::GuiSkillPlanner (void)
   : skill_store(Gtk::TreeStore::create(skill_cols)),
     skill_view(skill_store),
     filter_unknown("Only unknown"),
-    filter_trainable("Only trainable")
+    filter_trainable("Only trainable"),
+    filter_inchoate("Only inchoate"),
+    filter_trained("Only partial")
 {
   this->skill_store->set_sort_column
       (this->skill_cols.name, Gtk::SORT_ASCENDING);
@@ -45,13 +48,15 @@ GuiSkillPlanner::GuiSkillPlanner (void)
   filter_box->pack_start(this->filter_entry, true, true, 0);
   filter_box->pack_start(*clear_filter_but, false, false, 0);
 
-  Gtk::HBox* filter_cb_box = MK_HBOX;
-  filter_cb_box->pack_start(this->filter_unknown, false, false, 0);
-  filter_cb_box->pack_start(this->filter_trainable, false, false, 0);
+  Gtk::Table* filter_cb_table = MK_TABLE(2, 2);
+  filter_cb_table->attach(this->filter_unknown, 0, 1, 0, 1);
+  filter_cb_table->attach(this->filter_trainable, 1, 2, 0, 1);
+  filter_cb_table->attach(this->filter_trained, 0, 1, 1, 2);
+  filter_cb_table->attach(this->filter_inchoate, 1, 2, 1, 2);
 
   Gtk::VBox* skill_panechild = MK_VBOX;
   skill_panechild->pack_start(*filter_box, false, false, 0);
-  skill_panechild->pack_start(*filter_cb_box, false, false, 0);
+  skill_panechild->pack_start(*filter_cb_table, false, false, 0);
   skill_panechild->pack_start(*skill_scwin, true, true, 0);
   skill_panechild->set_size_request(250, -1);
 
@@ -86,6 +91,10 @@ GuiSkillPlanner::GuiSkillPlanner (void)
   this->filter_entry.signal_activate().connect(sigc::mem_fun
       (*this, &GuiSkillPlanner::fill_skill_store));
   this->filter_unknown.signal_clicked().connect(sigc::mem_fun
+      (*this, &GuiSkillPlanner::fill_skill_store));
+  this->filter_trained.signal_clicked().connect(sigc::mem_fun
+      (*this, &GuiSkillPlanner::fill_skill_store));
+  this->filter_inchoate.signal_clicked().connect(sigc::mem_fun
       (*this, &GuiSkillPlanner::fill_skill_store));
   this->filter_trainable.signal_clicked().connect(sigc::mem_fun
       (*this, &GuiSkillPlanner::fill_skill_store));
@@ -152,6 +161,8 @@ GuiSkillPlanner::fill_skill_store (void)
   Glib::ustring filter = this->filter_entry.get_text();
   bool only_unknown = this->filter_unknown.get_active();
   bool only_trainable = this->filter_trainable.get_active();
+  bool only_trained = this->filter_trained.get_active();
+  bool only_inchoate = this->filter_inchoate.get_active();
 
   ApiSkillTreePtr tree = ApiSkillTree::request();
   ApiSkillMap& skills = tree->skills;
@@ -194,8 +205,12 @@ GuiSkillPlanner::fill_skill_store (void)
     ApiCharSheetSkill* cskill = this->charsheet->get_skill_for_id(skill.id);
     Glib::RefPtr<Gdk::Pixbuf> skill_icon;
 
+    /* Do we know the skill already? */
     if (cskill == 0)
     {
+      if (only_inchoate || only_trained)
+        continue;
+
       if (this->have_prerequisites_for_skill(&skill))
         skill_icon = ImageStore::skillstatus[1];
       else
@@ -209,6 +224,9 @@ GuiSkillPlanner::fill_skill_store (void)
     else
     {
       if (only_unknown)
+        continue;
+
+      if (only_inchoate && cskill->points == cskill->points_start)
         continue;
 
       switch (cskill->level)
@@ -247,7 +265,8 @@ GuiSkillPlanner::fill_skill_store (void)
       this->skill_store->erase(iter->second.first);
   }
 
-  if (!filter.empty() || only_unknown || only_trainable)
+  if (!filter.empty() || only_unknown || only_trainable
+     || only_trained || only_inchoate)
     this->skill_view.expand_all();
 }
 

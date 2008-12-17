@@ -54,7 +54,7 @@ GtkHelpers::locale_to_utf8 (Glib::ustring const& opsys_string)
   #else
   std::auto_ptr<Glib::Error> error;
   std::string ret = Glib::locale_to_utf8(opsys_string, error);
-  if (error)
+  if (error.get())
     return LOCALE_TO_UTF8_ERROR;
   return ret;
   #endif
