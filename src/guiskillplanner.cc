@@ -20,8 +20,8 @@ GuiSkillPlanner::GuiSkillPlanner (void)
     skill_view(skill_store),
     filter_unknown("Only unknown"),
     filter_trainable("Only trainable"),
-    filter_inchoate("Only inchoate"),
-    filter_trained("Only partial")
+    filter_inchoate("Only partial"),
+    filter_trained("Only trained")
 {
   this->skill_store->set_sort_column
       (this->skill_cols.name, Gtk::SORT_ASCENDING);
