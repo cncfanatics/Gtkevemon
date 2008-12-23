@@ -32,7 +32,7 @@ guievelauncher.o: guievelauncher.cc defines.h gtkdefines.h exception.h \
 gtkevemon.o: gtkevemon.cc argumentsettings.h evetime.h config.h conf.h \
   ref_ptr.h serverlist.h server.h imagestore.h maingui.h gtkinfodisplay.h \
   winbase.h versionchecker.h asynchttp.h http.h thread.h exception.h \
-  gtkserver.h eveapi.h apicerttree.h apibase.h
+  gtkserver.h eveapi.h
 gtkserver.o: gtkserver.cc exception.h serverlist.h server.h helpers.h \
   thread.h gtkserver.h
 gtkconfwidgets.o: gtkconfwidgets.cc gtkportrait.h asynchttp.h http.h \

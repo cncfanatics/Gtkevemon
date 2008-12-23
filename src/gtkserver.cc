@@ -47,10 +47,10 @@ GtkServerChecker::run (void)
 
 /* ================================================================ */
 
-GtkServer::GtkServer (Server& server)
+GtkServer::GtkServer (Server* server)
   : Gtk::Table(2, 3, false)
 {
-  this->server = &server;
+  this->server = server;
   this->status_desc.set_text("Status:");
   this->status.set_text("Fetching");
 
@@ -66,7 +66,7 @@ GtkServer::GtkServer (Server& server)
   this->name.set_alignment(Gtk::ALIGN_RIGHT);
   this->status.set_alignment(Gtk::ALIGN_RIGHT);
 
-  this->name.set_text(server.get_name());
+  this->name.set_text(server->get_name());
 
   this->attach(this->status_but, 0, 1, 0, 2, Gtk::FILL, Gtk::FILL);
   this->attach(*label_server, 1, 2, 0, 1, Gtk::FILL, Gtk::FILL);
@@ -76,7 +76,10 @@ GtkServer::GtkServer (Server& server)
 
   this->status_but.signal_clicked().connect
       (sigc::mem_fun(*this, &GtkServer::force_refresh));
+  this->server->signal_updated().connect
+      (sigc::mem_fun(*this, &GtkServer::update));
 
+  this->update();
   this->show_all();
 }
 

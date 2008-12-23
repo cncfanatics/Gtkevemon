@@ -110,7 +110,7 @@ ApiCertTree::parse_eveapi_tag (xmlNodePtr node)
 {
   if (node->type != XML_ELEMENT_NODE
       || xmlStrcmp(node->name, (xmlChar const*)"eveapi"))
-    throw Exception("Invalid tag. expecting <eveapi> node");
+    throw Exception("Invalid tag. Expecting <eveapi> node");
 
   /* Try to get version information from the file. This will only
    * work if it's a CertificateTree.xml that is prepared for GtkEveMon. */

@@ -13,11 +13,12 @@
 #ifndef GUI_SKILL_PLANNER_HEADER
 #define GUI_SKILL_PLANNER_HEADER
 
-#include <gtkmm/treestore.h>
-#include <gtkmm/treeview.h>
 #include <gtkmm/entry.h>
+#include <gtkmm/treeview.h>
 #include <gtkmm/tooltips.h>
 #include <gtkmm/notebook.h>
+#include <gtkmm/treestore.h>
+#include <gtkmm/comboboxtext.h>
 
 #include "gtkplannerbase.h"
 #include "gtkskilldetails.h"
@@ -48,10 +49,7 @@ class GuiSkillPlanner : public WinBase
 
     /* Filters */
     Gtk::Entry filter_entry;
-    Gtk::CheckButton filter_unknown;
-    Gtk::CheckButton filter_trainable;
-    Gtk::CheckButton filter_inchoate;
-    Gtk::CheckButton filter_trained;
+    Gtk::ComboBoxText filter_cb;
 
     void fill_skill_store (void);
     void skill_selected (void);

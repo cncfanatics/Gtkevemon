@@ -22,11 +22,12 @@
 class ServerList
 {
   public:
-    static std::vector<Server> list;
+    static std::vector<Server*> list;
 
   public:
     static void init_from_config (void);
-    static void store_to_config (void);
+    static void unload (void);
+
     static void add_server (std::string const& name,
         std::string const& host, uint16_t port = 26000);
     static void refresh (void);

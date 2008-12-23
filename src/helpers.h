@@ -27,6 +27,7 @@ class Helpers
     static std::string get_string_from_double (double value, int digits);
     static int get_int_from_string (std::string const& value);
     static double get_double_from_string (std::string const& value);
+    static float get_float_from_string (std::string const& value);
     static std::string get_roman_from_int (int value);
 
     static std::string get_dotted_str_from_int (int value);

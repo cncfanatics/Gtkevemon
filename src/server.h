@@ -15,6 +15,7 @@
 
 #include <string>
 #include <stdint.h>
+#include <glibmm/dispatcher.h>
 
 /* Amount of seconds until server is declared as offline. */
 #define SERVER_TIMEOUT 5
@@ -46,8 +47,14 @@ class Server
     bool online;
     int players;
 
+  protected:
+    Glib::Dispatcher sig_updated;
+
+    void refresh_intern (void);
+
   public:
     Server (std::string const& name, std::string const& host, uint16_t port);
+    ~Server (void);
 
     void refresh (void);
 
@@ -57,6 +64,8 @@ class Server
     bool is_online (void) const;
     int get_players (void) const;
     bool is_refreshing (void) const;
+
+    Glib::Dispatcher& signal_updated (void);
 };
 
 /* ---------------------------------------------------------------- */
@@ -95,6 +104,12 @@ inline bool
 Server::is_refreshing (void) const
 {
   return this->refreshing;
+}
+
+inline Glib::Dispatcher&
+Server::signal_updated (void)
+{
+  return this->sig_updated;
 }
 
 #endif /* SERVER_HEADER */

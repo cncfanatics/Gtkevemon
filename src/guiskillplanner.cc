@@ -15,16 +15,28 @@
 #include "gtkdefines.h"
 #include "guiskillplanner.h"
 
+enum ComboBoxFilter
+{
+  CB_FILTER_ALL,
+  CB_FILTER_UNKNOWN,
+  CB_FILTER_PARTIAL,
+  CB_FILTER_ENABLED,
+  CB_FILTER_KNOWN
+};
+
 GuiSkillPlanner::GuiSkillPlanner (void)
   : skill_store(Gtk::TreeStore::create(skill_cols)),
-    skill_view(skill_store),
-    filter_unknown("Only unknown"),
-    filter_trainable("Only trainable"),
-    filter_inchoate("Only partial"),
-    filter_trained("Only trained")
+    skill_view(skill_store)
 {
   this->skill_store->set_sort_column
       (this->skill_cols.name, Gtk::SORT_ASCENDING);
+
+  this->filter_cb.append_text("Show all skills");
+  this->filter_cb.append_text("Only show unknown skills");
+  this->filter_cb.append_text("Only show partial skills");
+  this->filter_cb.append_text("Only show enabled skills");
+  this->filter_cb.append_text("Only show known skills");
+  this->filter_cb.set_active(0);
 
   Gtk::TreeViewColumn* skill_col_name = Gtk::manage(new Gtk::TreeViewColumn);
   skill_col_name->set_title("Name");
@@ -48,15 +60,9 @@ GuiSkillPlanner::GuiSkillPlanner (void)
   filter_box->pack_start(this->filter_entry, true, true, 0);
   filter_box->pack_start(*clear_filter_but, false, false, 0);
 
-  Gtk::Table* filter_cb_table = MK_TABLE(2, 2);
-  filter_cb_table->attach(this->filter_unknown, 0, 1, 0, 1);
-  filter_cb_table->attach(this->filter_trainable, 1, 2, 0, 1);
-  filter_cb_table->attach(this->filter_trained, 0, 1, 1, 2);
-  filter_cb_table->attach(this->filter_inchoate, 1, 2, 1, 2);
-
   Gtk::VBox* skill_panechild = MK_VBOX;
   skill_panechild->pack_start(*filter_box, false, false, 0);
-  skill_panechild->pack_start(*filter_cb_table, false, false, 0);
+  skill_panechild->pack_start(this->filter_cb, false, false, 0);
   skill_panechild->pack_start(*skill_scwin, true, true, 0);
   skill_panechild->set_size_request(250, -1);
 
@@ -90,13 +96,7 @@ GuiSkillPlanner::GuiSkillPlanner (void)
   close_but->signal_clicked().connect(sigc::mem_fun(*this, &WinBase::close));
   this->filter_entry.signal_activate().connect(sigc::mem_fun
       (*this, &GuiSkillPlanner::fill_skill_store));
-  this->filter_unknown.signal_clicked().connect(sigc::mem_fun
-      (*this, &GuiSkillPlanner::fill_skill_store));
-  this->filter_trained.signal_clicked().connect(sigc::mem_fun
-      (*this, &GuiSkillPlanner::fill_skill_store));
-  this->filter_inchoate.signal_clicked().connect(sigc::mem_fun
-      (*this, &GuiSkillPlanner::fill_skill_store));
-  this->filter_trainable.signal_clicked().connect(sigc::mem_fun
+  this->filter_cb.signal_changed().connect(sigc::mem_fun
       (*this, &GuiSkillPlanner::fill_skill_store));
   clear_filter_but->signal_clicked().connect(sigc::mem_fun
       (*this, &GuiSkillPlanner::clear_filter));
@@ -159,10 +159,6 @@ GuiSkillPlanner::fill_skill_store (void)
 {
   this->skill_store->clear();
   Glib::ustring filter = this->filter_entry.get_text();
-  bool only_unknown = this->filter_unknown.get_active();
-  bool only_trainable = this->filter_trainable.get_active();
-  bool only_trained = this->filter_trained.get_active();
-  bool only_inchoate = this->filter_inchoate.get_active();
 
   ApiSkillTreePtr tree = ApiSkillTree::request();
   ApiSkillMap& skills = tree->skills;
@@ -183,6 +179,13 @@ GuiSkillPlanner::fill_skill_store (void)
     skill_group_iters.insert(std::make_pair
         (iter->first, std::make_pair(siter, 0)));
   }
+
+  /* Prepare some short hands .*/
+  int active_row_num = this->filter_cb.get_active_row_number();
+  bool only_unknown = (active_row_num == CB_FILTER_UNKNOWN);
+  bool only_partial = (active_row_num == CB_FILTER_PARTIAL);
+  bool only_enabled = (active_row_num == CB_FILTER_ENABLED);
+  bool only_known = (active_row_num == CB_FILTER_KNOWN);
 
   /* Append all skills to the skill groups. */
   for (ApiSkillMap::iterator iter = skills.begin();
@@ -205,17 +208,21 @@ GuiSkillPlanner::fill_skill_store (void)
     ApiCharSheetSkill* cskill = this->charsheet->get_skill_for_id(skill.id);
     Glib::RefPtr<Gdk::Pixbuf> skill_icon;
 
-    /* Do we know the skill already? */
     if (cskill == 0)
     {
-      if (only_inchoate || only_trained)
+      /* The skill is unknown. */
+      if (only_known || only_partial)
         continue;
 
       if (this->have_prerequisites_for_skill(&skill))
+      {
+        /* The skill is unknown but prequisites are there. */
         skill_icon = ImageStore::skillstatus[1];
+      }
       else
       {
-        if (only_trainable)
+        /* The skill is unknown and no prequisites. */
+        if (only_enabled)
           continue;
         skill_icon = ImageStore::skillstatus[0];
       }
@@ -223,10 +230,12 @@ GuiSkillPlanner::fill_skill_store (void)
     }
     else
     {
-      if (only_unknown)
+      /* The skill is known. */
+      if (only_unknown || only_enabled)
         continue;
 
-      if (only_inchoate && cskill->points == cskill->points_start)
+      /* Check if the skill is partially trained. */
+      if (only_partial && cskill->points == cskill->points_start)
         continue;
 
       switch (cskill->level)
@@ -236,11 +245,7 @@ GuiSkillPlanner::fill_skill_store (void)
         case 2: skill_icon = ImageStore::skillstatus[4]; break;
         case 3: skill_icon = ImageStore::skillstatus[5]; break;
         case 4: skill_icon = ImageStore::skillstatus[6]; break;
-        case 5:
-          skill_icon = ImageStore::skillstatus[7];
-          if (only_trainable)
-            continue;
-          break;
+        case 5: skill_icon = ImageStore::skillstatus[7]; break;
         default: skill_icon = ImageStore::skillstatus[0]; break;
       }
     }
@@ -265,8 +270,7 @@ GuiSkillPlanner::fill_skill_store (void)
       this->skill_store->erase(iter->second.first);
   }
 
-  if (!filter.empty() || only_unknown || only_trainable
-     || only_trained || only_inchoate)
+  if (!filter.empty() || active_row_num != 0)
     this->skill_view.expand_all();
 }
 

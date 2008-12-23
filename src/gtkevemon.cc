@@ -43,7 +43,7 @@ main (int argc, char* argv[])
 
   ImageStore::unload();
   EveTime::store_to_config();
-  ServerList::store_to_config();
+  ServerList::unload();
 
   Config::unload();
 

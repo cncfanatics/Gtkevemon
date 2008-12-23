@@ -27,8 +27,31 @@ Server::Server (std::string const& name, std::string const& host, uint16_t port)
 
 /* ---------------------------------------------------------------- */
 
+Server::~Server (void)
+{
+}
+
+/* ---------------------------------------------------------------- */
+
 void
 Server::refresh (void)
+{
+  try
+  {
+    this->refresh_intern();
+    this->sig_updated.emit();
+  }
+  catch (Exception& e)
+  {
+    this->sig_updated.emit();
+    throw e;
+  }
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+Server::refresh_intern (void)
 {
   this->refreshing = true;
   this->online = false;

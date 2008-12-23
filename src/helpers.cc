@@ -68,6 +68,17 @@ Helpers::get_double_from_string (std::string const& value)
 
 /* ---------------------------------------------------------------- */
 
+float
+Helpers::get_float_from_string (std::string const& value)
+{
+  std::stringstream ss(value);
+  float ret;
+  ss >> ret;
+  return ret;
+}
+
+/* ---------------------------------------------------------------- */
+
 std::string
 Helpers::get_roman_from_int (int value)
 {

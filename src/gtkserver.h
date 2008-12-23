@@ -33,7 +33,7 @@ class GtkServer : public Gtk::Table
     void set_status_icon (Gtk::BuiltinStockID const& id);
 
   public:
-    GtkServer (Server& server);
+    GtkServer (Server* server);
     void update (void);
 };
 

@@ -6,7 +6,7 @@
 #include "serverlist.h"
 
 /* Static members. */
-std::vector<Server> ServerList::list;
+std::vector<Server*> ServerList::list;
 
 /* ---------------------------------------------------------------- */
 
@@ -25,8 +25,8 @@ ServerChecker::run (void)
   {
     try
     {
-      if (!ServerList::list[i].is_refreshing())
-        ServerList::list[i].refresh();
+      if (!ServerList::list[i]->is_refreshing())
+        ServerList::list[i]->refresh();
     }
     catch (Exception& s)
     {
@@ -58,8 +58,11 @@ ServerList::init_from_config (void)
 /* ---------------------------------------------------------------- */
 
 void
-ServerList::store_to_config (void)
+ServerList::unload (void)
 {
+  for (unsigned int i = 0; i < ServerList::list.size(); ++i)
+    delete ServerList::list[i];
+  ServerList::list.clear();
 }
 
 /* ---------------------------------------------------------------- */
@@ -68,7 +71,7 @@ void
 ServerList::add_server (std::string const& name,
     std::string const& host, uint16_t port)
 {
-  ServerList::list.push_back(Server(name, host, port));
+  ServerList::list.push_back(new Server(name, host, port));
 }
 
 /* ---------------------------------------------------------------- */

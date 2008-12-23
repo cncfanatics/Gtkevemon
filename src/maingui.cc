@@ -129,7 +129,7 @@ MainGui::MainGui (void)
       ("/MenuBar/MenuHelp");
   help_menu->set_right_justified(true);
 
-  /* Create the server list. */
+  /* Create the GUI part of server list. */
   Gtk::HBox* server_box = Gtk::manage(new Gtk::HBox(false, 5));
   server_box->pack_start(*MK_LABEL0, true, true, 0);
   for (unsigned int i = 0; i < ServerList::list.size(); ++i)
@@ -142,10 +142,13 @@ MainGui::MainGui (void)
   }
   server_box->pack_start(*MK_LABEL0, true, true, 0);
 
+  /* The box with the local and EVE time. */
   Gtk::HBox* time_hbox = MK_HBOX;
   time_hbox->pack_start(this->evetime_label, false, false, 0);
   time_hbox->pack_end(this->localtime_label, false, false, 0);
 
+  /* Build the server monitor with the time box. Ommit the server
+   * box if there are no servers to monitor. */
   Gtk::VBox* server_info_box = Gtk::manage(new Gtk::VBox(false, 2));
   server_info_box->set_border_width(5);
   if (ServerList::list.size() > 0)
@@ -192,8 +195,6 @@ MainGui::MainGui (void)
 
   /* Setup timers for refresh and GUI update for the servers. */
   Glib::signal_timeout().connect(sigc::mem_fun
-      (*this, &MainGui::update_servers), MAINGUI_SERVER_UPDATE);
-  Glib::signal_timeout().connect(sigc::mem_fun
       (*this, &MainGui::refresh_servers), MAINGUI_SERVER_REFRESH);
   Glib::signal_timeout().connect(sigc::mem_fun
       (*this, &MainGui::update_time), MAINGUI_TIME_UPDATE);
@@ -211,17 +212,6 @@ MainGui::MainGui (void)
 
 MainGui::~MainGui (void)
 {
-}
-
-/* ---------------------------------------------------------------- */
-
-bool
-MainGui::update_servers (void)
-{
-  for (unsigned int i = 0; i < this->gtkserver.size(); ++i)
-    this->gtkserver[i]->update();
-
-  return true;
 }
 
 /* ---------------------------------------------------------------- */
