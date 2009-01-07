@@ -129,12 +129,13 @@ GuiAboutDialog::set_version_label (AsyncHttpData result)
   {
     this->version_label.set_text("Error fetchting version!");
     this->version_status_image.set(Gtk::Stock::NO, Gtk::ICON_SIZE_BUTTON);
-    std::cout << "Could not fetch version: " << result.exception << std::endl;
+    std::cout << "Could not fetch version: "
+        << result.exception << std::endl;
   }
   else
   {
-    this->version_label.set_text(result.data->data);
-    if (std::string(result.data->data) != GTKEVEMON_VERSION_STR)
+    this->version_label.set_text(&result.data->data[0]);
+    if (std::string(&result.data->data[0]) != GTKEVEMON_VERSION_STR)
       this->version_status_image.set(Gtk::Stock::NO, Gtk::ICON_SIZE_BUTTON);
     else
       this->version_status_image.set(Gtk::Stock::YES, Gtk::ICON_SIZE_BUTTON);

@@ -5,9 +5,10 @@ CORES = $(shell grep processor /proc/cpuinfo | wc -l)
 
 SOURCES = maingui.cc guiuserdata.cc guiconfiguration.cc guiaboutdialog.cc \
           guiskill.cc guiskillplanner.cc guixmlsource.cc guievelauncher.cc \
+	  guiversionchecker.cc \
           gtkevemon.cc gtkserver.cc gtkconfwidgets.cc gtkcharpage.cc \
           gtkportrait.cc gtkinfodisplay.cc gtkplannerbase.cc \
-	  gtkcolumnsbase.cc gtkhelpers.cc \
+	  gtkcolumnsbase.cc gtkhelpers.cc gtkdownloader.cc \
 	  gtktrainingplan.cc gtkskilldetails.cc imagestore.cc \
           server.cc serverlist.cc helpers.cc conf.cc config.cc \
           xml.cc evetime.cc bgprocess.cc pipedexec.cc notifier.cc \

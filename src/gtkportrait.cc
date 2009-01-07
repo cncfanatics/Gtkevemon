@@ -137,7 +137,7 @@ GtkPortrait::set_from_eve_online (AsyncHttpData result)
   try
   {
     std::ofstream out(jpg_name.str().c_str());
-    out.write(result.data->data, result.data->size);
+    out.write(&result.data->data[0], result.data->data.size());
     out.close();
 
     Glib::RefPtr<Gdk::Pixbuf> image

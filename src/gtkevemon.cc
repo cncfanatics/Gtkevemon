@@ -3,11 +3,12 @@
 #include <gtkmm/main.h>
 
 #include "argumentsettings.h"
+#include "versionchecker.h"
+#include "imagestore.h"
+#include "serverlist.h"
 #include "evetime.h"
 #include "config.h"
-#include "serverlist.h"
 #include "server.h"
-#include "imagestore.h"
 #include "maingui.h"
 
 void
@@ -24,26 +25,29 @@ main (int argc, char* argv[])
 {
   Gtk::Main kit(&argc, &argv);
 
-  ::signal(SIGINT, signal_received);
-  ::signal(SIGTERM, signal_received);
-
   ArgumentSettings::init(argc, argv);
 
   Config::init_defaults();
   Config::init_user_config();
 
+  ImageStore::init();
+
+  VersionChecker::check_data_files();
+
+  std::signal(SIGINT, signal_received);
+  std::signal(SIGTERM, signal_received);
+
   ServerList::init_from_config();
   EveTime::init_from_config();
-  ImageStore::init();
 
   {
     MainGui gui;
     kit.run();
   }
 
-  ImageStore::unload();
   EveTime::store_to_config();
   ServerList::unload();
+  ImageStore::unload();
 
   Config::unload();
 

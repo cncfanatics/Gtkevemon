@@ -13,15 +13,41 @@
 #ifndef EXCEPTION_HEADER
 #define EXCEPTION_HEADER
 
+#include <exception>
 #include <string>
 
 /* Universal simple exception class. */
-class Exception : public std::string
+class Exception : public std::exception, public std::string
 {
   public:
-    Exception (void) { }
-    Exception (const std::string& msg) : std::string(msg) { }
-    virtual ~Exception (void) { }
+    Exception (void) throw()
+    { }
+
+    Exception (const std::string& msg) throw() : std::string(msg)
+    { }
+
+    virtual ~Exception (void) throw()
+    { }
+
+    virtual const char* what (void) const throw()
+    { return this->c_str(); }
+};
+
+/* ---------------------------------------------------------------- */
+
+/* More detailed exception for file errors. */
+class FileException : public Exception
+{
+  public:
+    std::string name;
+
+  public:
+    FileException (std::string const& name, std::string const& msg) throw()
+        : Exception(msg), name(name)
+    { }
+
+    virtual ~FileException (void) throw()
+    { }
 };
 
 #endif /* EXCEPTION_HEADER */

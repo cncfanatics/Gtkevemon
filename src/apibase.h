@@ -18,8 +18,9 @@
 
 #include "eveapi.h"
 #include "http.h"
+#include "xml.h"
 
-class ApiBase
+class ApiBase : public XmlBase
 {
   protected:
     HttpDataPtr http_data;
@@ -30,20 +31,6 @@ class ApiBase
     /* Extracts some common information like errors,
      * the EVE time and the cache time. */
     void check_node (xmlNodePtr node);
-
-    /* Some helper functions. */
-    std::string get_property (xmlNodePtr node, char const* name);
-    int get_property_int (xmlNodePtr node, char const* name);
-    std::string get_node_text (xmlNodePtr node);
-
-    void set_string_if_node_text (xmlNodePtr node, char const* node_name,
-        std::string& target);
-    void set_int_if_node_text (xmlNodePtr node, char const* node_name,
-        int& target);
-    void set_double_if_node_text (xmlNodePtr node, char const* node_name,
-        double& target);
-    void set_bool_if_node_text (xmlNodePtr node, char const* node_name,
-        bool& target);
 
   public:
     virtual ~ApiBase (void);

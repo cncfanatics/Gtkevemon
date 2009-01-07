@@ -151,14 +151,14 @@ ConfSection::get_section (const std::string& key)
 ConfValuePtr
 ConfSection::get_value (const std::string& key)
 {
+  conf_values_t::iterator iter = this->values.find(key);
+  if (iter != this->values.end())
+    return iter->second;
+
   size_t dot_pos = key.find_first_of('.');
   if (dot_pos == std::string::npos)
   {
-    conf_values_t::iterator iter = this->values.find(key);
-    if (iter == this->values.end())
-      throw Exception("Key does not exist");
-    else
-      return iter->second;
+    throw Exception("Key does not exist");
   }
   else
   {

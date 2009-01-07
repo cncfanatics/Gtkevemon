@@ -50,10 +50,13 @@ char const* default_config =
     "  tray_usage = never\n"
     "  verbose_wintitle = true\n"
     "[versionchecker]\n"
-    //"  data_check = true\n"
-    //"  data_last_seen = \n"
-    "  svn_check = true\n"
-    "  svn_last_seen = \n";
+    "  enabled = true\n"
+    "  raise_updater = true\n"
+    "[versionchecker.datafiles]\n"
+    "  CertificateTree.xml.gz = \n"
+    "  ItemTree.xml.gz = \n"
+    "  SkillTree.xml.gz = \n"
+    "[versionchecker.last_seen]\n";
 
 /* The initial configuration is loaded once if the configuration
  * file is created for the first time. Thus it initializes the

@@ -34,19 +34,13 @@ class HttpData
 {
   protected:
     HttpData (void);
-    HttpData (size_t size);
 
   public:
     std::vector<std::string> headers;
-    char* data;
-    size_t size;
+    std::vector<char> data;
 
   public:
     static HttpDataPtr create (void);
-    static HttpDataPtr create (size_t size);
-    ~HttpData (void);
-
-    void alloc (size_t size);
 };
 
 /* ---------------------------------------------------------------- */
@@ -99,16 +93,32 @@ class Http
 
   public:
     Http (void);
+    Http (std::string const& url);
     Http (std::string const& host, std::string const& path);
 
+    /* Set host and path with a single URL. */
+    void set_url (std::string const& url);
+    /* Set host and path separately. */
     void set_host (std::string const& host);
     void set_path (std::string const& path);
+    /* Set port, defaults to 80. */
     void set_port (uint16_t port);
+    /* Set user agent, defaults to VerySimpleHttpRequester. */
     void set_agent (std::string const& path);
+    /* Set either GET or POST data. */
     void set_data (HttpMethod method, std::string const& data);
+    /* Adds a user defined header, e.g.
+     * Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ== */
     void add_header (std::string const& header);
+    /* Set HTTP proxy server. */
     void set_proxy (std::string const& address, uint16_t port);
 
+    /* Information about the progress. */
+    size_t get_bytes_read (void) const;
+    /* Information about the total size. This may be zero! */
+    size_t get_bytes_total (void) const;
+
+    /* Request the document. This will block until transfer is completed. */
     HttpDataPtr request (void);
 };
 
@@ -117,41 +127,12 @@ class Http
 inline
 HttpData::HttpData (void)
 {
-  this->data = 0;
-  this->size = 0;
-}
-
-inline
-HttpData::HttpData (size_t size)
-{
-  this->data = 0;
-  this->alloc(size);
 }
 
 inline HttpDataPtr
 HttpData::create (void)
 {
   return HttpDataPtr(new HttpData);
-}
-
-inline HttpDataPtr
-HttpData::create (size_t size)
-{
-  return HttpDataPtr(new HttpData(size));
-}
-
-inline
-HttpData::~HttpData (void)
-{
-  delete [] this->data;
-}
-
-inline void
-HttpData::alloc (size_t size)
-{
-  delete [] this->data;
-  this->data = new char[size];
-  this->size = size;
 }
 
 inline void
@@ -196,6 +177,18 @@ Http::set_proxy (std::string const& address, uint16_t port)
 {
   this->proxy = address;
   this->proxy_port = port;
+}
+
+inline size_t
+Http::get_bytes_read (void) const
+{
+  return this->bytes_read;
+}
+
+inline size_t
+Http::get_bytes_total (void) const
+{
+  return this->bytes_total;
 }
 
 #endif /* HTTP_HEADER */

@@ -13,7 +13,7 @@
 #ifndef DEFINES_HEADER
 #define DEFINES_HEADER
 
-#define GTKEVEMON_VERSION_STR "Revision 1.5-79"
+#define GTKEVEMON_VERSION_STR "Revision 1.5-80"
 #define LAUNCHER_CMD_AMOUNT 5
 
 #endif /* DEFINES_HEADER */

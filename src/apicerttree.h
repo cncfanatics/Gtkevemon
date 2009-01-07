@@ -69,7 +69,7 @@ class ApiCertTree : public ApiBase
 
   protected:
     ApiCertTree (void);
-    void parse_xml (std::string const& doc);
+    void parse_xml (std::string const& filename);
     void parse_eveapi_tag (xmlNodePtr node);
     void parse_result_tag (xmlNodePtr node);
     void parse_categories_rowset (xmlNodePtr node);

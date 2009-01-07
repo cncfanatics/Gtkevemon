@@ -34,11 +34,33 @@ class XmlDocument
     static XmlDocumentPtr create (void);
     static XmlDocumentPtr create (std::string const& data);
     static XmlDocumentPtr create (char const* data, size_t size);
+    static XmlDocumentPtr create_from_file (std::string const& filename);
     ~XmlDocument (void);
 
     void parse (std::string const& data);
     void parse (char const* data, size_t size);
+    void parse_from_file (std::string const& filename);
     xmlNodePtr get_root_element (void);
+};
+
+/* ---------------------------------------------------------------- */
+
+class XmlBase
+{
+  protected:
+    /* Some helper functions. */
+    std::string get_property (xmlNodePtr node, char const* name);
+    int get_property_int (xmlNodePtr node, char const* name);
+    std::string get_node_text (xmlNodePtr node);
+
+    void set_string_if_node_text (xmlNodePtr node, char const* node_name,
+        std::string& target);
+    void set_int_if_node_text (xmlNodePtr node, char const* node_name,
+        int& target);
+    void set_double_if_node_text (xmlNodePtr node, char const* node_name,
+        double& target);
+    void set_bool_if_node_text (xmlNodePtr node, char const* node_name,
+        bool& target);
 };
 
 /* ---------------------------------------------------------------- */
@@ -68,6 +90,14 @@ XmlDocument::create (char const* data, size_t size)
 {
   XmlDocumentPtr doc = XmlDocumentPtr(new XmlDocument);
   doc->parse(data, size);
+  return doc;
+}
+
+inline XmlDocumentPtr
+XmlDocument::create_from_file (std::string const& filename)
+{
+  XmlDocumentPtr doc = XmlDocumentPtr(new XmlDocument);
+  doc->parse_from_file(filename);
   return doc;
 }
 

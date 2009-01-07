@@ -8,6 +8,8 @@
 #include "exception.h"
 #include "apiitemtree.h"
 
+#define ITEMTREE_FN "ItemTree.xml.gz"
+
 ApiItemTreePtr ApiItemTree::instance;
 
 /* ---------------------------------------------------------------- */
@@ -39,63 +41,51 @@ ApiItemTree::refresh (void)
 {
   /* Try a series of possible file names. */
   std::vector<std::string> filenames;
-  filenames.push_back("../xml/ItemTree.xml");
-  filenames.push_back("ItemTree.xml");
-  filenames.push_back(Config::get_conf_dir() + "/ItemTree.xml");
+  filenames.push_back("../xml/" ITEMTREE_FN);
+  filenames.push_back(ITEMTREE_FN);
+  filenames.push_back(Config::get_conf_dir() + "/" ITEMTREE_FN);
 
-  std::cout << "Seeking XML: ItemTree.xml ...";
-  std::cout.flush();
-
-  std::string content;
   for (unsigned int i = 0; i < filenames.size(); ++i)
   {
-    std::string filename(filenames[i]);
-    std::ifstream in(filename.c_str());
-    if (in.fail())
-      continue;
-
-    std::cout << " Using local file." << std::endl;
-
-    std::string line;
-    while (std::getline(in, line))
-      content += line + "\n";
-    in.close();
-    break;
+    try
+    {
+      this->parse_xml(filenames[i]);
+      //this->debug_dump();
+      return;
+    }
+    catch (FileException& e)
+    {
+      /* Ignore file exception. File is probably just not there. */
+    }
+    catch (Exception& e)
+    {
+      /* Parse error occured. Report this. */
+      std::cout << std::endl << "XML error: " << e << std::endl;
+    }
   }
 
-  /* If the content is empty, we give up. */
-  if (content.empty())
-  {
-    std::cout << " Not found." << std::endl;
-    return;
-  }
-
-  this->parse_xml(content);
-  //this->debug_dump();
+  std::cout << "Seeking XML: " << ITEMTREE_FN
+      << " not found. Shutdown!" << std::endl;
+  ::exit(0);
 }
 
 /* ---------------------------------------------------------------- */
 
 void
-ApiItemTree::parse_xml (std::string const& doc)
+ApiItemTree::parse_xml (std::string const& filename)
 {
-  /* Clear members. */
+  /* Try to read the document. */
+  XmlDocumentPtr xml = XmlDocument::create_from_file(filename);
+  xmlNodePtr root = xml->get_root_element();
+
+  std::cout << "Parsing XML: " ITEMTREE_FN " ...";
+  std::cout.flush();
+
+  /* Document was parsed. Reset information. */
   this->version = 0;
   this->cats.clear();
 
-  std::cout << "Parsing XML: ItemTree.xml ...";
-  std::cout.flush();
-
-  try
-  {
-    XmlDocumentPtr xml = XmlDocument::create(doc);
-    xmlNodePtr root = xml->get_root_element();
-    this->parse_root_tag(root);
-  }
-  catch (Exception& e)
-  {
-    std::cout << std::endl << "Error: " << e << std::endl;
-  }
+  this->parse_root_tag(root);
 
   std::cout << " Version " << this->version
       << (this->version == 0 ? " (not set)" : "")

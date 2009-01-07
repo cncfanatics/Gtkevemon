@@ -6,8 +6,9 @@
 #include "config.h"
 #include "helpers.h"
 #include "exception.h"
-#include "certtree.xml.h"
 #include "apicerttree.h"
+
+#define CERTTREE_FN "CertificateTree.xml.gz"
 
 ApiCertTreePtr ApiCertTree::instance;
 
@@ -40,63 +41,53 @@ ApiCertTree::refresh (void)
 {
   /* Try a series of possible file names. */
   std::vector<std::string> filenames;
-  filenames.push_back("../xml/CertificateTree.xml");
-  filenames.push_back("CertificateTree.xml");
-  filenames.push_back(Config::get_conf_dir() + "/CertificateTree.xml");
+  filenames.push_back("../xml/" CERTTREE_FN);
+  filenames.push_back(CERTTREE_FN);
+  filenames.push_back(Config::get_conf_dir() + "/" CERTTREE_FN);
 
-  std::cout << "Seeking XML: CertificateTree.xml ...";
-  std::cout.flush();
-
-  std::string content;
   for (unsigned int i = 0; i < filenames.size(); ++i)
   {
-    std::string filename(filenames[i]);
-    std::ifstream in(filename.c_str());
-    if (in.fail())
-      continue;
-
-    std::cout << " Using local file." << std::endl;
-
-    std::string line;
-    while (std::getline(in, line))
-      content += line + "\n";
-    in.close();
-    break;
+    try
+    {
+      this->parse_xml(filenames[i]);
+      //this->debug_dump();
+      return;
+    }
+    catch (FileException& e)
+    {
+      /* Ignore file exception. File is probably just not there. */
+    }
+    catch (Exception& e)
+    {
+      /* Parse error occured. Report this. */
+      std::cout << std::endl << "XML error: " << e << std::endl;
+    }
   }
 
-  if (content.empty())
-  {
-    std::cout << " Using build-in string." << std::endl;
-    content = certtree_string;
-  }
-
-  this->parse_xml(content);
-  //this->debug_dump();
+  std::cout << "Seeking XML: " << CERTTREE_FN
+      << " not found. Shutdown!" << std::endl;
+  ::exit(0);
 }
 
 /* ---------------------------------------------------------------- */
 
 void
-ApiCertTree::parse_xml (std::string const& doc)
+ApiCertTree::parse_xml (std::string const& filename)
 {
+  /* Try to read the document. */
+  XmlDocumentPtr xml = XmlDocument::create_from_file(filename);
+  xmlNodePtr root = xml->get_root_element();
+
+  std::cout << "Parsing XML: " CERTTREE_FN " ...";
+  std::cout.flush();
+
+  /* Document was parsed. Reset information. */
   this->certificates.clear();
   this->categories.clear();
   this->classes.clear();
   this->version = 0;
 
-  std::cout << "Parsing XML: CertificateTree.xml ...";
-  std::cout.flush();
-
-  try
-  {
-    XmlDocumentPtr xml = XmlDocument::create(doc);
-    xmlNodePtr root = xml->get_root_element();
-    this->parse_eveapi_tag(root);
-  }
-  catch (Exception& e)
-  {
-    std::cout << std::endl << "Error: " << e << std::endl;
-  }
+  this->parse_eveapi_tag(root);
 
   std::cout << " Version " << this->version
       << (this->version == 0 ? " (not set)" : "")

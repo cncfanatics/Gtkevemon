@@ -59,6 +59,7 @@ class MainGui : public Gtk::Window
     void setup_profile (void);
     void configuration (void);
     void about_dialog (void);
+    void version_checker (void);
     void check_if_no_pages (void);
     void launch_eve (void);
     void close (void);

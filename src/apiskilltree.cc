@@ -6,8 +6,9 @@
 #include "config.h"
 #include "helpers.h"
 #include "exception.h"
-#include "skilltree.xml.h"
 #include "apiskilltree.h"
+
+#define SKILLTREE_FN "SkillTree.xml.gz"
 
 ApiSkillTreePtr ApiSkillTree::instance;
 
@@ -40,63 +41,51 @@ ApiSkillTree::refresh (void)
 {
   /* Try a series of possible file names. */
   std::vector<std::string> filenames;
-  filenames.push_back("../xml/SkillTree.xml");
-  filenames.push_back("SkillTree.xml");
-  filenames.push_back(Config::get_conf_dir() + "/SkillTree.xml");
+  filenames.push_back("../xml/" SKILLTREE_FN);
+  filenames.push_back(SKILLTREE_FN);
+  filenames.push_back(Config::get_conf_dir() + "/" SKILLTREE_FN);
 
-  std::cout << "Seeking XML: SkillTree.xml ...";
-  std::cout.flush();
-
-  std::string content;
   for (unsigned int i = 0; i < filenames.size(); ++i)
   {
-    std::string filename(filenames[i]);
-    std::ifstream in(filename.c_str());
-    if (in.fail())
-      continue;
-
-    std::cout << " Using local file." << std::endl;
-
-    std::string line;
-    while (std::getline(in, line))
-      content += line + "\n";
-    in.close();
-    break;
+    try
+    {
+      this->parse_xml(filenames[i]);
+      return;
+    }
+    catch (FileException& e)
+    {
+      /* Ignore file exception. File is probably just not there. */
+    }
+    catch (Exception& e)
+    {
+      /* Parse error occured. Report this. */
+      std::cout << std::endl << "XML error: " << e << std::endl;
+    }
   }
 
-  /* If the SkillTree.xml file could not been found,
-   * use the build-in version. */
-  if (content.empty())
-  {
-    std::cout << " Using build-in string." << std::endl;
-    content = skilltree_string;
-  }
-
-  this->parse_xml(content);
+  std::cout << "Seeking XML: " << SKILLTREE_FN
+      << " not found. Shutdown!" << std::endl;
+  ::exit(0);
 }
 
 /* ---------------------------------------------------------------- */
 
 void
-ApiSkillTree::parse_xml (std::string const& doc)
+ApiSkillTree::parse_xml (std::string const& filename)
 {
+  /* Try to read the document. */
+  XmlDocumentPtr xml = XmlDocument::create_from_file(filename);
+  xmlNodePtr root = xml->get_root_element();
+
+  std::cout << "Parsing XML: " SKILLTREE_FN " ...";
+  std::cout.flush();
+
+  /* Document was parsed. Reset information. */
   this->skills.clear();
   this->groups.clear();
   this->version = 0;
 
-  std::cout << "Parsing XML: SkillTree.xml ...";
-  std::cout.flush();
-
-  try
-  {
-    XmlDocumentPtr xml = XmlDocument::create(doc);
-    xmlNodePtr root = xml->get_root_element();
-    this->parse_eveapi_tag(root);
-  }
-  catch (Exception& e)
-  {
-    std::cout << std::endl << "Error: " << e << std::endl;
-  }
+  this->parse_eveapi_tag(root);
 
   std::cout << " Version " << this->version
       << (this->version == 0 ? " (not set)" : "")

@@ -24,6 +24,7 @@
 #include "guiconfiguration.h"
 #include "guiaboutdialog.h"
 #include "guievelauncher.h"
+#include "guiversionchecker.h"
 #include "maingui.h"
 
 MainGui::MainGui (void)
@@ -33,6 +34,7 @@ MainGui::MainGui (void)
   this->notebook.set_scrollable(true);
 
   this->versionchecker.set_info_display(&this->info_display);
+  this->versionchecker.set_parent_window(this);
 
   /* Create the actions, menus and toolbars. */
   this->actions = Gtk::ActionGroup::create();
@@ -46,6 +48,9 @@ MainGui::MainGui (void)
   this->actions->add(Gtk::Action::create("Configuration",
       Gtk::Stock::PREFERENCES, "_Configuration..."),
       sigc::mem_fun(*this, &MainGui::configuration));
+  this->actions->add(Gtk::Action::create("CheckUpdates",
+      Gtk::Stock::NETWORK, "_Check for updates..."),
+      sigc::mem_fun(*this, &MainGui::version_checker));
   this->actions->add(Gtk::Action::create("QuitEveMon", Gtk::Stock::QUIT),
       sigc::mem_fun(*this, &MainGui::close));
   this->actions->add(Gtk::Action::create("LaunchEVE",
@@ -76,6 +81,7 @@ MainGui::MainGui (void)
       "    <menu name='MenuEveMon' action='MenuEveMon'>"
       "      <menuitem action='SetupProfile'/>"
       "      <menuitem action='Configuration'/>"
+      "      <menuitem action='CheckUpdates' />"
       "      <separator/>"
       "      <menuitem action='LaunchEVE'/>"
       "      <separator/>"
@@ -205,7 +211,7 @@ MainGui::MainGui (void)
 
   this->update_time();
   this->init_from_config();
-  this->versionchecker.startup_check();
+  this->versionchecker.request_versions();
 }
 
 /* ---------------------------------------------------------------- */
@@ -283,6 +289,16 @@ MainGui::about_dialog (void)
 {
   Gtk::Window* dialog = new GuiAboutDialog();
   dialog->set_transient_for(*this);
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+MainGui::version_checker (void)
+{
+  GuiVersionChecker* checker = new GuiVersionChecker();
+  checker->request_versions();
+  checker->set_transient_for(*this);
 }
 
 /* ---------------------------------------------------------------- */

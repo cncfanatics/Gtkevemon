@@ -36,28 +36,26 @@ GuiConfiguration::GuiConfiguration (void)
   GtkConfCheckButton* misc_detailed_tray_tt_cb = Gtk::manage
       (new GtkConfCheckButton("Detailed tray tooltip",
       false, "settings.detailed_tray_tooltip"));
-  GtkConfCheckButton* misc_autoupdate_sheets_cb = Gtk::manage
-      (new GtkConfCheckButton("Automatically update character status",
-      false, "settings.auto_update_sheets"));
-  GtkConfCheckButton* misc_svn_versioncheck_cb = Gtk::manage
-      (new GtkConfCheckButton("Notify about new GtkEveMon SVN versions",
-      false, "versionchecker.svn_check"));
-  /*
-  GtkConfCheckButton* misc_data_versioncheck_cb = Gtk::manage
-      (new GtkConfCheckButton("Notify about new data file versions",
-      false, "versionchecker.data_check"));
-  */
   GtkConfCheckButton* misc_verbose_wintitle_cb = Gtk::manage
       (new GtkConfCheckButton("Show training info in window title",
       false, "settings.verbose_wintitle"));
+  GtkConfCheckButton* misc_autoupdate_sheets_cb = Gtk::manage
+      (new GtkConfCheckButton("Automatically update character status",
+      false, "settings.auto_update_sheets"));
+  GtkConfCheckButton* misc_versioncheck_cb = Gtk::manage
+      (new GtkConfCheckButton("Notify about new SVN and data file versions",
+      false, "versionchecker.enabled"));
+  GtkConfCheckButton* misc_raise_update_gui_cb = Gtk::manage
+      (new GtkConfCheckButton("Automatically raise update GUI for data files",
+      false, "versionchecker.raise_updater"));
 
   Gtk::VBox* misc_cb_box = MK_VBOX0;
   misc_cb_box->pack_start(*misc_min_on_close_cb, false, false, 0);
   misc_cb_box->pack_start(*misc_detailed_tray_tt_cb, false, false, 0);
-  misc_cb_box->pack_start(*misc_autoupdate_sheets_cb, false, false, 0);
-  misc_cb_box->pack_start(*misc_svn_versioncheck_cb, false, false, 0);
-  //misc_cb_box->pack_start(*misc_data_versioncheck_cb, false, false, 0);
   misc_cb_box->pack_start(*misc_verbose_wintitle_cb, false, false, 0);
+  misc_cb_box->pack_start(*misc_autoupdate_sheets_cb, false, false, 0);
+  misc_cb_box->pack_start(*misc_versioncheck_cb, false, false, 0);
+  misc_cb_box->pack_start(*misc_raise_update_gui_cb, false, false, 0);
 
   Gtk::VBox* page_misc = MK_VBOX;
   page_misc->set_border_width(5);
@@ -67,7 +65,7 @@ GuiConfiguration::GuiConfiguration (void)
   /* The LAUNCHER notebook tab. */
   Gtk::Label* launch_info_label = MK_LABEL("You can define up to "
       "five EVE commands to launch EVE online. If you specify more than "
-      "one command, GtkEveMon will prompt for the command to be started.\n"
+      "one command, GtkEveMon will prompt for the command to execute.\n"
       "Note that \"~\" will not work as home directory.");
   launch_info_label->set_alignment(Gtk::ALIGN_LEFT);
   launch_info_label->set_line_wrap(true);

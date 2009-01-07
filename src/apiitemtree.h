@@ -77,7 +77,7 @@ class ApiItemTree : public ApiBase
 
   protected:
     ApiItemTree (void);
-    void parse_xml (std::string const& doc);
+    void parse_xml (std::string const& filename);
     void parse_root_tag (xmlNodePtr node);
     void parse_item_categories (ApiItemCategoryList& cats, xmlNodePtr node);
     void parse_item_category (ApiItemCategory& cat, xmlNodePtr node);

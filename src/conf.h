@@ -82,6 +82,9 @@ class ConfSection
     conf_sections_t::iterator sections_begin (void);
     conf_sections_t::iterator sections_end (void);
 
+    conf_values_t::iterator find_value (std::string const& key);
+    conf_sections_t::iterator find_section (std::string const& key);
+
     /* Clearing. */
     void clear_values (void);
     void clear_sections (void);
@@ -168,6 +171,18 @@ inline conf_sections_t::iterator
 ConfSection::sections_end (void)
 {
   return this->sections.end();
+}
+
+inline conf_values_t::iterator
+ConfSection::find_value (std::string const& key)
+{
+  return this->values.find(key);
+}
+
+inline conf_sections_t::iterator
+ConfSection::find_section (std::string const& key)
+{
+  return this->sections.find(key);
 }
 
 inline void

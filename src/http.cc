@@ -7,7 +7,7 @@
 #include <cerrno>
 #include <cstring>
 #include <cstdlib>
-#include <iostream>
+//#include <iostream>
 #include <sstream>
 #include <string>
 
@@ -95,6 +95,14 @@ Http::Http (void)
 
 /* ---------------------------------------------------------------- */
 
+Http::Http (std::string const& url)
+{
+  this->set_url(url);
+  this->initialize_defaults();
+}
+
+/* ---------------------------------------------------------------- */
+
 Http::Http (std::string const& host, std::string const& path)
 {
   this->host = host;
@@ -114,6 +122,33 @@ Http::initialize_defaults (void)
   this->http_state = HTTP_STATE_READY;
   this->bytes_read = 0;
   this->bytes_total = 0;
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+Http::set_url (std::string const& url)
+{
+  if (url.size() <= 7)
+    throw Exception("Invalid URL");
+
+  if (url.substr(0, 7) != "http://")
+    throw Exception("Invalid protocol");
+
+  std::string host = url.substr(7);
+  size_t spos = host.find_first_of('/');
+  if (spos == std::string::npos)
+    throw Exception("No path specification");
+
+  if (spos == 0)
+    throw Exception("Invalid host specification");
+
+  std::string path = host.substr(spos);
+  host = host.substr(0, spos);
+
+  //std::cout << "Setting host and path: " << host << ":" << path << std::endl;
+  this->host = host;
+  this->path = path;
 }
 
 /* ---------------------------------------------------------------- */
@@ -305,7 +340,7 @@ Http::read_http_reply (int sock)
     /* Deal with chunks *sigh*. */
     unsigned int size = 512;
     unsigned int pos = 0;
-    char* buffer = (char*)::malloc(size);
+    result->data.resize(size);
 
     while (true)
     {
@@ -324,28 +359,27 @@ Http::read_http_reply (int sock)
       while (pos + chunk_size >= size)
       {
         size *= 2;
-        buffer = (char*)::realloc(buffer, size);
+        result->data.resize(size);
       }
 
       /* Read bytes. */
-      ssize_t nbytes = this->http_data_read(sock, buffer + pos, chunk_size);
+      ssize_t nbytes = this->http_data_read(sock,
+          &result->data[pos], chunk_size);
       pos += nbytes;
       if (nbytes != (ssize_t)chunk_size)
         break;
     }
 
-    result->data = buffer;
-    result->size = pos;
+    result->data.resize(pos);
   }
   else
   {
     /* Simply copy the buffer to the result. Allocating one more byte and
      * setting the memory to '\0' makes it safe for use as string. But
      * the size member is still precise and does not include the '\0'. */
-    result->alloc(this->bytes_total + 1);
-    result->size = this->bytes_total;
-    ::memset(result->data, '\0', this->bytes_total + 1);
-    this->http_data_read(sock, result->data, this->bytes_total);
+    result->data.resize(this->bytes_total + 1);
+    ::memset(&result->data[0], '\0', this->bytes_total + 1);
+    this->http_data_read(sock, &result->data[0], this->bytes_total);
   }
 
   return result;
@@ -466,8 +500,8 @@ Http::http_data_read (int sock, char* buf, size_t size)
       throw Exception(::strerror(errno));
     else if (new_read == 0) /* EOF */
       break;
-    ret += new_read;
 
+    ret += new_read;
     this->bytes_read += new_read;
   }
 

@@ -180,7 +180,7 @@ EveApiFetcher::process_caching (EveApiData& data)
       return;
     }
     std::cout << "Caching XML: " << xmlname << " ..." << std::endl;
-    out.write(data.data->data, data.data->size);
+    out.write(&data.data->data[0], data.data->data.size());
     out.close();
   }
   else
@@ -206,9 +206,10 @@ EveApiFetcher::process_caching (EveApiData& data)
     }
     in.close();
 
-    data.data = HttpData::create(input.size());
+    data.data = HttpData::create();
+    data.data->data.resize(input.size() + 1);
     data.locally_cached = true;
-    ::memcpy(data.data->data, input.c_str(), input.size());
+    ::memcpy(&data.data->data[0], input.c_str(), input.size() + 1);
 
     std::cout << "Warning: Using " << xmlname << " from cache!" << std::endl;
   }
