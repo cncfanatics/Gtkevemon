@@ -471,12 +471,13 @@ Conf::to_stream (std::ostream& outstr)
 void
 Conf::clip_string (std::string& str)
 {
-  while (str[str.size() - 1] == ' ' || str[str.size() - 1] == '\t'
-      || str[str.size() - 1] == '\n'|| str[str.size() - 1] == '\r')
+  while (!str.empty() &&
+      (str[str.size() - 1] == ' ' || str[str.size() - 1] == '\t'
+      || str[str.size() - 1] == '\n' || str[str.size() - 1] == '\r'))
     str.erase(str.size() - 1);
 
-  while (str[0] == ' ' || str[0] == '\t'
-      || str[0] == '\n'|| str[0] == '\r')
+  while (!str.empty() && (str[0] == ' ' || str[0] == '\t'
+      || str[0] == '\n'|| str[0] == '\r'))
     str.erase(0, 1);
 }
 

@@ -337,10 +337,15 @@ GtkCharPage::update_training_details (void)
     if (this->training->in_training)
     {
       this->training_label.set_text(this->get_skill_in_training());
-      this->finish_eve_label.set_text
-          (EveTime::get_gm_time_string(this->training->end_time_t, false));
-      this->finish_local_label.set_text(EveTime::get_local_time_string
-          (EveTime::adjust_local_time(this->training->end_time_t), false));
+
+      std::string downtime_str;
+      if (EveTime::is_in_eve_downtime(this->training->end_time_t))
+        downtime_str = " <i>(in DT!)</i>";
+      this->finish_eve_label.set_markup(EveTime::get_gm_time_string
+          (this->training->end_time_t, false) + downtime_str);
+      this->finish_local_label.set_markup(EveTime::get_local_time_string
+          (EveTime::adjust_local_time(this->training->end_time_t), false)
+          + downtime_str);
     }
     else
     {

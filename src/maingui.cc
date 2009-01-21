@@ -426,7 +426,7 @@ MainGui::update_time (void)
   if (EveTime::is_initialized())
     this->evetime_label.set_text("EVE time: " + EveTime::get_eve_time_string());
   else
-    this->evetime_label.set_text("EVE time: Not yet set!");
+    this->evetime_label.set_text("EVE time: Not yet known!");
 
   this->localtime_label.set_text("Local time: "
       + EveTime::get_local_time_string());

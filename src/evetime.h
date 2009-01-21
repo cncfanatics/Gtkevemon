@@ -15,7 +15,12 @@
 
 #include <string>
 
+/* Time format present in XML files. */
 #define EVE_TIME_FORMAT "%Y-%m-%d %H:%M:%S"
+/* EVE downtime is 1h = 60m = 3600s. */
+#define EVE_DOWNTIME_DUR 3600
+/* EVE downtime starts at 11 o'clock. */
+#define EVE_DOWNTIME_START (11 * 3600)
 
 class EveTime
 {
@@ -57,6 +62,9 @@ class EveTime
     /* Returns a string representing a time difference. */
     static std::string get_string_for_timediff (time_t diff, bool slim);
     static std::string get_minute_str_for_diff (time_t diff);
+
+    /* Returns true if the given EVE time is in server downtime. */
+    static bool is_in_eve_downtime (time_t time);
 
     /* Returns if the EVE time has been initialized. Otherwise
      * the EVE time is equal to the local time. */

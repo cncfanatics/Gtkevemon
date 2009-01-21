@@ -18,6 +18,7 @@
 #include <gtkmm/window.h>
 
 #include "gtkinfodisplay.h"
+#include "exception.h"
 #include "asynchttp.h"
 #include "xml.h"
 
@@ -84,9 +85,9 @@ class VersionCheckerBase
     VersionCheckerBase (void);
     virtual ~VersionCheckerBase (void);
 
-    bool request_versions (void);
-
+    virtual void request_versions (void);
     virtual void handle_version_info (VersionInformation& vi) = 0;
+    virtual void handle_version_error (Exception& e) = 0;
 };
 
 /* ---------------------------------------------------------------- */
@@ -109,13 +110,17 @@ class VersionChecker : public VersionCheckerBase
     void check_gtkevemon_version (VersionInformation& vi);
     void check_datafile_versions (VersionInformation& vi);
     void handle_version_info (VersionInformation& vi);
+    void handle_version_error (Exception& e);
     void show_notification (std::string const& title, std::string const& msg);
+
+  protected:
+    bool on_check_timeout (void);
 
   public:
     VersionChecker (void);
     ~VersionChecker (void);
 
-    bool request_versions (void);
+    void request_versions (void);
     void set_info_display (GtkInfoDisplay* disp);
     void set_parent_window (Gtk::Window* disp);
 

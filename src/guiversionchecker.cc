@@ -13,6 +13,7 @@
 #include "helpers.h"
 #include "imagestore.h"
 #include "gtkdefines.h"
+#include "guiconfiguration.h"
 #include "guiversionchecker.h"
 
 GuiVersionChecker::GuiVersionChecker (bool startup_mode)
@@ -26,7 +27,10 @@ GuiVersionChecker::GuiVersionChecker (bool startup_mode)
   this->update_but = MK_BUT(Gtk::Stock::REFRESH);
   this->update_but->set_sensitive(false);
   this->files_box.set_spacing(5);
-  this->files_box.pack_start(*MK_LABEL("Requesting version information..."));
+
+  Gtk::Button* config_but = MK_BUT0;
+  config_but->set_image(*MK_IMG
+      (Gtk::Stock::PREFERENCES, Gtk::ICON_SIZE_BUTTON));
 
   Gtk::Label* info_label = MK_LABEL0;
   info_label->set_line_wrap(true);
@@ -55,6 +59,8 @@ GuiVersionChecker::GuiVersionChecker (bool startup_mode)
   Gtk::HBox* button_box = MK_HBOX;
   button_box->pack_start(*this->close_but, false, false, 0);
   button_box->pack_end(*this->update_but, false, false, 0);
+  if (this->startup_mode)
+    button_box->pack_start(*config_but, false, false, 0);
 
   Gtk::VBox* main_vbox = MK_VBOX;
   main_vbox->pack_start(*main_frame, true, true, 0);
@@ -74,6 +80,8 @@ GuiVersionChecker::GuiVersionChecker (bool startup_mode)
       (*this, &GuiVersionChecker::on_close_clicked));
   this->update_but->signal_clicked().connect(sigc::mem_fun
       (*this, &GuiVersionChecker::on_update_clicked));
+  config_but->signal_clicked().connect(sigc::mem_fun
+      (*this, &GuiVersionChecker::on_config_clicked));
   this->downloader.signal_download_done().connect(sigc::mem_fun
       (*this, &GuiVersionChecker::on_download_done));
   this->downloader.signal_all_downloads_done().connect
@@ -106,11 +114,55 @@ GuiVersionChecker::~GuiVersionChecker (void)
 /* ---------------------------------------------------------------- */
 
 void
+GuiVersionChecker::handle_version_error (Exception& e)
+{
+  std::cout << "Not able to perform version check: " << e << std::endl;
+
+  this->files_box.children().clear();
+
+  Gtk::Label* error_label = MK_LABEL("There was a problem while "
+      "requesting\nthe online versioning service.\nMessage: " + e);
+  error_label->set_line_wrap(true);
+  error_label->set_alignment(Gtk::ALIGN_LEFT);
+
+  Gtk::HBox* error_box = MK_HBOX;
+  error_box->set_border_width(5);
+  error_box->pack_start(*MK_IMG(Gtk::Stock::DIALOG_ERROR,
+      Gtk::ICON_SIZE_DIALOG), false, false, 0);
+  error_box->pack_start(*error_label, true, true, 0);
+
+  Gtk::Button* again_but = MK_BUT("Try again");
+  again_but->set_image(*MK_IMG(Gtk::Stock::NETWORK, Gtk::ICON_SIZE_BUTTON));
+  Gtk::HBox* button_box = MK_HBOX;
+  button_box->pack_start(*again_but, true, false, 0);
+
+  again_but->signal_clicked().connect(sigc::mem_fun
+      (*this, &GuiVersionChecker::request_versions));
+
+  this->files_box.pack_start(*error_box, false, false, 0);
+  this->files_box.pack_start(*button_box, false, false, 0);
+  this->files_box.show_all();
+}
+
+/* ---------------------------------------------------------------- */
+
+void
 GuiVersionChecker::handle_version_info (VersionInformation& vi)
 {
   this->version_info = vi;
   this->rebuild_files_box();
   this->update_but->set_sensitive(!this->update_list.empty());
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GuiVersionChecker::request_versions (void)
+{
+  this->files_box.children().clear();
+  this->files_box.pack_start(*MK_LABEL("Requesting version information..."));
+  this->files_box.show_all();
+  this->VersionCheckerBase::request_versions();
 }
 
 /* ---------------------------------------------------------------- */
@@ -254,6 +306,15 @@ GuiVersionChecker::on_update_done (void)
 /* ---------------------------------------------------------------- */
 
 void
+GuiVersionChecker::on_config_clicked (void)
+{
+  GuiConfiguration* dialog = new GuiConfiguration();
+  dialog->set_transient_for(*this);
+}
+
+/* ---------------------------------------------------------------- */
+
+void
 GuiVersionChecker::on_download_done (DownloadItem dl, AsyncHttpData data)
 {
   /* Download successful? */
@@ -289,7 +350,7 @@ GuiVersionChecker::on_download_done (DownloadItem dl, AsyncHttpData data)
     return;
   }
 
-  dlf.write(&data.data->data[0], data.data->data.size());
+  dlf.write(&data.data->data[0], data.data->data.size() - 1);
   if (dlf.fail())
   {
     std::cout << std::endl << "Error: " << ::strerror(errno) << std::endl;

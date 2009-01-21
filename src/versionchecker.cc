@@ -132,7 +132,7 @@ VersionCheckerBase::~VersionCheckerBase (void)
 
 /* ---------------------------------------------------------------- */
 
-bool
+void
 VersionCheckerBase::request_versions (void)
 {
   std::cout << "Request XML: versions.xml ..." << std::endl;
@@ -140,12 +140,10 @@ VersionCheckerBase::request_versions (void)
   AsyncHttp* http = AsyncHttp::create();
   http->set_host(VERSION_CHECK_HOST);
   http->set_path(VERSION_CHECK_PATH);
-  http->set_agent("GtkEveMon");
+  Config::setup_http(http);
   this->request_conn = http->signal_done().connect(sigc::mem_fun
       (*this, &VersionCheckerBase::handle_result));
   http->async_request();
-
-  return true;
 }
 
 /* ---------------------------------------------------------------- */
@@ -155,8 +153,7 @@ VersionCheckerBase::handle_result (AsyncHttpData result)
 {
   if (result.data.get() == 0)
   {
-    std::cout << "Unable to perform SVN version check: "
-        << result.exception << std::endl;
+    this->handle_version_error(result.exception);
     return;
   }
 
@@ -187,7 +184,7 @@ VersionChecker::VersionChecker (void)
   this->info_display = 0;
   this->parent_window = 0;
   this->timeout_conn = Glib::signal_timeout().connect(sigc::mem_fun(*this,
-      &VersionChecker::request_versions), VERSION_CHECK_INTERVAL);
+      &VersionChecker::on_check_timeout), VERSION_CHECK_INTERVAL);
 }
 
 /* ---------------------------------------------------------------- */
@@ -200,6 +197,15 @@ VersionChecker::~VersionChecker (void)
 /* ---------------------------------------------------------------- */
 
 bool
+VersionChecker::on_check_timeout (void)
+{
+  this->request_versions();
+  return true;
+}
+
+/* ---------------------------------------------------------------- */
+
+void
 VersionChecker::request_versions (void)
 {
   /* Request SVN version. */
@@ -208,8 +214,6 @@ VersionChecker::request_versions (void)
   {
     this->VersionCheckerBase::request_versions();
   }
-
-  return true;
 }
 
 /* ---------------------------------------------------------------- */
@@ -219,6 +223,14 @@ VersionChecker::handle_version_info (VersionInformation& vi)
 {
   this->check_gtkevemon_version(vi);
   this->check_datafile_versions(vi);
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+VersionChecker::handle_version_error (Exception& e)
+{
+  std::cout << "Unable to perform version check: " << e << std::endl;
 }
 
 /* ---------------------------------------------------------------- */

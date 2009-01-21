@@ -6,8 +6,8 @@
 #include <gtkmm/messagedialog.h>
 
 #include "http.h"
-#include "imagestore.h"
 #include "config.h"
+#include "imagestore.h"
 #include "gtkportrait.h"
 
 GtkPortrait::GtkPortrait (void)
@@ -109,7 +109,7 @@ GtkPortrait::request_from_eve_online (void)
   AsyncHttp* http = AsyncHttp::create();;
   http->set_host("img.eve.is");
   http->set_path("/serv.asp?s=256&c=" + this->char_id);
-  http->set_agent("GtkEveMon");
+  Config::setup_http(http);
 
   this->http_request.disconnect();
   this->http_request = http->signal_done().connect(sigc::mem_fun
@@ -137,7 +137,7 @@ GtkPortrait::set_from_eve_online (AsyncHttpData result)
   try
   {
     std::ofstream out(jpg_name.str().c_str());
-    out.write(&result.data->data[0], result.data->data.size());
+    out.write(&result.data->data[0], result.data->data.size() - 1);
     out.close();
 
     Glib::RefPtr<Gdk::Pixbuf> image

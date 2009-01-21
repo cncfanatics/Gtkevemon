@@ -3,6 +3,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <unistd.h>
 #include <cmath>
 #include <cerrno>
 #include <cstring>
@@ -66,18 +67,43 @@ GetHostByName::GetHostByName (char const* host)
     throw Exception("gethostbyname_r() failed: "
         + std::string(::strerror(errno)));
 
-#else
-#  ifdef __APPLE__
+#elif defined(__APPLE__)
 
   /* Under MacOS X the gethostbyname function is already thread safe. */
   this->result = *::gethostbyname(host);
 
-#  else
+#elif defined(__SunOS)
+  /* Solaris has 1 argument fewer than Linux. */
+  struct hostent* hp;
+  struct hostent* res;
+  int herr;
+
+  /* Define initial buffer length and alloc space. */
+  size_t buffer_len = 1024;
+  this->strange_data = (char*)::malloc(buffer_len);
+
+  do
+  {
+    res = ::gethostbyname_r(host, &this->result,
+    this->strange_data, buffer_len, &herr);
+    /*  Check for errors.  */
+    if (res == 0 && herr == ERANGE)
+    {
+      /* Enlarge the buffer.  */
+      buffer_len *= 2;
+      this->strange_data = (char*)::realloc(this->strange_data, buffer_len);
+    }
+  } while (res == 0 && herr == ERANGE);
+
+  if (res == 0 && herr != 0)
+    throw Exception("gethostbyname_r() failed: "
+      + std::string(::strerror(herr)));
+
+#else
 
   /* There is no solution for other systems yet. */
-#    error "gethostbyname_r(): no implementation available. PEASE REPORT THIS!"
+# error "gethostbyname_r(): no implementation available. PEASE REPORT THIS!"
 
-#  endif
 #endif
 }
 
@@ -375,8 +401,9 @@ Http::read_http_reply (int sock)
   else
   {
     /* Simply copy the buffer to the result. Allocating one more byte and
-     * setting the memory to '\0' makes it safe for use as string. But
-     * the size member is still precise and does not include the '\0'. */
+     * setting the memory to '\0' makes it safe for use as string.
+     * WARNING: For binary data you should always remove the last character.
+     */
     result->data.resize(this->bytes_total + 1);
     ::memset(&result->data[0], '\0', this->bytes_total + 1);
     this->http_data_read(sock, &result->data[0], this->bytes_total);

@@ -5,6 +5,7 @@
 #include <cerrno>
 #include <cstdlib>
 #include <sys/wait.h>
+#include <unistd.h>
 
 #include "exception.h"
 #include "helpers.h"

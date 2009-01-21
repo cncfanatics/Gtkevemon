@@ -19,6 +19,7 @@
 #include <gdkmm/pixbuf.h>
 
 #include "apiskilltree.h"
+#include "apicerttree.h"
 
 class GtkSkillContextMenu : public Gtk::Menu
 {
@@ -38,6 +39,7 @@ class GtkSkillContextMenu : public Gtk::Menu
 
 /* ---------------------------------------------------------------- */
 
+/* A wrapper around TreeView to handle context menu requests. */
 class GtkSkillListView : public Gtk::TreeView
 {
   private:
@@ -54,15 +56,19 @@ class GtkSkillListView : public Gtk::TreeView
 
 /* ---------------------------------------------------------------- */
 
-class GuiPlannerSkillCols : public Gtk::TreeModel::ColumnRecord
+template <class T>
+class GuiPlannerCols : public Gtk::TreeModel::ColumnRecord
 {
   public:
-    GuiPlannerSkillCols (void);
+    GuiPlannerCols (void);
 
     Gtk::TreeModelColumn<Glib::ustring> name;
     Gtk::TreeModelColumn<Glib::RefPtr<Gdk::Pixbuf> > icon;
-    Gtk::TreeModelColumn<ApiSkill const*> skill;
+    Gtk::TreeModelColumn<T> data;
 };
+
+typedef GuiPlannerCols<ApiSkill const*> GuiPlannerSkillCols;
+typedef GuiPlannerCols<ApiCert const*> GuiPlannerCertCols;
 
 /* ---------------------------------------------------------------- */
 
@@ -78,12 +84,13 @@ GtkSkillListView::signal_button_press_myevent (void)
   return this->sig_button_press_event;
 }
 
+template <class T>
 inline
-GuiPlannerSkillCols::GuiPlannerSkillCols (void)
+GuiPlannerCols<T>::GuiPlannerCols (void)
 {
   this->add(name);
   this->add(icon);
-  this->add(skill);
+  this->add(data);
 }
 
 #endif /* GTK_PLANNER_BASE_HEADER */

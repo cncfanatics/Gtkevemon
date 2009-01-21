@@ -9,6 +9,7 @@
 #include <gtkmm/frame.h>
 #include <gtkmm/table.h>
 
+#include "config.h"
 #include "asynchttp.h"
 #include "defines.h"
 #include "gtkdefines.h"
@@ -114,7 +115,7 @@ GuiAboutDialog::request_version_label (void)
   AsyncHttp* http = AsyncHttp::create();
   http->set_host("gtkevemon.battleclinic.com");
   http->set_path("/svn_version.txt");
-  http->set_agent("GtkEveMon");
+  Config::setup_http(http);
   this->request = http->signal_done().connect(sigc::mem_fun
       (*this, &GuiAboutDialog::set_version_label));
   http->async_request();

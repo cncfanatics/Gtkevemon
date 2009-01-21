@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cstring>
 #include <ctime>
+#include <cstdlib>
 
 #include "evetime.h"
 #include "config.h"
@@ -127,6 +128,32 @@ EveTime::get_local_time (void)
 
 /* ---------------------------------------------------------------- */
 
+#ifdef __SunOS
+/*
+ * timegm() is a GNU extension which is not available on OpenSolaris.
+ * The timegm() manpage suggests the following code as a portable alternative.
+ */
+time_t
+timegm(struct tm *tm)
+{
+  time_t ret;
+  char *tz;
+
+  tz = ::getenv("TZ");
+  ::setenv("TZ", "", 1);
+  ::tzset();
+  ret = ::mktime(tm);
+  if (tz)
+    ::setenv("TZ", tz, 1);
+  else
+    ::unsetenv("TZ");
+  ::tzset();
+  return ret;
+}
+#endif
+
+/* ---------------------------------------------------------------- */
+
 time_t
 EveTime::get_time_for_string (std::string const& timestr)
 {
@@ -197,6 +224,18 @@ EveTime::get_minute_str_for_diff (time_t diff)
   std::stringstream ss;
   ss << ((diff + 59) / 60) << "m";
   return ss.str();
+}
+
+/* ---------------------------------------------------------------- */
+
+bool
+EveTime::is_in_eve_downtime (time_t time)
+{
+  time_t hours = time % (3600 * 24);
+  if (hours < EVE_DOWNTIME_START)
+    return false;
+  else
+    return (hours - EVE_DOWNTIME_START) < EVE_DOWNTIME_DUR;
 }
 
 /* ---------------------------------------------------------------- */

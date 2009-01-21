@@ -20,8 +20,8 @@ EveApiFetcher::setup_fetcher (void)
 {
   /* Setup HTTP fetcher. */
   AsyncHttp* fetcher = AsyncHttp::create();
+  Config::setup_http(fetcher);
   fetcher->set_host("api.eve-online.com");
-  fetcher->set_agent("GtkEveMon");
 
   /* Setup HTTP post data. */
   std::string post_data;
@@ -35,14 +35,6 @@ EveApiFetcher::setup_fetcher (void)
     post_data += this->auth.char_id;
   }
   fetcher->set_data(HTTP_METHOD_POST, post_data);
-
-  /* Setup proxy if set. */
-  ConfSectionPtr section = Config::conf.get_section("network");
-  if (section->get_value("use_proxy")->get_bool())
-  {
-    fetcher->set_proxy(section->get_value("proxy_address")->get_string(),
-        (uint16_t)section->get_value("proxy_port")->get_int());
-  }
 
   switch (this->type)
   {

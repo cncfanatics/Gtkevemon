@@ -30,6 +30,7 @@ class GuiVersionChecker : public VersionCheckerBase, public WinBase
     void on_update_clicked (void);
     void on_update_done (void);
     void on_close_clicked (void);
+    void on_config_clicked (void);
     void on_download_done (DownloadItem dl, AsyncHttpData data);
 
   public:
@@ -37,15 +38,8 @@ class GuiVersionChecker : public VersionCheckerBase, public WinBase
     ~GuiVersionChecker (void);
 
     void handle_version_info (VersionInformation& vi);
-    bool request_versions (void);
+    void handle_version_error (Exception& e);
+    void request_versions (void);
 };
-
-/* ---------------------------------------------------------------- */
-
-inline bool
-GuiVersionChecker::request_versions (void)
-{
-  return this->VersionCheckerBase::request_versions();
-}
 
 #endif /* GUI_VERSION_CHECKER_HEADER */

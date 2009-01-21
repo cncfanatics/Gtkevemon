@@ -131,7 +131,7 @@ GtkColumnsBase::append_column (Gtk::TreeViewColumn* col, GtkColumnOptions o)
 {
   this->columns.push_back(std::make_pair(col, o));
   if (this->columns.size() > this->format.size())
-    this->format.push_back(std::make_pair(this->format.size(), true));
+    this->format.push_back(std::make_pair((int)this->format.size(), true));
 }
 
 /* ---------------------------------------------------------------- */
@@ -284,7 +284,7 @@ void
 GtkColumnsBase::check_format (void)
 {
   while (this->columns.size() > this->format.size())
-    this->format.push_back(std::make_pair(this->format.size(), true));
+    this->format.push_back(std::make_pair((int)this->format.size(), true));
 
   while (this->columns.size() < this->format.size())
     this->format.pop_back();

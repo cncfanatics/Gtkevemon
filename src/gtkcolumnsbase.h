@@ -15,7 +15,7 @@
 
 #include <vector>
 #include <string>
-#include <bits/stl_pair.h>
+#include <utility>
 #include <gdkmm/pixbuf.h>
 #include <gtkmm/treeview.h>
 

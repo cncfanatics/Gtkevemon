@@ -158,3 +158,18 @@ Config::init_user_config (void)
     Config::conf.add_from_file(Config::filename);
   }
 }
+
+/* ---------------------------------------------------------------- */
+
+void
+Config::setup_http (AsyncHttp* fetcher)
+{
+  fetcher->set_agent("GtkEveMon");
+
+  ConfSectionPtr section = Config::conf.get_section("network");
+  if (section->get_value("use_proxy")->get_bool())
+  {
+    fetcher->set_proxy(section->get_value("proxy_address")->get_string(),
+        (uint16_t)section->get_value("proxy_port")->get_int());
+  }
+}

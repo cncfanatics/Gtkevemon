@@ -6,6 +6,7 @@
 #include <gtkmm/box.h>
 
 #include "http.h"
+#include "config.h"
 #include "helpers.h"
 #include "gtkdefines.h"
 #include "gtkdownloader.h"
@@ -64,8 +65,8 @@ GtkDownloader::start_next_download (void)
 
   this->asynchttp = AsyncHttp::create();
   this->asynchttp->set_url(dli.url);
-  this->asynchttp->set_agent("GtkEveMon");
-  /* TODO Set proxy. */
+  Config::setup_http(this->asynchttp);
+
   this->asynchttp->signal_done().connect(sigc::mem_fun
       (*this, &GtkDownloader::on_download_complete));
   this->asynchttp->async_request();

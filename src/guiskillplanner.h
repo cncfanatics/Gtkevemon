@@ -43,8 +43,14 @@ class GuiSkillPlanner : public WinBase
     Glib::RefPtr<Gtk::TreeStore> skill_store;
     GtkSkillListView skill_view;
 
+    /* Certificate list. */
+    GuiPlannerCertCols cert_cols;
+    Glib::RefPtr<Gtk::TreeStore> cert_store;
+    GtkSkillListView cert_view;
+
     /* Misc. */
-    Gtk::Notebook notebook;
+    Gtk::Notebook details_nb;
+    Gtk::Notebook lists_nb;
     Gtk::Tooltips tooltips;
 
     /* Filters */
@@ -52,6 +58,7 @@ class GuiSkillPlanner : public WinBase
     Gtk::ComboBoxText filter_cb;
 
     void fill_skill_store (void);
+    void fill_cert_store (void);
     void skill_selected (void);
     void clear_filter (void);
     void skill_row_activated (Gtk::TreeModel::Path const& path,

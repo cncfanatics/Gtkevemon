@@ -26,10 +26,14 @@ enum ComboBoxFilter
 
 GuiSkillPlanner::GuiSkillPlanner (void)
   : skill_store(Gtk::TreeStore::create(skill_cols)),
-    skill_view(skill_store)
+    skill_view(skill_store),
+    cert_store(Gtk::TreeStore::create(cert_cols)),
+    cert_view(cert_store)
 {
   this->skill_store->set_sort_column
       (this->skill_cols.name, Gtk::SORT_ASCENDING);
+  this->cert_store->set_sort_column
+      (this->cert_cols.name, Gtk::SORT_ASCENDING);
 
   this->filter_cb.append_text("Show all skills");
   this->filter_cb.append_text("Only show unknown skills");
@@ -46,10 +50,23 @@ GuiSkillPlanner::GuiSkillPlanner (void)
   this->skill_view.set_headers_visible(false);
   this->skill_view.get_selection()->set_mode(Gtk::SELECTION_SINGLE);
 
+  Gtk::TreeViewColumn* cert_col_name = Gtk::manage(new Gtk::TreeViewColumn);
+  cert_col_name->set_title("Name");
+  cert_col_name->pack_start(this->cert_cols.icon, false);
+  cert_col_name->pack_start(this->cert_cols.name, true);
+  this->cert_view.append_column(*cert_col_name);
+  this->cert_view.set_headers_visible(false);
+  this->cert_view.get_selection()->set_mode(Gtk::SELECTION_SINGLE);
+
   Gtk::ScrolledWindow* skill_scwin = MK_SCWIN;
   skill_scwin->set_shadow_type(Gtk::SHADOW_ETCHED_IN);
   skill_scwin->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_ALWAYS);
   skill_scwin->add(this->skill_view);
+
+  Gtk::ScrolledWindow* cert_scwin = MK_SCWIN;
+  cert_scwin->set_shadow_type(Gtk::SHADOW_ETCHED_IN);
+  cert_scwin->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_ALWAYS);
+  cert_scwin->add(this->cert_view);
 
   Gtk::Button* clear_filter_but = MK_BUT0;
   clear_filter_but->set_image(*MK_IMG(Gtk::Stock::CLEAR, Gtk::ICON_SIZE_MENU));
@@ -60,14 +77,23 @@ GuiSkillPlanner::GuiSkillPlanner (void)
   filter_box->pack_start(this->filter_entry, true, true, 0);
   filter_box->pack_start(*clear_filter_but, false, false, 0);
 
-  Gtk::VBox* skill_panechild = MK_VBOX;
-  skill_panechild->pack_start(*filter_box, false, false, 0);
-  skill_panechild->pack_start(this->filter_cb, false, false, 0);
-  skill_panechild->pack_start(*skill_scwin, true, true, 0);
-  skill_panechild->set_size_request(250, -1);
+  Gtk::VBox* skills_pane = MK_VBOX;
+  skills_pane->pack_start(*filter_box, false, false, 0);
+  skills_pane->pack_start(this->filter_cb, false, false, 0);
+  skills_pane->pack_start(*skill_scwin, true, true, 0);
+  skills_pane->set_border_width(5);
 
-  this->notebook.append_page(this->plan_gui, "Training plan");
-  this->notebook.append_page(this->details_gui, "Skill details");
+  Gtk::VBox* certs_pane = MK_VBOX;
+  certs_pane->pack_start(*cert_scwin, true, true, 0);
+  certs_pane->set_border_width(5);
+
+  this->lists_nb.append_page(*skills_pane, "Skills");
+  //this->lists_nb.append_page(*certs_pane, "Certificates");
+  this->lists_nb.set_show_tabs(false);
+  this->lists_nb.set_size_request(260, -1);
+
+  this->details_nb.append_page(this->plan_gui, "Training plan");
+  this->details_nb.append_page(this->details_gui, "Skill details");
 
   Gtk::Button* close_but = MK_BUT(Gtk::Stock::CLOSE);
   Gtk::HBox* button_hbox = MK_HBOX;
@@ -75,11 +101,11 @@ GuiSkillPlanner::GuiSkillPlanner (void)
   button_hbox->pack_start(*close_but, false, false, 0);
 
   Gtk::VBox* details_panechild = MK_VBOX;
-  details_panechild->pack_start(this->notebook, true, true, 0);
+  details_panechild->pack_start(this->details_nb, true, true, 0);
   details_panechild->pack_start(*button_hbox, false, false, 0);
 
   Gtk::HPaned* main_pane = MK_HPANED;
-  main_pane->add1(*skill_panechild);
+  main_pane->add1(this->lists_nb);
   main_pane->add2(*details_panechild);
 
   Gtk::VBox* main_vbox = MK_VBOX;
@@ -131,6 +157,7 @@ GuiSkillPlanner::set_character (ApiCharSheetPtr sheet)
   this->details_gui.set_character(sheet);
   this->plan_gui.set_character(sheet);
   this->fill_skill_store();
+  this->fill_cert_store();
   this->set_title(this->charsheet->name + " - GtkEveMon");
 }
 
@@ -148,8 +175,29 @@ GuiSkillPlanner::set_training (ApiInTrainingPtr training)
 void
 GuiSkillPlanner::set_skill (ApiSkill const* skill)
 {
-  this->notebook.set_current_page(1);
+  this->details_nb.set_current_page(1);
   this->details_gui.set_skill(skill);
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GuiSkillPlanner::fill_cert_store (void)
+{
+  #if 0
+  this->cert_store->clear();
+
+  ApiCertTreePtr tree = ApiCertTree::request();
+  ApiCertMap& certs = tree->certificates;
+  for (ApiCertMap::iterator iter = certs.begin(); iter != certs.end(); iter++)
+  {
+    Gtk::TreeModel::iterator siter = this->cert_store->append();
+    (*siter)[this->cert_cols.name] = "Grade " + Helpers::get_string_from_int
+        (iter->second.grade);
+    (*siter)[this->cert_cols.icon] = ImageStore::skillicons[0];
+    (*siter)[this->cert_cols.data] = 0;
+  }
+  #endif
 }
 
 /* ---------------------------------------------------------------- */
@@ -175,7 +223,7 @@ GuiSkillPlanner::fill_skill_store (void)
     Gtk::TreeModel::iterator siter = this->skill_store->append();
     (*siter)[this->skill_cols.name] = iter->second.name;
     (*siter)[this->skill_cols.icon] = ImageStore::skillicons[0];
-    (*siter)[this->skill_cols.skill] = 0;
+    (*siter)[this->skill_cols.data] = 0;
     skill_group_iters.insert(std::make_pair
         (iter->first, std::make_pair(siter, 0)));
   }
@@ -255,7 +303,7 @@ GuiSkillPlanner::fill_skill_store (void)
         (giter->second.first->children());
     (*siter)[this->skill_cols.name] = skill.name + " ("
         + Helpers::get_string_from_int(skill.rank) + ")";
-    (*siter)[this->skill_cols.skill] = &skill;
+    (*siter)[this->skill_cols.data] = &skill;
 
     (*siter)[this->skill_cols.icon] = skill_icon;
 
@@ -285,7 +333,7 @@ GuiSkillPlanner::skill_selected (void)
   Gtk::TreeModel::iterator iter = this->skill_view.get_selection
       ()->get_selected();
 
-  ApiSkill const* skill = (*iter)[this->skill_cols.skill];
+  ApiSkill const* skill = (*iter)[this->skill_cols.data];
   if (skill == 0)
     return;
 
@@ -301,7 +349,7 @@ GuiSkillPlanner::skill_row_activated (Gtk::TreeModel::Path const& path,
   col = 0;
 
   Gtk::TreeModel::iterator iter = this->skill_store->get_iter(path);
-  ApiSkill const* skill = (*iter)[this->skill_cols.skill];
+  ApiSkill const* skill = (*iter)[this->skill_cols.data];
 
   if (skill != 0)
   {
@@ -359,7 +407,7 @@ GuiSkillPlanner::on_view_button_pressed (GdkEventButton* event)
     return;
 
   Gtk::TreeModel::iterator iter = selection->get_selected();
-  ApiSkill const* skill = (*iter)[this->skill_cols.skill];
+  ApiSkill const* skill = (*iter)[this->skill_cols.data];
   if (skill == 0)
     return;
 
@@ -377,7 +425,7 @@ GuiSkillPlanner::on_view_button_pressed (GdkEventButton* event)
 void
 GuiSkillPlanner::on_planning_requested (ApiSkill const* skill, int level)
 {
-  this->notebook.set_current_page(0);
+  this->details_nb.set_current_page(0);
   this->plan_gui.append_skill(skill, level);
 }
 

@@ -13,6 +13,7 @@
 #ifndef CONFIG_HEADER
 #define CONFIG_HEADER
 
+#include "asynchttp.h"
 #include "conf.h"
 
 class Config
@@ -32,6 +33,9 @@ class Config
 
     static std::string const& get_conf_dir (void);
     static std::string const& get_filename (void);
+
+    /* Helper function to setup HTTP requests. */
+    static void setup_http (AsyncHttp* fetcher);
 };
 
 /* ---------------------------------------------------------------- */

@@ -1,6 +1,6 @@
 User interface
 --------------
- - Display if skill training finish time is withing downtime
+ - Display if skill training finish time is within downtime
  - Make links clickable (about dialog)
  - Implant viewer
 
@@ -15,6 +15,12 @@ Skill Browser / Planner
  - Optional:
    - Subplan
    - Enabled skills through training
+
+
+Notifications
+-------------
+- Notification a few miniutes before actual finish
+
 
 Certificate Browser
 -------------------

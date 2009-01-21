@@ -317,7 +317,7 @@ GtkSkillDetails::on_skill_selected (Gtk::TreeModel::Path const& path,
   col = 0;
 
   Gtk::TreeModel::iterator iter = this->deps_store->get_iter(path);
-  ApiSkill const* skill = (*iter)[this->deps_cols.skill];
+  ApiSkill const* skill = (*iter)[this->deps_cols.data];
 
   if (skill == 0)
     return;
@@ -333,7 +333,7 @@ GtkSkillDetails::recurse_append_skill_req (ApiSkill const* skill,
 {
   (*slot)[this->deps_cols.name] = skill->name + " "
       + Helpers::get_roman_from_int(level);
-  (*slot)[this->deps_cols.skill] = skill;
+  (*slot)[this->deps_cols.data] = skill;
 
   ApiCharSheetSkill* cskill = this->charsheet->get_skill_for_id(skill->id);
   Glib::RefPtr<Gdk::Pixbuf> skill_icon;
@@ -371,7 +371,7 @@ GtkSkillDetails::on_view_button_pressed (GdkEventButton* event)
     return;
 
   Gtk::TreeModel::iterator iter = selection->get_selected();
-  ApiSkill const* skill = (*iter)[this->deps_cols.skill];
+  ApiSkill const* skill = (*iter)[this->deps_cols.data];
   if (skill == 0)
     return;
 
@@ -401,7 +401,7 @@ GtkSkillDetails::on_query_skillview_tooltip (int x, int y, bool key,
     return false;
 
   Gtk::TreeIter iter = this->deps_store->get_iter(path);
-  ApiSkill const* skill = (*iter)[this->deps_cols.skill];
+  ApiSkill const* skill = (*iter)[this->deps_cols.data];
 
   if (skill == 0)
     return false;
