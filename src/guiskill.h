@@ -24,6 +24,8 @@ class GuiSkill : public WinBase
   private:
     Gtk::Label skill_name;
     Gtk::Label group_name;
+    Gtk::Label skill_id;
+    Gtk::Label group_id;
     Gtk::Label skill_attribs;
     Glib::RefPtr<Gtk::TextBuffer> desc_buffer;
     Gtk::TextView skill_desc;

@@ -1,9 +1,12 @@
 #include "images/skill.h"
+#include "images/certificate.h"
 #include "images/skillstatus.h"
 #include "images/skillicons.h"
 #include "images/skillprogress.h"
 #include "images/skilldeps.h"
 #include "images/skillplan.h"
+#include "images/certgrades.h"
+#include "images/certstatus.h"
 #include "images/eveportrait.h"
 #include "images/applogo.h"
 #include "images/aboutlogo.h"
@@ -14,6 +17,8 @@
 #include "imagestore.h"
 
 Glib::RefPtr<Gdk::Pixbuf> ImageStore::skill;
+Glib::RefPtr<Gdk::Pixbuf> ImageStore::certificate;
+Glib::RefPtr<Gdk::Pixbuf> ImageStore::certificate_small;
 Glib::RefPtr<Gdk::Pixbuf> ImageStore::applogo;
 Glib::RefPtr<Gdk::Pixbuf> ImageStore::aboutlogo;
 Glib::RefPtr<Gdk::Pixbuf> ImageStore::eveportrait;
@@ -22,6 +27,8 @@ Glib::RefPtr<Gdk::Pixbuf> ImageStore::skillicons[6];
 Glib::RefPtr<Gdk::Pixbuf> ImageStore::skillstatus[8];
 Glib::RefPtr<Gdk::Pixbuf> ImageStore::skilldeps[3];
 Glib::RefPtr<Gdk::Pixbuf> ImageStore::skillplan[5];
+Glib::RefPtr<Gdk::Pixbuf> ImageStore::certgrades[4];
+Glib::RefPtr<Gdk::Pixbuf> ImageStore::certstatus[4];
 Glib::RefPtr<Gdk::Pixbuf> ImageStore::menuicons[3];
 
 /* ---------------------------------------------------------------- */
@@ -30,6 +37,10 @@ void
 ImageStore::init (void)
 {
   ImageStore::skill = ImageStore::create_from_inline(img_skill);
+  ImageStore::certificate = ImageStore::create_from_inline
+      (img_certificate)->scale_simple(54, 54, Gdk::INTERP_BILINEAR);
+  ImageStore::certificate_small = ImageStore::create_from_inline
+      (img_certificate)->scale_simple(20, 20, Gdk::INTERP_BILINEAR);
 
   ImageStore::applogo = Gdk::Pixbuf::create_from_xpm_data
       (img_applogo_xpm);
@@ -90,6 +101,24 @@ ImageStore::init (void)
       (img_skillplan_untrainable);
   ImageStore::skillplan[4] = ImageStore::create_from_inline
       (img_skillplan_deperror);
+
+  ImageStore::certgrades[0] = Gdk::Pixbuf::create_from_xpm_data
+      (img_certgrades_1_xpm);
+  ImageStore::certgrades[1] = Gdk::Pixbuf::create_from_xpm_data
+      (img_certgrades_2_xpm);
+  ImageStore::certgrades[2] = Gdk::Pixbuf::create_from_xpm_data
+      (img_certgrades_3_xpm);
+  ImageStore::certgrades[3] = Gdk::Pixbuf::create_from_xpm_data
+      (img_certgrades_4_xpm);
+
+  ImageStore::certstatus[0] = ImageStore::create_from_inline
+      (img_certstatus_claimed);
+  ImageStore::certstatus[1] = ImageStore::create_from_inline
+      (img_certstatus_claimable);
+  ImageStore::certstatus[2] = ImageStore::create_from_inline
+      (img_certstatus_partial);
+  ImageStore::certstatus[3] = ImageStore::create_from_inline
+      (img_certstatus_unavail);
 
   ImageStore::menuicons[0] = Gdk::Pixbuf::create_from_xpm_data
       (img_menu_evemon_xpm);

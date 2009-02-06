@@ -332,6 +332,52 @@ ApiCharSheet::find_implant_bonus (xmlNodePtr node, char const* name, double& v)
 
 /* ---------------------------------------------------------------- */
 
+void
+ApiCharSheet::add_char_skill (int skill_id, int level)
+{
+  /* Bail out if we get an invalid level. */
+  if (level < 0 || level > 5)
+    return;
+
+  ApiCharSheetSkill* cskill = this->get_skill_for_id(skill_id);
+
+  /* Bail out if the character has the skill and level. */
+  if (cskill != 0 && cskill->level >= level)
+    return;
+
+  /* Create skill if the character does not have it, update otherwise. */
+  if (cskill == 0)
+  {
+    /* Create new skill. */
+    ApiSkillTreePtr tree = ApiSkillTree::request();
+    ApiSkill const* skill = tree->get_skill_for_id(skill_id);
+
+    ApiCharSheetSkill new_cskill;
+    new_cskill.id = skill->id;
+    new_cskill.level = level;
+    new_cskill.points = 0;
+    new_cskill.points_start = ApiCharSheet::calc_start_sp(level, skill->rank);
+    new_cskill.points_dest = ApiCharSheet::calc_dest_sp(level, skill->rank);
+    new_cskill.completed = 0.0;
+    new_cskill.details = skill;
+
+    this->skills.push_back(new_cskill);
+  }
+  else
+  {
+    /* Update existing skill. */
+    ApiSkill const* skill = cskill->details;
+
+    cskill->level = level;
+    cskill->points = 0;
+    cskill->points_start = ApiCharSheet::calc_start_sp(level, skill->rank);
+    cskill->points_dest = ApiCharSheet::calc_dest_sp(level, skill->rank);
+    cskill->completed = 0.0;
+  }
+}
+
+/* ---------------------------------------------------------------- */
+
 int
 ApiCharSheet::get_level_for_skill (int id)
 {
@@ -370,6 +416,23 @@ ApiCharSheet::get_cert_for_id (int id)
   }
 
   return 0;
+}
+
+/* ---------------------------------------------------------------- */
+
+int
+ApiCharSheet::get_grade_for_class (int class_id)
+{
+  int grade = 0;
+  for (unsigned int i = 0; i < this->certs.size(); ++i)
+  {
+    ApiCert const* cert = this->certs[i].details;
+    ApiCertClass const* cclass = cert->class_details;
+    if (cclass->id == class_id && cert->grade > grade)
+      grade = this->certs[i].details->grade;
+  }
+
+  return grade;
 }
 
 /* ---------------------------------------------------------------- */

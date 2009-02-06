@@ -41,6 +41,21 @@ GtkHelpers::create_tooltip (Glib::RefPtr<Gtk::Tooltip> const& tooltip,
 
 /* ---------------------------------------------------------------- */
 
+void
+GtkHelpers::create_tooltip (Glib::RefPtr<Gtk::Tooltip> const& tooltip,
+    ApiCert const* cert)
+{
+  Glib::ustring class_name = cert->class_details->name;
+  Glib::ustring cert_grade = ApiCertTree::get_name_for_grade(cert->grade);
+  Glib::ustring cert_desc = cert->desc;
+
+  tooltip->set_icon(ImageStore::certificate);
+  tooltip->set_text("Name: " + class_name + "\nGrade: " + cert_grade
+      + "\n\n" + cert_desc);
+}
+
+/* ---------------------------------------------------------------- */
+
 std::string
 GtkHelpers::locale_to_utf8 (Glib::ustring const& opsys_string)
 {

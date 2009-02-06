@@ -160,8 +160,9 @@ ApiCertTree::parse_categories_rowset (xmlNodePtr node)
       category.id = this->get_property_int(node, "categoryID");
 
       //std::cout << "Inserting category: " << category.name << std::endl;
-      this->categories.insert(std::make_pair(category.id, category));
-      this->parse_categories_row(category, node->children);
+      ApiCertCategoryMap::iterator ins = this->categories.insert
+          (std::make_pair(category.id, category)).first;
+      this->parse_categories_row(&ins->second, node->children);
     }
     node = node->next;
   }
@@ -170,7 +171,7 @@ ApiCertTree::parse_categories_rowset (xmlNodePtr node)
 /* ---------------------------------------------------------------- */
 
 void
-ApiCertTree::parse_categories_row (ApiCertCategory& category, xmlNodePtr node)
+ApiCertTree::parse_categories_row (ApiCertCategory* category, xmlNodePtr node)
 {
   /* Look for the rowset tag. It's for the classes rowset. */
   while (node != 0)
@@ -188,7 +189,7 @@ ApiCertTree::parse_categories_row (ApiCertCategory& category, xmlNodePtr node)
 /* ---------------------------------------------------------------- */
 
 void
-ApiCertTree::parse_classes_rowset (ApiCertCategory& category, xmlNodePtr node)
+ApiCertTree::parse_classes_rowset (ApiCertCategory* category, xmlNodePtr node)
 {
   /* Look for row tags. These are for the cert classes. */
   while (node != 0)
@@ -199,11 +200,12 @@ ApiCertTree::parse_classes_rowset (ApiCertCategory& category, xmlNodePtr node)
       ApiCertClass certclass;
       certclass.name = this->get_property(node, "className");
       certclass.id = this->get_property_int(node, "classID");
-      certclass.cat_id = category.id;
+      certclass.cat_details = category;
 
       //std::cout << "Inserting class: " << certclass.name << std::endl;
-      this->classes.insert(std::make_pair(certclass.id, certclass));
-      this->parse_classes_row(certclass, node->children);
+      ApiCertClassMap::iterator ins = this->classes.insert
+          (std::make_pair(certclass.id, certclass)).first;
+      this->parse_classes_row(&ins->second, node->children);
     }
     node = node->next;
   }
@@ -212,7 +214,7 @@ ApiCertTree::parse_classes_rowset (ApiCertCategory& category, xmlNodePtr node)
 /* ---------------------------------------------------------------- */
 
 void
-ApiCertTree::parse_classes_row (ApiCertClass& cclass, xmlNodePtr node)
+ApiCertTree::parse_classes_row (ApiCertClass* cclass, xmlNodePtr node)
 {
   /* Look for the rowset tag. It's for the certificates rowset (at last!). */
   while (node != 0)
@@ -230,7 +232,7 @@ ApiCertTree::parse_classes_row (ApiCertClass& cclass, xmlNodePtr node)
 /* ---------------------------------------------------------------- */
 
 void
-ApiCertTree::parse_certificates_rowset (ApiCertClass& cclass, xmlNodePtr node)
+ApiCertTree::parse_certificates_rowset (ApiCertClass* cclass, xmlNodePtr node)
 {
   /* Look for row tags. These are for the certificates. */
   while (node != 0)
@@ -239,14 +241,15 @@ ApiCertTree::parse_certificates_rowset (ApiCertClass& cclass, xmlNodePtr node)
         && !xmlStrcmp(node->name, (xmlChar const*)"row"))
     {
       ApiCert certificate;
-      certificate.class_id = cclass.id;
+      certificate.class_details = cclass;
       certificate.id = this->get_property_int(node, "certificateID");
       certificate.grade = this->get_property_int(node, "grade");
       certificate.desc = this->get_property(node, "description");
 
       //std::cout << "Inserting certificate: " << certificate.id << std::endl;
-      this->certificates.insert(std::make_pair(certificate.id, certificate));
-      this->parse_certificate_row(certificate, node->children);
+      ApiCertMap::iterator ins = this->certificates.insert
+          (std::make_pair(certificate.id, certificate)).first;
+      this->parse_certificate_row(&ins->second, node->children);
     }
     node = node->next;
   }
@@ -255,7 +258,7 @@ ApiCertTree::parse_certificates_rowset (ApiCertClass& cclass, xmlNodePtr node)
 /* ---------------------------------------------------------------- */
 
 void
-ApiCertTree::parse_certificate_row (ApiCert& cert, xmlNodePtr node)
+ApiCertTree::parse_certificate_row (ApiCert* cert, xmlNodePtr node)
 {
   for (; node != 0; node = node->next)
   {
@@ -270,12 +273,12 @@ ApiCertTree::parse_certificate_row (ApiCert& cert, xmlNodePtr node)
       for (xmlNodePtr cnode = node->children; cnode != 0; cnode = cnode->next)
       {
         if (node->type != XML_ELEMENT_NODE
-            || xmlStrcmp(node->name, (xmlChar const*)"row"))
+            || xmlStrcmp(cnode->name, (xmlChar const*)"row"))
           continue;
 
         int skill_id = this->get_property_int(cnode, "typeID");
         int skill_level = this->get_property_int(cnode, "level");
-        cert.skilldeps.push_back(std::make_pair(skill_id, skill_level));
+        cert->skilldeps.push_back(std::make_pair(skill_id, skill_level));
       }
     }
     else if (name == "requiredCertificates")
@@ -288,7 +291,7 @@ ApiCertTree::parse_certificate_row (ApiCert& cert, xmlNodePtr node)
 
         int cert_id = this->get_property_int(cnode, "certificateID");
         int cert_grade = this->get_property_int(cnode, "grade");
-        cert.certdeps.push_back(std::make_pair(cert_id, cert_grade));
+        cert->certdeps.push_back(std::make_pair(cert_id, cert_grade));
       }
     }
   }
@@ -332,6 +335,40 @@ ApiCertTree::get_class_for_id (int id) const
 
 /* ---------------------------------------------------------------- */
 
+char const*
+ApiCertTree::get_name_for_grade (int grade)
+{
+  if (grade <= 0 || grade > 5)
+    throw Exception("Error: Invalid certificate grade: "
+        + Helpers::get_string_from_int(grade));
+
+  switch (grade)
+  {
+    case 1: return "Basic";
+    case 2: return "Standard";
+    case 3: return "Improved";
+    case 5: return "Elite";
+    default: break;
+  }
+  return "Error";
+}
+
+/* ---------------------------------------------------------------- */
+
+int
+ApiCertTree::get_grade_index (int grade)
+{
+  if (grade <= 0 || grade > 5 || grade == 4)
+    return -1;
+
+  if (grade == 5)
+    return 3;
+
+  return grade - 1;
+}
+
+/* ---------------------------------------------------------------- */
+
 void
 ApiCertTree::debug_dump (void)
 {
@@ -354,3 +391,4 @@ ApiCertTree::debug_dump (void)
     std::cout << i->second.id << " / " << i->second.grade << std::endl;
   std::cout << std::endl;
 }
+

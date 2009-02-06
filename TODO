@@ -1,9 +1,10 @@
 User interface
 --------------
- - Display if skill training finish time is within downtime
  - Make links clickable (about dialog)
  - Implant viewer
 
+ - Underline labels that have tooltips
+ - Fix for minimizing (IMPORTANT)
 
 Skill Browser / Planner
 -----------------------
@@ -22,6 +23,9 @@ Notifications
 - Notification a few miniutes before actual finish
 
 
-Certificate Browser
--------------------
-
+Skill / Certificate Browser
+---------------------------
+ - History: Check if element is in history, move to the end of history
+ - Sorting of certificate categories and classes (IMPORTANT)
+ - Filtering of certificates (IMPORTANT)
+ - Duplicated code: on_query_element_tooltip

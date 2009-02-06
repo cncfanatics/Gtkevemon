@@ -13,59 +13,37 @@
 #ifndef GUI_SKILL_PLANNER_HEADER
 #define GUI_SKILL_PLANNER_HEADER
 
-#include <gtkmm/entry.h>
-#include <gtkmm/treeview.h>
-#include <gtkmm/tooltips.h>
 #include <gtkmm/notebook.h>
-#include <gtkmm/treestore.h>
-#include <gtkmm/comboboxtext.h>
 
+#include "winbase.h"
 #include "gtkplannerbase.h"
-#include "gtkskilldetails.h"
+#include "gtkitemdetails.h"
+#include "gtkitembrowser.h"
 #include "gtktrainingplan.h"
 #include "apiskilltree.h"
 #include "apicharsheet.h"
 #include "apiintraining.h"
-#include "winbase.h"
 
 class GuiSkillPlanner : public WinBase
 {
   private:
-    GtkSkillDetails details_gui;
+    GtkSkillBrowser skill_browser;
+    GtkCertBrowser cert_browser;
+    GtkItemDetails details_gui;
     GtkTrainingPlan plan_gui;
 
     /* Character stuff. */
     ApiCharSheetPtr charsheet;
     ApiInTrainingPtr training;
 
-    /* Skill list. */
-    GuiPlannerSkillCols skill_cols;
-    Glib::RefPtr<Gtk::TreeStore> skill_store;
-    GtkSkillListView skill_view;
-
-    /* Certificate list. */
-    GuiPlannerCertCols cert_cols;
-    Glib::RefPtr<Gtk::TreeStore> cert_store;
-    GtkSkillListView cert_view;
-
     /* Misc. */
     Gtk::Notebook details_nb;
-    Gtk::Notebook lists_nb;
-    Gtk::Tooltips tooltips;
+    Gtk::Notebook browser_nb;
 
-    /* Filters */
-    Gtk::Entry filter_entry;
-    Gtk::ComboBoxText filter_cb;
-
-    void fill_skill_store (void);
-    void fill_cert_store (void);
-    void skill_selected (void);
-    void clear_filter (void);
-    void skill_row_activated (Gtk::TreeModel::Path const& path,
-        Gtk::TreeViewColumn* col);
-    bool have_prerequisites_for_skill (ApiSkill const* skill);
-    void on_view_button_pressed (GdkEventButton* event);
+    void on_element_selected (ApiElement const* elem);
+    void on_element_activated (ApiElement const* elem);
     void on_planning_requested (ApiSkill const* skill, int level);
+
     bool on_gtkmain_quit (void);
 
   public:
@@ -74,7 +52,6 @@ class GuiSkillPlanner : public WinBase
 
     void set_character (ApiCharSheetPtr sheet);
     void set_training (ApiInTrainingPtr training);
-    void set_skill (ApiSkill const* skill);
 };
 
 #endif /* GUI_SKILL_PLANNER_HEADER */

@@ -10,12 +10,19 @@ void
 ApiInTraining::set_api_data (EveApiData const& data)
 {
   this->valid = false;
+  this->holds_completed = false;
+
   this->ApiBase::set_api_data(data);
   this->parse_xml();
 
-  /* Do some checking if end time is expired. */
+  /* Do some checking if end time is expired. In this case we mark
+   * the sheet as not in training but also indicate that it holds
+   * a valid, completed skill. */
   if (this->in_training && this->end_time_t < EveTime::get_eve_time())
+  {
     this->in_training = false;
+    this->holds_completed = true;
+  }
 
   // This is to test notifications! NEVER PUT THIS IN A REVISION
   //this->end_time_t = ::time(0);

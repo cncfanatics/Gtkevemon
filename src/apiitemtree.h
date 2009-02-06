@@ -35,7 +35,7 @@ enum ApiItemRace
 typedef std::vector<std::pair<std::string, float> > ApiItemPropertyList;
 typedef std::vector<std::pair<int, int> > ApiItemSkillDeps;
 
-class ApiItem
+class ApiItem : public ApiElement
 {
   public:
     int id;
@@ -45,6 +45,10 @@ class ApiItem
 
     ApiItemPropertyList properties;
     ApiItemSkillDeps skilldeps;
+
+  public:
+    ~ApiItem (void) {}
+    ApiElementType get_type (void) const;
 };
 
 /* ---------------------------------------------------------------- */
@@ -95,5 +99,13 @@ class ApiItemTree : public ApiBase
     void debug_dump (ApiItemCategoryList* cats = 0, int indent = 0);
     void debug_dump (ApiItemList* items, int indent);
 };
+
+/* ---------------------------------------------------------------- */
+
+inline ApiElementType
+ApiItem::get_type (void) const
+{
+  return API_ELEM_ITEM;
+}
 
 #endif /* API_ITEM_TREE_HEADER */

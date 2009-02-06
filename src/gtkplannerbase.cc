@@ -66,10 +66,9 @@ GtkSkillContextMenu::signal_planning_requested (void)
 /* ================================================================ */
 
 bool
-GtkSkillListView::on_button_press_event (GdkEventButton* event)
+GtkListViewHelper::on_button_press_event (GdkEventButton* event)
 {
   bool return_value = this->Gtk::TreeView::on_button_press_event(event);
   this->sig_button_press_event.emit(event);
   return return_value;
 }
-

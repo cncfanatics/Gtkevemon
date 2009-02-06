@@ -183,6 +183,7 @@ class GtkCharPage : public Gtk::VBox
     void set_parent_window (Gtk::Window* parent);
     void open_skill_planner (void);
     void open_source_viewer (void);
+    void open_info_exporter (void);
 
     /* Pass close requests to the outside. */
     sigc::signal<void, EveApiAuth>& signal_close_request (void);

@@ -35,6 +35,7 @@ class ApiInTraining : public ApiBase
   public:
     bool valid;
     bool in_training;
+    bool holds_completed;
 
     std::string start_time;
     std::string end_time;

@@ -34,23 +34,26 @@ class ApiCertClass
 {
   public:
     int id;
-    int cat_id;
     std::string name;
+    ApiCertCategory const* cat_details;
 };
 
 /* ---------------------------------------------------------------- */
 
-class ApiCert
+class ApiCert : public ApiElement
 {
   public:
     int id;
-    int class_id;
     int grade;
     std::string desc;
+    ApiCertClass const* class_details;
 
     std::vector<std::pair<int, int> > skilldeps;
     std::vector<std::pair<int, int> > certdeps;
 
+  public:
+    ~ApiCert (void) {}
+    ApiElementType get_type (void) const;
     void debug (void) const;
 };
 
@@ -73,11 +76,11 @@ class ApiCertTree : public ApiBase
     void parse_eveapi_tag (xmlNodePtr node);
     void parse_result_tag (xmlNodePtr node);
     void parse_categories_rowset (xmlNodePtr node);
-    void parse_categories_row (ApiCertCategory& category, xmlNodePtr node);
-    void parse_classes_rowset (ApiCertCategory& category, xmlNodePtr node);
-    void parse_classes_row (ApiCertClass& cclass, xmlNodePtr node);
-    void parse_certificates_rowset (ApiCertClass& cclass, xmlNodePtr node);
-    void parse_certificate_row (ApiCert& cert, xmlNodePtr node);
+    void parse_categories_row (ApiCertCategory* category, xmlNodePtr node);
+    void parse_classes_rowset (ApiCertCategory* category, xmlNodePtr node);
+    void parse_classes_row (ApiCertClass* cclass, xmlNodePtr node);
+    void parse_certificates_rowset (ApiCertClass* cclass, xmlNodePtr node);
+    void parse_certificate_row (ApiCert* cert, xmlNodePtr node);
 
   public:
     ApiCertMap certificates;
@@ -92,8 +95,19 @@ class ApiCertTree : public ApiBase
     ApiCertCategory const* get_category_for_id (int id) const;
     ApiCert const* get_certificate_for_id (int id) const;
 
+    static char const* get_name_for_grade (int grade);
+    static int get_grade_index (int grade);
+
     void debug_dump (void);
     void refresh (void);
 };
+
+/* ---------------------------------------------------------------- */
+
+inline ApiElementType
+ApiCert::get_type (void) const
+{
+  return API_ELEM_CERT;
+}
 
 #endif /* API_CERT_TREE_HEADER */

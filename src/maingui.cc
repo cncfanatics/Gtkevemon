@@ -65,6 +65,9 @@ MainGui::MainGui (void)
   this->actions->add(Gtk::Action::create("MenuCharXMLSource",
       Gtk::Stock::OK, "View XML source..."),
       sigc::mem_fun(*this, &MainGui::view_xml_source));
+  this->actions->add(Gtk::Action::create("MenuCharInfoExport",
+      Gtk::Stock::PRINT, "Export character..."),
+      sigc::mem_fun(*this, &MainGui::export_char_info));
 
   this->actions->add(Gtk::Action::create("MenuHelp",
       Gtk::Stock::HELP, "_Help"));
@@ -90,6 +93,7 @@ MainGui::MainGui (void)
       "    <menu name='MenuCharacter' action='MenuCharacter'>"
       "      <menuitem action='MenuCharPlanning'/>"
       "      <menuitem action='MenuCharXMLSource'/>"
+      "      <menuitem action='MenuCharInfoExport'/>"
       "    </menu>"
       "    <menu name='MenuHelp' action='MenuHelp'>"
       "      <menuitem action='AboutDialog' />"
@@ -125,6 +129,7 @@ MainGui::MainGui (void)
   tmp_item->set_image(*Gtk::manage(new Gtk::Image
       (ImageStore::skill->scale_simple(16, 16, Gdk::INTERP_BILINEAR))));
 
+  /* Set the Stock item separately to avoid getting a shortcut key. */
   tmp_item = (Gtk::ImageMenuItem*)this->uiman->get_widget
       ("/MenuBar/MenuCharacter/MenuCharXMLSource");
   tmp_item->set_image(*Gtk::manage(new Gtk::Image
@@ -786,6 +791,19 @@ MainGui::view_xml_source (void)
 
   GtkCharPage* page = (GtkCharPage*)this->notebook.pages()[current].get_child();
   page->open_source_viewer();
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+MainGui::export_char_info (void)
+{
+  int current = this->notebook.get_current_page();
+  if (current < 0)
+    return;
+
+  GtkCharPage* page = (GtkCharPage*)this->notebook.pages()[current].get_child();
+  page->open_info_exporter();
 }
 
 /* ---------------------------------------------------------------- */

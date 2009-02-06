@@ -23,6 +23,8 @@ GuiSkill::GuiSkill (void)
   this->group_name.set_alignment(Gtk::ALIGN_LEFT);
   this->skill_attribs.set_selectable(true);
   this->skill_attribs.set_alignment(Gtk::ALIGN_LEFT);
+  this->skill_id.set_alignment(Gtk::ALIGN_RIGHT);
+  this->group_id.set_alignment(Gtk::ALIGN_RIGHT);
 
   Gtk::Label* skill_name_desc = MK_LABEL("Skill name:");
   Gtk::Label* group_name_desc = MK_LABEL("Skill group:");
@@ -31,7 +33,7 @@ GuiSkill::GuiSkill (void)
   group_name_desc->set_alignment(Gtk::ALIGN_LEFT);
   skill_attribs_desc->set_alignment(Gtk::ALIGN_LEFT);
 
-  Gtk::Table* info_table = Gtk::manage(new Gtk::Table(3, 2, false));
+  Gtk::Table* info_table = MK_TABLE(3, 3);
   info_table->set_col_spacings(5);
   info_table->set_row_spacings(5);
   info_table->attach(*skill_name_desc, 0, 1, 0, 1, Gtk::FILL, Gtk::SHRINK);
@@ -41,8 +43,10 @@ GuiSkill::GuiSkill (void)
       Gtk::FILL|Gtk::EXPAND, Gtk::SHRINK);
   info_table->attach(this->group_name, 1, 2, 1, 2,
       Gtk::FILL|Gtk::EXPAND, Gtk::SHRINK);
-  info_table->attach(this->skill_attribs, 1, 2, 2, 3,
+  info_table->attach(this->skill_attribs, 1, 3, 2, 3,
       Gtk::FILL|Gtk::EXPAND, Gtk::SHRINK);
+  info_table->attach(this->skill_id, 2, 3, 0, 1, Gtk::FILL);
+  info_table->attach(this->group_id, 2, 3, 1, 2, Gtk::FILL);
 
   Gtk::HBox* desc_separator = MK_HBOX;
   desc_separator->pack_start(*MK_HSEP, true, true, 0);
@@ -102,6 +106,8 @@ GuiSkill::set_skill (int skill_id)
     this->group_name.set_text(group->name);
     this->skill_attribs.set_text(ApiSkillTree::get_attrib_name(skill->primary)
         + std::string(" / ") + ApiSkillTree::get_attrib_name(skill->secondary));
+    this->skill_id.set_text("ID " + Helpers::get_string_from_int(skill->id));
+    this->group_id.set_text("ID " + Helpers::get_string_from_int(group->id));
     this->desc_buffer->set_text(skill->desc);
   }
   catch (...)

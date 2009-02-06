@@ -27,6 +27,7 @@
 #include "guiskill.h"
 #include "guiskillplanner.h"
 #include "guixmlsource.h"
+#include "guicharexport.h"
 #include "gtkcharpage.h"
 
 GtkCharPage::GtkCharPage (void)
@@ -705,47 +706,18 @@ GtkCharPage::api_info_changed (void)
     && this->training->valid
     && this->training->in_training)
   {
+    /* Both, char sheet and training sheet is available and there is
+     * a skill in training. We make sure the character sheet is up
+     * to date by adding the previous level of the skill in training. */
+    this->sheet->add_char_skill(this->training->skill,
+        this->training->to_level - 1);
+
     /* Cache current skill in training and the SP/h. */
     this->skill_info.char_skill = this->sheet->get_skill_for_id
         (this->training->skill);
     this->skill_info.sp_per_hour = this->get_spph_in_training();
     this->spph_label.set_text(Helpers::get_string_from_uint
         ((unsigned int)this->skill_info.sp_per_hour) + " SP per hour");
-
-    /* Update the skill: level, start and dest SP if the character
-     * skill information is outdated outdated or the character
-     * sheet is still cached and has old info. Create the skill if the
-     * character does not even have it. */
-    if (this->skill_info.char_skill == 0)
-    {
-      /* The character does not even have the skill. Create it. */
-      ApiSkillTreePtr tree = ApiSkillTree::request();
-      ApiSkill const* skill = tree->get_skill_for_id(this->training->skill);
-
-      ApiCharSheetSkill cskill;
-      cskill.id = skill->id;
-      cskill.level = this->training->to_level - 1;
-      cskill.points = 0;
-      cskill.points_start = ApiCharSheet::calc_start_sp
-          (cskill.level, skill->rank);
-      cskill.points_dest = ApiCharSheet::calc_dest_sp
-          (cskill.level, skill->rank);
-      cskill.completed = 0.0;
-      cskill.details = skill;
-
-      this->sheet->skills.push_back(cskill);
-      this->skill_info.char_skill = &this->sheet->skills.back();
-    }
-    else if (this->skill_info.char_skill->level != this->training->to_level - 1)
-    {
-      /* The character has outdated skill information. Update. */
-      ApiCharSheetSkill* skill = this->skill_info.char_skill;
-      skill->level = this->training->to_level - 1;
-      skill->points_start = ApiCharSheet::calc_start_sp
-          (skill->level, skill->details->rank);
-      skill->points_dest = ApiCharSheet::calc_dest_sp
-          (skill->level, skill->details->rank);
-    }
 
     /* Cache the total skill points for the skill in training. */
     ApiCharSheetSkill* training_skill = this->skill_info.char_skill;
@@ -770,6 +742,16 @@ GtkCharPage::api_info_changed (void)
   }
   else
   {
+    if (this->sheet->valid && this->training->valid
+        && this->training->holds_completed)
+    {
+      /* The training sheet holds a skill that is already completed.
+       * We can use this information to update the character sheet if
+       * it does not yet have the new skill level. */
+      this->sheet->add_char_skill(this->training->skill,
+          this->training->to_level);
+    }
+
     this->skill_info.char_skill = 0;
     this->skill_info.sp_per_hour = 0;
     this->skill_info.skill_group_sp = 0;
@@ -1349,4 +1331,19 @@ GtkCharPage::open_source_viewer (void)
   GuiXmlSource* window = new GuiXmlSource();
   window->append(this->sheet->get_http_data(), "CharacterSheet.xml");
   window->append(this->training->get_http_data(), "SkillInTraining.xml");
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GtkCharPage::open_info_exporter (void)
+{
+  if (!this->sheet->valid)
+  {
+    this->info_display.append(INFO_WARNING, "Cannot open the exporter "
+        "without a valid character sheet!");
+    return;
+  }
+
+  new GuiCharExport(this->sheet);
 }

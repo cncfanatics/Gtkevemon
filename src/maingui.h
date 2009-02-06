@@ -74,6 +74,7 @@ class MainGui : public Gtk::Window
     void destroy_tray_icon (void);
     void create_skillplan (void);
     void view_xml_source (void);
+    void export_char_info (void);
     bool internal_add_character (EveApiAuth const& auth);
     bool internal_remove_character (EveApiAuth const& auth);
 

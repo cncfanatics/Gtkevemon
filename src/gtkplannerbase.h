@@ -21,6 +21,12 @@
 #include "apiskilltree.h"
 #include "apicerttree.h"
 
+typedef sigc::signal<void, ApiSkill const*, int> SignalPlanningRequested;
+typedef sigc::signal<void, ApiElement const*> SignalApiElementSelected;
+typedef sigc::signal<void, ApiElement const*> SignalApiElementActivated;
+
+/* ---------------------------------------------------------------- */
+
 class GtkSkillContextMenu : public Gtk::Menu
 {
   private:
@@ -40,7 +46,7 @@ class GtkSkillContextMenu : public Gtk::Menu
 /* ---------------------------------------------------------------- */
 
 /* A wrapper around TreeView to handle context menu requests. */
-class GtkSkillListView : public Gtk::TreeView
+class GtkListViewHelper : public Gtk::TreeView
 {
   private:
     sigc::signal<void, GdkEventButton*> sig_button_press_event;
@@ -49,10 +55,10 @@ class GtkSkillListView : public Gtk::TreeView
     bool on_button_press_event (GdkEventButton* event);
 
   public:
-    GtkSkillListView (Glib::RefPtr<Gtk::TreeModel> const& model);
+    GtkListViewHelper (Glib::RefPtr<Gtk::TreeModel> const& model);
+    virtual ~GtkListViewHelper (void) {}
     sigc::signal<void, GdkEventButton*>& signal_button_press_myevent (void);
 };
-
 
 /* ---------------------------------------------------------------- */
 
@@ -67,19 +73,20 @@ class GuiPlannerCols : public Gtk::TreeModel::ColumnRecord
     Gtk::TreeModelColumn<T> data;
 };
 
+typedef GuiPlannerCols<ApiElement const*> GuiPlannerElemCols;
 typedef GuiPlannerCols<ApiSkill const*> GuiPlannerSkillCols;
 typedef GuiPlannerCols<ApiCert const*> GuiPlannerCertCols;
 
 /* ---------------------------------------------------------------- */
 
 inline
-GtkSkillListView::GtkSkillListView (Glib::RefPtr<Gtk::TreeModel> const& model)
+GtkListViewHelper::GtkListViewHelper (Glib::RefPtr<Gtk::TreeModel> const& model)
   : Gtk::TreeView(model)
 {
 }
 
 inline sigc::signal<void, GdkEventButton*>&
-GtkSkillListView::signal_button_press_myevent (void)
+GtkListViewHelper::signal_button_press_myevent (void)
 {
   return this->sig_button_press_event;
 }

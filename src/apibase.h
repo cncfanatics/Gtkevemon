@@ -20,6 +20,22 @@
 #include "http.h"
 #include "xml.h"
 
+enum ApiElementType
+{
+  API_ELEM_SKILL,
+  API_ELEM_CERT,
+  API_ELEM_ITEM
+};
+
+class ApiElement
+{
+  public:
+    virtual ~ApiElement (void) {}
+    virtual ApiElementType get_type (void) const = 0;
+};
+
+/* ---------------------------------------------------------------- */
+
 class ApiBase : public XmlBase
 {
   protected:

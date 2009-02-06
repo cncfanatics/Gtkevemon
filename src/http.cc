@@ -343,23 +343,23 @@ Http::read_http_reply (int sock)
   /* Read the headers. */
   while (true)
   {
-    char* line;
-    int ret = this->socket_read_line(sock, &line);
+    std::string line;
+    int ret = this->socket_read_line(sock, line);
 
     /* Exit loop if we read an empty line. */
     if (ret == 0)
       break;
 
-    std::string sline(line);
-    result->headers.push_back(sline);
-    if (sline == "Transfer-Encoding: chunked")
+    result->headers.push_back(line);
+    if (line == "Transfer-Encoding: chunked")
       chunked_read = true;
-    else if (sline.substr(0, 16) == "Content-Length: ")
-      this->bytes_total = (size_t)this->get_uint_from_str(sline.substr(16));
+    else if (line.substr(0, 16) == "Content-Length: ")
+      this->bytes_total = (size_t)this->get_uint_from_str(line.substr(16));
   }
 
-  if (!chunked_read && this->bytes_total == 0)
-    throw Exception("Neither Transfer-Encoding nor Content-Length specified");
+  //std::cout << "Dump of HTTP reply headers" << std::endl;
+  //for (unsigned int i = 0; i < result->headers.size(); ++i)
+  //  std::cout << "  " << result->headers[i] << std::endl;
 
   if (chunked_read)
   {
@@ -371,8 +371,8 @@ Http::read_http_reply (int sock)
     while (true)
     {
       /* Read line with chunk size information. */
-      char* line;
-      int ret = this->socket_read_line(sock, &line);
+      std::string line;
+      int ret = this->socket_read_line(sock, line);
       if (ret == 0)
         break;
 
@@ -385,7 +385,7 @@ Http::read_http_reply (int sock)
       while (pos + chunk_size >= size)
       {
         size *= 2;
-        result->data.resize(size);
+        result->data.resize(size, '\0');
       }
 
       /* Read bytes. */
@@ -397,6 +397,24 @@ Http::read_http_reply (int sock)
     }
 
     result->data.resize(pos);
+  }
+  else if (this->bytes_total == 0)
+  {
+    /* The Server did not specify a content-length header. */
+    unsigned int size = 512;
+    unsigned int pos = 0;
+
+    while (true)
+    {
+      if (result->data.size() < pos + size)
+        result->data.resize(pos + size, '\0');
+
+      ssize_t nbytes = this->http_data_read(sock, &result->data[pos], size);
+      if (nbytes == 0)
+        break;
+      pos += nbytes;
+    }
+    result->data.resize(pos + 1, '\0');
   }
   else
   {
@@ -465,16 +483,12 @@ Http::get_uint_from_str (std::string const& str)
 /* ---------------------------------------------------------------- */
 
 ssize_t
-Http::socket_read_line (int sock, char** line)
+Http::socket_read_line (int sock, std::string& line)
 {
-  int size = 256;
   ssize_t i = 0;
   /* whether the previous char was a \r */
   bool cr = false;
   char ch;
-
-  /* Result, grows as we need it to. */
-  *line = (char*)::malloc(size);
 
   while (true)
   {
@@ -485,27 +499,21 @@ Http::socket_read_line (int sock, char** line)
     else if (ret == 0)
       break;
 
-    /* Grow result if we're running out of space. */
-    if (i >= size)
-    {
-      size *= 2;
-      *line = (char*)::realloc(*line, size);
-    }
-
     /* Check for newlines. */
     if (ch == '\n')
     {
-      /* If preceded by a \r, overwrite it. */
+      /* If preceded by a \r, remove it. */
       if (cr)
+      {
+        line.erase(line.size() - 1);
         i -= 1;
-
-      (*line)[i] = '\0';
+      }
       break;
     }
     else
     {
       cr = (ch == '\r');
-      (*line)[i] = ch;
+      line.push_back(ch);
     }
 
     i += 1;

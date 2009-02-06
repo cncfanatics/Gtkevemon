@@ -88,7 +88,7 @@ class Http
     /* Helpers. */
     unsigned int get_uint_from_hex (std::string const& str);
     unsigned int get_uint_from_str (std::string const& str);
-    ssize_t socket_read_line (int sock, char** line);
+    ssize_t socket_read_line (int sock, std::string& line);
     ssize_t http_data_read (int sock, char* buf, size_t size);
 
   public:

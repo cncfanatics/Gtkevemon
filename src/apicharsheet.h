@@ -102,17 +102,20 @@ class ApiCharSheet : public ApiBase
     static ApiCharSheetPtr create (void);
     void set_api_data (EveApiData const& data);
 
-    int get_level_for_skill (int id);
+    void add_char_skill (int skill_id, int level);
+
     ApiCharSheetSkill* get_skill_for_id (int id);
+    int get_level_for_skill (int id);
 
     ApiCharSheetCert* get_cert_for_id (int id);
-
-    static int calc_start_sp (int level, int rank);
-    static int calc_dest_sp (int level, int rank);
+    int get_grade_for_class (int class_id);
 
     double get_sppm_for_skill (ApiSkill const* skill);
     double get_sppm_for_skill (ApiSkill const* skill,
         ApiCharAttribs const& attribs);
+
+    static int calc_start_sp (int level, int rank);
+    static int calc_dest_sp (int level, int rank);
 };
 
 /* ---------------------------------------------------------------- */

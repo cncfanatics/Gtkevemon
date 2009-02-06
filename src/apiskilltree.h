@@ -30,7 +30,7 @@ enum ApiAttrib
 
 /* ---------------------------------------------------------------- */
 
-class ApiSkill
+class ApiSkill : public ApiElement
 {
   public:
     int id;
@@ -43,6 +43,9 @@ class ApiSkill
 
     std::vector<std::pair<int, int> > deps;
 
+  public:
+    ~ApiSkill (void) {}
+    ApiElementType get_type (void) const;
     void debug (void) const;
 };
 
@@ -96,5 +99,13 @@ class ApiSkillTree : public ApiBase
     static char const* get_attrib_name (ApiAttrib const& attrib);
     static char const* get_attrib_short_name (ApiAttrib const& attrib);
 };
+
+/* ---------------------------------------------------------------- */
+
+inline ApiElementType
+ApiSkill::get_type (void) const
+{
+  return API_ELEM_SKILL;
+}
 
 #endif /* API_SKILL_TREE_HEADER */
