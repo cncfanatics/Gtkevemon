@@ -37,9 +37,9 @@
 /* Update the live SP image every this milli seconds. */
 #define CHARPAGE_LIVE_SP_IMAGE_UPDATE 60000
 /* Check for expired sheets every this milli seconds. */
-#define CHARPAGE_CHECK_EXPIRED_SHEETS 300000
+#define CHARPAGE_CHECK_EXPIRED_SHEETS 600000
 /* Update the cached duration this milli seconds. */
-#define CHARPAGE_UPDATE_CACHED_DURATION 15000
+#define CHARPAGE_UPDATE_CACHED_DURATION 25000
 
 class GtkCharSkillsCols : public Gtk::TreeModel::ColumnRecord
 {

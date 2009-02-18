@@ -4,6 +4,9 @@
 #include <cstdlib>
 #include <unistd.h>
 #include <csignal>
+#if defined(__SUNPRO_CC) // sunCC doesn't define kill() in csignal.
+#	include <signal.h>
+#endif
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/wait.h>

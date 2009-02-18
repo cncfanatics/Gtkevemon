@@ -30,7 +30,8 @@
  *
  * During refresh the is_refreshing() method will return true. This is
  * useful if used in another thread. If players is set to -1, the status
- * has never been checked since creation of the object.
+ * has never been checked since creation of the object. If players is set
+ * to -2, there was an error while requesting the player amount.
  */
 class Server
 {

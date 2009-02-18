@@ -65,7 +65,7 @@ GetHostByName::GetHostByName (char const* host)
   /*  Check for errors.  */
   if (res || hp == 0)
     throw Exception("gethostbyname_r() failed: "
-        + std::string(::strerror(errno)));
+        + std::string(::hstrerror(herr)));
 
 #elif defined(__APPLE__)
 
@@ -73,8 +73,8 @@ GetHostByName::GetHostByName (char const* host)
   this->result = *::gethostbyname(host);
 
 #elif defined(__SunOS)
+
   /* Solaris has 1 argument fewer than Linux. */
-  struct hostent* hp;
   struct hostent* res;
   int herr;
 
@@ -85,7 +85,7 @@ GetHostByName::GetHostByName (char const* host)
   do
   {
     res = ::gethostbyname_r(host, &this->result,
-    this->strange_data, buffer_len, &herr);
+        this->strange_data, buffer_len, &herr);
     /*  Check for errors.  */
     if (res == 0 && herr == ERANGE)
     {
@@ -93,16 +93,17 @@ GetHostByName::GetHostByName (char const* host)
       buffer_len *= 2;
       this->strange_data = (char*)::realloc(this->strange_data, buffer_len);
     }
-  } while (res == 0 && herr == ERANGE);
+  }
+  while (res == 0 && herr == ERANGE);
 
   if (res == 0 && herr != 0)
     throw Exception("gethostbyname_r() failed: "
-      + std::string(::strerror(herr)));
+        + std::string(::hstrerror(herr)));
 
 #else
 
   /* There is no solution for other systems yet. */
-# error "gethostbyname_r(): no implementation available. PEASE REPORT THIS!"
+# error "gethostbyname_r(): no implementation available. PLEASE REPORT THIS!"
 
 #endif
 }

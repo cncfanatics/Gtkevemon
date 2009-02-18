@@ -96,8 +96,12 @@ GtkServer::update (void)
   {
     this->set_status_icon(Gtk::Stock::YES);
     this->status_desc.set_text("Players:");
-    this->status.set_text(Helpers::get_dotted_str_from_int
-        (this->server->get_players()));
+
+    if (server->get_players() == -2)
+      this->status.set_text("Unknown");
+    else
+      this->status.set_text(Helpers::get_dotted_str_from_int
+          (this->server->get_players()));
   }
   else
   {

@@ -81,7 +81,7 @@ Server::refresh_intern (void)
 
   /* Set timeout handler. */
   Server::current_socket = sock;
-  ::signal(SIGALRM, Server::alarm_expired);
+  std::signal(SIGALRM, Server::alarm_expired);
   ::alarm(SERVER_TIMEOUT);
 
   //std::cout << "Connecting to " << this->name << "..." << std::endl;
@@ -121,9 +121,15 @@ Server::refresh_intern (void)
 
     if (ret < 0)
     {
-      this->refreshing = false;
+      /* Read failed. This may be a temporary issue. */
       ::close(sock);
-      throw Exception(std::string("read() failed: ") + ::strerror(errno));
+      this->refreshing = false;
+      this->players = -2;
+
+      std::cout << "Server info: " << this->name << " online. "
+          << "Players: Unknown (" << ::strerror(errno) << ")" << std::endl;
+
+      return;
     }
 
     if (ret == 0)
