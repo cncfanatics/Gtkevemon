@@ -211,9 +211,9 @@ GtkCharPage::GtkCharPage (void)
   this->pack_start(this->info_display, false, false, 0);
 
   /* Setup tooltips. */
-  this->tooltips.set_tip(*close_but, "Closes the character");
-  this->tooltips.set_tip(this->info_but, "Infomation about cached sheets");
-  this->tooltips.set_tip(this->refresh_but, "Request API information");
+  close_but->set_tooltip_text("Close the character");
+  this->info_but.set_tooltip_text("Infomation about cached sheets");
+  this->refresh_but.set_tooltip_text("Request API information");
 
   /* Signals. */
   close_but->signal_clicked().connect(sigc::mem_fun
@@ -285,9 +285,14 @@ GtkCharPage::update_charsheet_details (void)
     this->attr_per_label.set_text("---");
     this->attr_mem_label.set_text("---");
     this->attr_wil_label.set_text("---");
+
+    this->known_skills_label.set_has_tooltip(false);
+    this->skill_points_label.set_has_tooltip(false);
+    this->attr_cha_label.set_has_tooltip(false);
   }
   else
   {
+    /* Set character labels. */
     this->char_name_label.set_text("<b>" + this->sheet->name + "</b>");
     this->char_name_label.set_use_markup(true);
     this->char_info_label.set_text(this->sheet->gender + ", "
@@ -313,6 +318,77 @@ GtkCharPage::update_charsheet_details (void)
         (this->sheet->total.mem, 2));
     this->attr_wil_label.set_text(Helpers::get_string_from_double
         (this->sheet->total.wil, 2));
+
+    /* Build list of known skills per level (tooltip). */
+    Glib::ustring skills_at_tt;
+    skills_at_tt = "<u><b>List of known skills</b></u>\n";
+    for (unsigned int i = 0; i < 6; ++i)
+    {
+      skills_at_tt += "Level ";
+      skills_at_tt += Helpers::get_string_from_uint(i);
+      skills_at_tt += ": ";
+      skills_at_tt += Helpers::get_string_from_uint
+          (this->skill_info.skills_at[i]);
+      if (i != 5)
+        skills_at_tt += "\n";
+    }
+
+    /* Build clone information (tooltip). */
+    Glib::ustring clone_tt;
+    clone_tt = "<u><b>Character clone information</b></u>\nName: ";
+    clone_tt += this->sheet->clone_name + "\nKeeps: ";
+    clone_tt += Helpers::get_dotted_str_from_str(this->sheet->clone_sp);
+    clone_tt += " SP";
+
+    /* Build detailed attribute information (tooltip). */
+    Glib::ustring attr_cha_tt;
+    attr_cha_tt = "<u><b>Attribute: Charisma</b></u>\nBase: ";
+    attr_cha_tt += Helpers::get_string_from_double(this->sheet->base.cha, 2);
+    attr_cha_tt += "\nImplants: ";
+    attr_cha_tt += Helpers::get_string_from_double(this->sheet->implant.cha, 2);
+    attr_cha_tt += "\nSkills: ";
+    attr_cha_tt += Helpers::get_string_from_double(this->sheet->skill.cha, 2);
+
+    Glib::ustring attr_int_tt;
+    attr_int_tt = "<u><b>Attribute: Intelligence</b></u>\nBase: ";
+    attr_int_tt += Helpers::get_string_from_double(this->sheet->base.intl, 2);
+    attr_int_tt += "\nImplants: ";
+    attr_int_tt += Helpers::get_string_from_double(this->sheet->implant.intl,2);
+    attr_int_tt += "\nSkills: ";
+    attr_int_tt += Helpers::get_string_from_double(this->sheet->skill.intl, 2);
+
+    Glib::ustring attr_per_tt;
+    attr_per_tt = "<u><b>Attribute: Perception</b></u>\nBase: ";
+    attr_per_tt += Helpers::get_string_from_double(this->sheet->base.per, 2);
+    attr_per_tt += "\nImplants: ";
+    attr_per_tt += Helpers::get_string_from_double(this->sheet->implant.per, 2);
+    attr_per_tt += "\nSkills: ";
+    attr_per_tt += Helpers::get_string_from_double(this->sheet->skill.per, 2);
+
+    Glib::ustring attr_mem_tt;
+    attr_mem_tt = "<u><b>Attribute: Memory</b></u>\nBase: ";
+    attr_mem_tt += Helpers::get_string_from_double(this->sheet->base.mem, 2);
+    attr_mem_tt += "\nImplants: ";
+    attr_mem_tt += Helpers::get_string_from_double(this->sheet->implant.mem, 2);
+    attr_mem_tt += "\nSkills: ";
+    attr_mem_tt += Helpers::get_string_from_double(this->sheet->skill.mem, 2);
+
+    Glib::ustring attr_wil_tt;
+    attr_wil_tt = "<u><b>Attribute: Willpower</b></u>\nBase: ";
+    attr_wil_tt += Helpers::get_string_from_double(this->sheet->base.wil, 2);
+    attr_wil_tt += "\nImplants: ";
+    attr_wil_tt += Helpers::get_string_from_double(this->sheet->implant.wil, 2);
+    attr_wil_tt += "\nSkills: ";
+    attr_wil_tt += Helpers::get_string_from_double(this->sheet->skill.wil, 2);
+
+    /* Update some character sheet related skills. */
+    this->known_skills_label.set_tooltip_markup(skills_at_tt);
+    this->skill_points_label.set_tooltip_markup(clone_tt);
+    this->attr_cha_label.set_tooltip_markup(attr_cha_tt);
+    this->attr_int_label.set_tooltip_markup(attr_int_tt);
+    this->attr_per_label.set_tooltip_markup(attr_per_tt);
+    this->attr_mem_label.set_tooltip_markup(attr_mem_tt);
+    this->attr_wil_label.set_tooltip_markup(attr_wil_tt);
   }
 
   this->update_skill_list();
@@ -583,10 +659,7 @@ GtkCharPage::check_expired_sheets (void)
   /* Skip automatic update if both sheets are cached. */
   if (this->training->valid && this->training->is_locally_cached()
       && this->sheet->valid && this->sheet->is_locally_cached())
-  {
-    std::cout << "Skipping auto-update" << std::endl;
     return true;
-  }
 
   //std::cout << "Checking for expired sheets..." << std::endl;
 
@@ -682,21 +755,6 @@ GtkCharPage::api_info_changed (void)
       this->skill_info.total_sp += skill.points;
       this->skill_info.skills_at[skill.level] += 1;
     }
-
-    Glib::ustring skills_at_str;
-    for (unsigned int i = 0; i < 6; ++i)
-    {
-      skills_at_str += "Known skills at ";
-      skills_at_str += Helpers::get_string_from_uint(i);
-      skills_at_str += ": ";
-      skills_at_str += Helpers::get_string_from_uint
-          (this->skill_info.skills_at[i]);
-      if (i != 5)
-        skills_at_str += "\n";
-    }
-
-    /* Update some character sheet related skills. */
-    this->tooltips.set_tip(this->known_skills_label, skills_at_str);
 
     this->sig_sheet_updated.emit(this->character);
   }

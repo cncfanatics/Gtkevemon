@@ -118,9 +118,6 @@ class GtkCharPage : public Gtk::VBox
 
     GtkInfoDisplay info_display;
 
-    /* Tooltips. */
-    Gtk::Tooltips tooltips;
-
     /* Signals. */
     sigc::signal<void, EveApiAuth> sig_close_request;
     sigc::signal<void, EveApiAuth> sig_sheet_updated;

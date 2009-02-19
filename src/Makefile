@@ -1,6 +1,10 @@
 SHELL = /bin/sh
 
-PLATFORM = $(shell uname|tr '[:upper:]' '[:lower:]')
+ifeq (${OS},Windows_NT)
+  PLATFORM = win32
+else
+  PLATFORM = $(shell uname|tr '[:upper:]' '[:lower:]')
+endif
 include Makefile.$(PLATFORM)
 
 SOURCES = maingui.cc guiuserdata.cc guiconfiguration.cc guiaboutdialog.cc \

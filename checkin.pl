@@ -43,3 +43,5 @@ close FILE;
 
 print("Executing SVN...\n");
 system("svn ci");
+
+print("Backend needs update: http://gtkevemon.battleclinic.com/updates/\n");

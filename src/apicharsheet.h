@@ -87,6 +87,8 @@ class ApiCharSheet : public ApiBase
     std::string gender;
     std::string corp;
     std::string balance;
+    std::string clone_name;
+    std::string clone_sp;
 
     /* Attribute values for the character. */
     ApiCharAttribs base;

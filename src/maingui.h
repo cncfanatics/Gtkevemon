@@ -49,34 +49,42 @@ class MainGui : public Gtk::Window
     GtkInfoDisplay info_display;
     bool iconified;
 
+  private:
+    /* Misc helpers. */
     void init_from_config (void);
+    bool internal_add_character (EveApiAuth const& auth);
+    bool internal_remove_character (EveApiAuth const& auth);
+    void on_pages_changed (Gtk::Widget* widget, guint pnum);
+    void on_pages_switched (GtkNotebookPage* page, guint pnum);
+    void check_if_no_pages (void);
+
+    /* Update handlers. */
     bool update_servers (void);
     bool refresh_servers (void);
     bool update_time (void);
     bool update_tooltip (void);
     bool update_windowtitle (void);
     void update_char_page (EveApiAuth const& auth);
+
+    /* Actions. */
     void setup_profile (void);
     void configuration (void);
     void about_dialog (void);
     void version_checker (void);
-    void check_if_no_pages (void);
-    void launch_eve (void);
     void close (void);
-    bool on_window_state_event (GdkEventWindowState* event);
-    void on_tray_icon_clicked (void);
-    bool on_delete_event (GdkEventAny* event);
-    void on_pages_changed (Gtk::Widget* widget, guint pnum);
-    void on_pages_switched (GtkNotebookPage* page, guint pnum);
-    void tray_popup_menu (guint button, guint32 activate_time);
-    void update_tray_settings (void);
-    void create_tray_icon (void);
-    void destroy_tray_icon (void);
+    void launch_eve (void);
     void create_skillplan (void);
     void view_xml_source (void);
     void export_char_info (void);
-    bool internal_add_character (EveApiAuth const& auth);
-    bool internal_remove_character (EveApiAuth const& auth);
+
+    /* Window state and tray icon. */
+    bool on_window_state_event (GdkEventWindowState* event);
+    bool on_delete_event (GdkEventAny* event);
+    void on_tray_icon_clicked (void);
+    void create_tray_icon (void);
+    void destroy_tray_icon (void);
+    void tray_popup_menu (guint button, guint32 activate_time);
+    void update_tray_settings (void);
 
   public:
     MainGui (void);

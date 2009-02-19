@@ -1,6 +1,6 @@
 COMPILER = sunCC
 
-CORES = 1
+CORES = $(shell psrinfo -p)
 
 GCC_FLAGS = +w +w2 -g
 GTK_FLAGS = $(shell pkg-config --cflags gtkmm-2.4)
