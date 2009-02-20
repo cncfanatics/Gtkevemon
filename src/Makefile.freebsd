@@ -1,6 +1,6 @@
 COMPILER = g++
 
-CORES = 1
+CORES = $(shell sysctl -n hw.ncpu)
 
 GCC_FLAGS = -Wall -Wextra -ansi -Wcast-align -Wcast-qual -Wpointer-arith -Wundef -Wconversion -g -pedantic
 GTK_FLAGS = $(shell pkg-config --cflags gtkmm-2.4)

@@ -2,7 +2,7 @@ COMPILER = g++
 
 CORES = $(shell grep processor /proc/cpuinfo | wc -l)
 
-GCC_FLAGS = -Wall -Wextra -ansi -Wcast-align -Wcast-qual -Wpointer-arith -Wundef -Wconversion -g # -pedantic
+GCC_FLAGS = -Wall -Wextra -ansi -Wcast-align -Wcast-qual -Wpointer-arith -Wundef -Wconversion -g -pedantic
 GTK_FLAGS = $(shell pkg-config --cflags gtkmm-2.4)
 GTK_LIBS = $(shell pkg-config --libs gtkmm-2.4)
 PTH_LIBS = -lpthread
