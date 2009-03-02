@@ -19,10 +19,10 @@
 #include <gtkmm/button.h>
 #include <gtkmm/treeview.h>
 #include <gtkmm/image.h>
-#include <gtkmm/tooltips.h>
 #include <gtkmm/frame.h>
 #include <gtkmm/treestore.h>
 #include <gtkmm/statusicon.h>
+#include <gtkmm/tooltip.h>
 
 #include "eveapi.h"
 #include "apiintraining.h"

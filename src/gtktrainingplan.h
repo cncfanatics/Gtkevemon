@@ -16,7 +16,6 @@
 #include <gtkmm/button.h>
 #include <gtkmm/label.h>
 #include <gtkmm/box.h>
-#include <gtkmm/tooltips.h>
 #include <gtkmm/treeview.h>
 #include <gtkmm/liststore.h>
 
@@ -146,7 +145,6 @@ class GtkTrainingPlan : public Gtk::VBox
     Gtk::Button clean_plan_but;
     Gtk::Button column_conf_but;
     Gtk::Label total_time;
-    Gtk::Tooltips tooltips;
 
     GtkTreeModelColumns cols;
     Glib::RefPtr<Gtk::ListStore> liststore;

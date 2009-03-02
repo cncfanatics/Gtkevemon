@@ -18,10 +18,13 @@ GtkInfoDisplay::GtkInfoDisplay (InfoDisplayStyle style)
   this->info_but.set_image(*Gtk::manage(new Gtk::Image
         (Gtk::Stock::FIND, Gtk::ICON_SIZE_MENU)));
   this->info_but.set_relief(Gtk::RELIEF_NONE);
+  this->info_but.set_tooltip_text("Detailed information");
+
   Gtk::Button* close_but = MK_BUT0;
   close_but->set_image(*Gtk::manage(new Gtk::Image
         (Gtk::Stock::CLOSE, Gtk::ICON_SIZE_MENU)));
   close_but->set_relief(Gtk::RELIEF_NONE);
+  close_but->set_tooltip_text("Hide message box");
 
   Gtk::HBox* button_box = MK_HBOX0;
   button_box->pack_start(this->info_but, false, false, 0);
@@ -49,9 +52,6 @@ GtkInfoDisplay::GtkInfoDisplay (InfoDisplayStyle style)
       this->pack_start(*frame, false, false, 0);
       break;
   }
-
-  this->tooltips.set_tip(*close_but, "Hide message box");
-  this->tooltips.set_tip(this->info_but, "Detailed information");
 
   close_but->signal_clicked().connect(sigc::mem_fun
       (*this, &Gtk::Widget::hide));

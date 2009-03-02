@@ -18,7 +18,6 @@
 #include <gtkmm/box.h>
 #include <gtkmm/textbuffer.h>
 #include <gtkmm/textview.h>
-#include <gtkmm/tooltips.h>
 
 #include "winbase.h"
 
@@ -61,7 +60,6 @@ class GtkInfoDisplay : public Gtk::VBox
     Gtk::Image icon;
     Gtk::Label text;
     Gtk::Button info_but;
-    Gtk::Tooltips tooltips;
 
   protected:
     void show_info_log (void);

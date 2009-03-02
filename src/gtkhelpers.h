@@ -13,7 +13,6 @@
 #ifndef GTK_HELPERS_HEADER
 #define GTK_HELPERS_HEADER
 
-#include <gtkmm/tooltips.h>
 #include <gtkmm/tooltip.h>
 
 #include "apiskilltree.h"

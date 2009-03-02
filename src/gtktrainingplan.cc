@@ -545,11 +545,11 @@ GtkTrainingPlan::GtkTrainingPlan (void)
   gui_table->attach(*button_vbox, 1, 3, 2, 3,
       Gtk::EXPAND | Gtk::FILL, Gtk::EXPAND | Gtk::FILL);
 
-  this->tooltips.set_tip(this->delete_plan_but, "Delete the current plan");
-  this->tooltips.set_tip(this->create_plan_but, "Create a new plan");
-  this->tooltips.set_tip(this->rename_plan_but, "Rename the current plan");
-  this->tooltips.set_tip(this->clean_plan_but, "Remove finished skills");
-  this->tooltips.set_tip(this->column_conf_but, "Configure list columns");
+  this->delete_plan_but.set_tooltip_text("Delete the current plan");
+  this->create_plan_but.set_tooltip_text("Create a new plan");
+  this->rename_plan_but.set_tooltip_text("Rename the current plan");
+  this->clean_plan_but.set_tooltip_text("Remove finished skills");
+  this->column_conf_but.set_tooltip_text("Configure list columns");
 
   this->pack_start(*gui_table, false, false, 0);
   this->pack_start(*scwin, true, true, 0);

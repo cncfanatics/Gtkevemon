@@ -15,7 +15,6 @@
 
 #include <gtkmm/box.h>
 #include <gtkmm/entry.h>
-#include <gtkmm/tooltips.h>
 #include <gtkmm/treestore.h>
 #include <gtkmm/comboboxtext.h>
 
@@ -68,7 +67,6 @@ class GtkSkillBrowser : public ItemBrowserBase, public Gtk::VBox
   private:
     Gtk::Entry filter_entry;
     Gtk::ComboBoxText filter_cb;
-    Gtk::Tooltips tooltips;
 
   protected:
     void fill_store (void);
@@ -91,8 +89,13 @@ class GtkCertBrowser : public ItemBrowserBase, public Gtk::VBox
       CERT_PRE_HAVE_ALL
     };
 
+  private:
+    Gtk::Entry filter_entry;
+    Gtk::ComboBoxText filter_cb;
+
   protected:
     void fill_store (void);
+    void clear_filter (void);
     CertPrerequisite check_prerequisites_for_cert (ApiCert const* cert);
 
   public:
