@@ -13,7 +13,6 @@
 #ifndef GUI_OPTIONS_HEADER
 #define GUI_OPTIONS_HEADER
 
-#include <gtkmm/image.h>
 #include <gtkmm/label.h>
 
 #include "winbase.h"

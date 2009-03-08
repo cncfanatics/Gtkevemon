@@ -13,6 +13,8 @@
 #ifndef ARGUMENT_SETTINGS_HEADER
 #define ARGUMENT_SETTINGS_HEADER
 
+#include <string>
+
 class ArgumentSettings
 {
   private:

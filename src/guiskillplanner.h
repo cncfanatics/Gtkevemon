@@ -16,7 +16,6 @@
 #include <gtkmm/notebook.h>
 
 #include "winbase.h"
-#include "gtkplannerbase.h"
 #include "gtkitemdetails.h"
 #include "gtkitembrowser.h"
 #include "gtktrainingplan.h"

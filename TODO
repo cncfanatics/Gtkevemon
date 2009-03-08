@@ -26,6 +26,4 @@ Notifications
 Skill / Certificate Browser
 ---------------------------
  - History: Check if element is in history, move to the end of history
- - Sorting of certificate categories and classes (IMPORTANT)
- - Filtering of certificates (IMPORTANT)
  - Duplicated code: on_query_element_tooltip

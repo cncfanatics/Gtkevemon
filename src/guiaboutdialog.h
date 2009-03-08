@@ -13,6 +13,7 @@
 #ifndef GUI_ABOUT_DIALOG_HEADER
 #define GUI_ABOUT_DIALOG_HEADER
 
+#include <gtkmm/image.h>
 #include <gtkmm/label.h>
 
 #include "asynchttp.h"

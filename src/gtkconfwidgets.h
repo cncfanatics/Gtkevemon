@@ -45,7 +45,7 @@ class GtkConfCheckButton : public Gtk::CheckButton
 
   public:
     GtkConfCheckButton (const Glib::ustring& label, bool mnemonic,
-        const std::string& conf_key);
+        std::string const& conf_key);
 };
 
 /* ---------------------------------------------------------------- */
@@ -72,8 +72,8 @@ class GtkConfComboBox : public Gtk::ComboBoxText
     void on_changed_signal (void);
 
   public:
-    GtkConfComboBox (const std::string& conf_key);
-    void append_conf_row (const std::string& text, const std::string& value);
+    GtkConfComboBox (std::string const& conf_key);
+    void append_conf_row (std::string const& text, std::string const& value);
 };
 
 /* ---------------------------------------------------------------- */

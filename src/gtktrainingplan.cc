@@ -126,10 +126,10 @@ GtkSkillList::release_skill (unsigned int index)
   this->at(index).is_objective = false;
 
   /* Remove dependencies. */
-  bool changed_items = 0;
+  bool items_changed = false;
   do
   {
-    changed_items = 0;
+    items_changed = false;
     /* Go bottom up and remove unneded skills. */
     for (int i = (int)this->size() - 1; i >= 0; --i)
     {
@@ -137,11 +137,11 @@ GtkSkillList::release_skill (unsigned int index)
       if (!info.is_objective && !this->is_dependency(i))
       {
         this->delete_skill(i);
-        changed_items += 1;
+        items_changed = true;
       }
     }
   }
-  while (changed_items > 0);
+  while (items_changed);
 }
 
 /* ---------------------------------------------------------------- */

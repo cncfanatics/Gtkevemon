@@ -38,7 +38,7 @@ typedef std::vector<std::pair<int, bool> > GtkColumnsFormatVector;
 class GtkColumnsFormat : public GtkColumnsFormatVector
 {
   public:
-    void set_format (const std::string& format_str);
+    void set_format (std::string const& format_str);
     std::string get_format (void) const;
     bool check_format (void);
 };
@@ -68,7 +68,7 @@ class GtkColumnsBase
     void toggle_edit_context (void);
 
     std::string get_format (void);
-    void set_format (const std::string& format_str);
+    void set_format (std::string const& format_str);
 };
 
 /* ---------------------------------------------------------------- */

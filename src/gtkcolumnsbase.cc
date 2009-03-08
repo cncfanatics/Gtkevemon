@@ -10,7 +10,7 @@
 #include "gtkcolumnsbase.h"
 
 void
-GtkColumnsFormat::set_format (const std::string& format_str)
+GtkColumnsFormat::set_format (std::string const& format_str)
 {
   this->clear();
   std::string fstr = format_str;
@@ -257,7 +257,7 @@ GtkColumnsBase::get_format (void)
 /* ---------------------------------------------------------------- */
 
 void
-GtkColumnsBase::set_format (const std::string& format_str)
+GtkColumnsBase::set_format (std::string const& format_str)
 {
   this->format.set_format(format_str);
   this->check_format();

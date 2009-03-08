@@ -158,7 +158,7 @@ Helpers::get_dotted_isk (std::string const& isk_string)
 /* ---------------------------------------------------------------- */
 
 StringVector
-Helpers::split_string (const std::string& str, char delim)
+Helpers::split_string (std::string const& str, char delim)
 {
   StringVector parts;
 

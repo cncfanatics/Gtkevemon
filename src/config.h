@@ -13,6 +13,8 @@
 #ifndef CONFIG_HEADER
 #define CONFIG_HEADER
 
+#include <string>
+
 #include "asynchttp.h"
 #include "conf.h"
 

@@ -354,6 +354,7 @@ GuiVersionChecker::on_download_done (DownloadItem dl, AsyncHttpData data)
   if (dlf.fail())
   {
     std::cout << std::endl << "Error: " << ::strerror(errno) << std::endl;
+    dlf.close();
     return;
   }
 

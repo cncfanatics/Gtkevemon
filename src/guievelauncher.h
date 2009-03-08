@@ -13,6 +13,9 @@
 #ifndef GUI_EVE_LAUNCHER
 #define GUI_EVE_LAUNCHER
 
+#include <string>
+#include <vector>
+
 #include "winbase.h"
 
 class GuiEveLauncher : public WinBase

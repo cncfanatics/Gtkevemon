@@ -13,6 +13,7 @@
 #ifndef API_SKILL_TREE_HEADER
 #define API_SKILL_TREE_HEADER
 
+#include <vector>
 #include <string>
 #include <map>
 

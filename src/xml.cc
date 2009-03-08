@@ -38,7 +38,7 @@ XmlDocument::parse_from_file (std::string const& filename)
     ::gzFile handle;
 
     gzFileHandle (char const* name)
-    { this->handle = ::gzopen(name, "r"); }
+    { this->handle = ::gzopen(name, "rb"); }
     ~gzFileHandle (void)
     { ::gzclose(this->handle); }
     ::gzFile& operator() (void)

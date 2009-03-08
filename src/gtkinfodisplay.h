@@ -13,6 +13,7 @@
 #ifndef GTK_INFO_DISPLAY
 #define GTK_INFO_DISPLAY
 
+#include <string>
 #include <gtkmm/label.h>
 #include <gtkmm/image.h>
 #include <gtkmm/box.h>

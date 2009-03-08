@@ -13,8 +13,10 @@
 #ifndef API_CERT_TREE_HEADER
 #define API_CERT_TREE_HEADER
 
+#include <vector>
 #include <string>
 #include <map>
+#include <libxml/parser.h>
 
 #include "ref_ptr.h"
 #include "apibase.h"

@@ -38,7 +38,7 @@ class ConfValue
 
   public:
     static ConfValuePtr create (void);
-    static ConfValuePtr create (const std::string& _value);
+    static ConfValuePtr create (std::string const& _value);
 
     std::string& get_string (void);
     double get_double (void);
@@ -47,7 +47,7 @@ class ConfValue
 
     std::string& operator* (void);
 
-    void set (const std::string& value);
+    void set (std::string const& value);
     void set (int value);
     void set (double value);
     void set (bool value);
@@ -69,10 +69,10 @@ class ConfSection
     static ConfSectionPtr create (void);
 
     /* Adding and getting. */
-    void add (const std::string& key, ConfSectionPtr section);
-    void add (const std::string& key, ConfValuePtr value);
-    ConfSectionPtr get_section (const std::string& key);
-    ConfValuePtr get_value (const std::string& key);
+    void add (std::string const& key, ConfSectionPtr section);
+    void add (std::string const& key, ConfValuePtr value);
+    ConfSectionPtr get_section (std::string const& key);
+    ConfValuePtr get_value (std::string const& key);
     void remove_section (std::string const& key);
     void remove_value (std::string const& key);
 
@@ -106,15 +106,15 @@ class Conf
   public:
     Conf (void);
 
-    ConfValuePtr get_value (const std::string& key);
-    ConfSectionPtr get_section (const std::string& key);
-    ConfSectionPtr get_or_create_section (const std::string& key);
+    ConfValuePtr get_value (std::string const& key);
+    ConfSectionPtr get_section (std::string const& key);
+    ConfSectionPtr get_or_create_section (std::string const& key);
 
     void clear (void);
     void add_from_file (std::istream& instr);
-    void add_from_file (const std::string& filename);
-    void add_from_string (const std::string& conf_string);
-    void to_file (const std::string& filename);
+    void add_from_file (std::string const& filename);
+    void add_from_string (std::string const& conf_string);
+    void to_file (std::string const& filename);
     void to_stream (std::ostream& outstr);
 };
 
@@ -144,7 +144,7 @@ ConfValue::operator* (void)
 }
 
 inline void
-ConfValue::set (const std::string& _value)
+ConfValue::set (std::string const& _value)
 {
   this->value = _value;
 }

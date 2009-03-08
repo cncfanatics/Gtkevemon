@@ -23,7 +23,7 @@ class Exception : public std::exception, public std::string
     Exception (void) throw()
     { }
 
-    Exception (const std::string& msg) throw() : std::string(msg)
+    Exception (std::string const& msg) throw() : std::string(msg)
     { }
 
     virtual ~Exception (void) throw()

@@ -24,7 +24,7 @@ ConfValue::create (void)
 /* ---------------------------------------------------------------- */
 
 ConfValuePtr
-ConfValue::create (const std::string& _value)
+ConfValue::create (std::string const& _value)
 {
   ConfValuePtr c(new ConfValue);
   c->set(_value);
@@ -99,7 +99,7 @@ ConfSection::create (void)
 /* ---------------------------------------------------------------- */
 
 void
-ConfSection::add (const std::string& key, ConfSectionPtr section)
+ConfSection::add (std::string const& key, ConfSectionPtr section)
 {
   if (this->sections.insert(std::make_pair(key, section)).second == false)
     this->sections.find(key)->second = section;
@@ -108,7 +108,7 @@ ConfSection::add (const std::string& key, ConfSectionPtr section)
 /* ---------------------------------------------------------------- */
 
 void
-ConfSection::add (const std::string& key, ConfValuePtr value)
+ConfSection::add (std::string const& key, ConfValuePtr value)
 {
   // TRY: this->values[key] = value;
   if (this->values.insert(std::make_pair(key, value)).second == false)
@@ -118,7 +118,7 @@ ConfSection::add (const std::string& key, ConfValuePtr value)
 /* ---------------------------------------------------------------- */
 
 ConfSectionPtr
-ConfSection::get_section (const std::string& key)
+ConfSection::get_section (std::string const& key)
 {
   size_t dot_pos = key.find_first_of('.');
   if (dot_pos == std::string::npos)
@@ -149,7 +149,7 @@ ConfSection::get_section (const std::string& key)
 /* ---------------------------------------------------------------- */
 
 ConfValuePtr
-ConfSection::get_value (const std::string& key)
+ConfSection::get_value (std::string const& key)
 {
   conf_values_t::iterator iter = this->values.find(key);
   if (iter != this->values.end())
@@ -244,7 +244,7 @@ Conf::Conf (void)
 /* Returns value or throws if value does not exist. */
 
 ConfValuePtr
-Conf::get_value (const std::string& key)
+Conf::get_value (std::string const& key)
 {
   try
   { return root->get_value(key); }
@@ -259,7 +259,7 @@ Conf::get_value (const std::string& key)
 /* Returns the section or throws if section does not exist. */
 
 ConfSectionPtr
-Conf::get_section (const std::string& key)
+Conf::get_section (std::string const& key)
 {
   try
   { return root->get_section(key); }
@@ -274,7 +274,7 @@ Conf::get_section (const std::string& key)
 /* Returns section or creates a new if section does not exist. */
 
 ConfSectionPtr
-Conf::get_or_create_section (const std::string& key)
+Conf::get_or_create_section (std::string const& key)
 {
   /* Try to find already existing section. */
   try
@@ -329,7 +329,7 @@ Conf::clear (void)
 /* ---------------------------------------------------------------- */
 
 void
-Conf::add_from_file (const std::string& filename)
+Conf::add_from_file (std::string const& filename)
 {
   std::ifstream instr(filename.c_str());
   if (instr.fail())
@@ -431,7 +431,7 @@ Conf::add_from_file (std::istream& instr)
 /* ---------------------------------------------------------------- */
 
 void
-Conf::add_from_string (const std::string& conf_string)
+Conf::add_from_string (std::string const& conf_string)
 {
   std::stringstream conf_file;
   conf_file << conf_string;
@@ -441,7 +441,7 @@ Conf::add_from_string (const std::string& conf_string)
 /* ---------------------------------------------------------------- */
 
 void
-Conf::to_file (const std::string& filename)
+Conf::to_file (std::string const& filename)
 {
   //std::cout << "Saving configuration..." << std::endl;
 

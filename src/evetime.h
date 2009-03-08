@@ -13,6 +13,7 @@
 #ifndef EVE_TIME_HEADER
 #define EVE_TIME_HEADER
 
+#include <ctime>
 #include <string>
 
 /* Time format present in XML files. */

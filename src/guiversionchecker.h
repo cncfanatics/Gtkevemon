@@ -18,6 +18,7 @@
 #include <gtkmm/box.h>
 #include <gtkmm/window.h>
 
+#include "exception.h"
 #include "asynchttp.h"
 #include "winbase.h"
 #include "gtkdownloader.h"

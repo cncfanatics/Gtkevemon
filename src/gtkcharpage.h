@@ -13,6 +13,7 @@
 #ifndef GTK_CHAR_PAGE_HEADER
 #define GTK_CHAR_PAGE_HEADER
 
+#include <string>
 #include <gdkmm/pixbuf.h>
 #include <gtkmm/box.h>
 #include <gtkmm/label.h>

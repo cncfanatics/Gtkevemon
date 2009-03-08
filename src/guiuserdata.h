@@ -13,6 +13,7 @@
 #ifndef GUI_USER_DATA_HEADER
 #define GUI_USER_DATA_HEADER
 
+#include <string>
 #include <gtkmm/combobox.h>
 #include <gtkmm/entry.h>
 #include <gtkmm/treeview.h>

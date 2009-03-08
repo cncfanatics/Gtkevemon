@@ -16,6 +16,7 @@
 #include <gtkmm/table.h>
 #include <gtkmm/label.h>
 #include <gtkmm/button.h>
+#include <gtkmm/stock.h>
 
 #include "server.h"
 

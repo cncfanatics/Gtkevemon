@@ -13,7 +13,7 @@
 #ifndef GUI_XML_SOURCE_HEADER
 #define GUI_XML_SOURCE_HEADER
 
-#include <string.h>
+#include <string>
 #include <gtkmm/notebook.h>
 
 #include "winbase.h"
