@@ -21,9 +21,9 @@ guiskill.o: guiskill.cc apiskilltree.h ref_ptr.h apibase.h eveapi.h \
   guiskill.h winbase.h
 guiskillplanner.o: guiskillplanner.cc helpers.h imagestore.h \
   gtkportrait.h asynchttp.h http.h ref_ptr.h thread.h exception.h \
-  gtkdefines.h guiskillplanner.h winbase.h gtkplannerbase.h \
-  apiskilltree.h apibase.h eveapi.h xml.h apicerttree.h gtkitemdetails.h \
-  apicharsheet.h apiitemtree.h gtkitembrowser.h gtktrainingplan.h \
+  gtkdefines.h guiskillplanner.h winbase.h gtkitemdetails.h \
+  apicharsheet.h apibase.h eveapi.h xml.h apiskilltree.h apicerttree.h \
+  apiitemtree.h gtkplannerbase.h gtkitembrowser.h gtktrainingplan.h \
   gtkcolumnsbase.h config.h conf.h gtkconfwidgets.h apiintraining.h
 guixmlsource.o: guixmlsource.cc gtkdefines.h guixmlsource.h winbase.h \
   http.h ref_ptr.h
@@ -50,8 +50,8 @@ gtkcharpage.o: gtkcharpage.cc config.h asynchttp.h http.h ref_ptr.h \
   thread.h exception.h conf.h evetime.h helpers.h notifier.h \
   apicharsheet.h apibase.h eveapi.h xml.h apiskilltree.h apicerttree.h \
   apiintraining.h imagestore.h gtkdefines.h gtkhelpers.h guiskill.h \
-  winbase.h guiskillplanner.h gtkplannerbase.h gtkitemdetails.h \
-  apiitemtree.h gtkitembrowser.h gtktrainingplan.h gtkportrait.h \
+  winbase.h guiskillplanner.h gtkitemdetails.h apiitemtree.h \
+  gtkplannerbase.h gtkitembrowser.h gtktrainingplan.h gtkportrait.h \
   gtkcolumnsbase.h gtkconfwidgets.h guixmlsource.h guicharexport.h \
   gtkcharpage.h gtkinfodisplay.h
 gtkportrait.o: gtkportrait.cc http.h ref_ptr.h config.h asynchttp.h \
