@@ -4,11 +4,11 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
+#include <iostream>
 #include <cmath>
 #include <cerrno>
 #include <cstring>
 #include <cstdlib>
-//#include <iostream>
 #include <sstream>
 #include <string>
 
@@ -72,6 +72,11 @@ GetHostByName::GetHostByName (char const* host)
   /* Under MacOS X the gethostbyname function is already thread safe. */
   this->result = *::gethostbyname(host);
 
+#elif defined(WIN32)
+
+  /* Under Win32 the gethostbyname function is already thread safe. */
+  this->result = *::gethostbyname(host);
+
 #elif defined(__SunOS)
 
   /* Solaris has 1 argument fewer than Linux. */
@@ -111,6 +116,26 @@ GetHostByName::GetHostByName (char const* host)
 GetHostByName::~GetHostByName (void)
 {
   ::free(this->strange_data);
+}
+
+/* ================================================================ */
+
+void
+HttpData::dump_headers (void)
+{
+  std::cout << "==== HTTP Headers ====" << std::endl;
+  for (std::size_t i = 0; i < this->headers.size(); ++i)
+    std::cout << this->headers[i] << std::endl;
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+HttpData::dump_data (void)
+{
+  std::cout << "==== HTTP Data dump ====" << std::endl;
+  std::cout.write(&this->data[0], this->data.size());
+  std::cout << std::endl;
 }
 
 /* ================================================================ */
@@ -358,10 +383,13 @@ Http::read_http_reply (int sock)
       this->bytes_total = (size_t)this->get_uint_from_str(line.substr(16));
   }
 
-  //std::cout << "Dump of HTTP reply headers" << std::endl;
-  //for (unsigned int i = 0; i < result->headers.size(); ++i)
-  //  std::cout << "  " << result->headers[i] << std::endl;
+  /* Debug dump of HTTP headers. */
+  //result->dump_headers();
 
+  /* Determine the HTTP status code. */
+  result->http_code = this->get_http_status_code(result->headers[0]);
+
+  /* Read the HTTP reply body. */
   if (chunked_read)
   {
     /* Deal with chunks *sigh*. */
@@ -429,6 +457,31 @@ Http::read_http_reply (int sock)
   }
 
   return result;
+}
+
+/* ---------------------------------------------------------------- */
+
+HttpStatusCode
+Http::get_http_status_code (std::string const& header)
+{
+  /* Find first and second whitespace. */
+  std::size_t p1 = header.find_first_of(' ');
+  if (p1 == std::string::npos)
+    return 999;
+  if (p1 == header.size() - 1)
+    return 999;
+  std::size_t p2 = header.find_first_of(' ', p1 + 1);
+  if (p2 == std::string::npos || p2 <= p1)
+    return 999;
+
+  /* Extract the code and convert to a numeric type. */
+  std::string code_str = header.substr(p1 + 1, p2 - p1 - 1);
+  std::stringstream ss(code_str);
+  HttpStatusCode code;
+  if (!(ss >> code) || !ss.eof())
+    return 999;
+
+  return code;
 }
 
 /* ---------------------------------------------------------------- */

@@ -147,11 +147,11 @@ ApiCharSheet::parse_eveapi_tag (xmlNodePtr node)
 {
   if (node->type != XML_ELEMENT_NODE
       || xmlStrcmp(node->name, (xmlChar const*)"eveapi"))
-  throw Exception("Invalid tag. expecting <eveapi> node");
+    throw Exception("Invalid XML root. Expecting <eveapi> node.");
 
   node = node->children;
 
-  while (node != 0)
+  for (; node != 0; node = node->next)
   {
     /* Let the base class know of some fields. */
     this->check_node(node);
@@ -162,8 +162,6 @@ ApiCharSheet::parse_eveapi_tag (xmlNodePtr node)
       //std::cout << "Found <result> tag" << std::endl;
       this->parse_result_tag(node->children);
     }
-
-    node = node->next;
   }
 }
 

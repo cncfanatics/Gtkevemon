@@ -318,7 +318,7 @@ void
 GuiVersionChecker::on_download_done (DownloadItem dl, AsyncHttpData data)
 {
   /* Download successful? */
-  if (data.data.get() == 0)
+  if (data.data.get() == 0 || data.data->http_code != 200)
   {
     std::cout << "Error: The download for " << dl.name
         << " failed: " << data.exception << std::endl;

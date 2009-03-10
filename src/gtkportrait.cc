@@ -129,6 +129,12 @@ GtkPortrait::set_from_eve_online (AsyncHttpData result)
     return;
   }
 
+  if (result.data->http_code != 200)
+  {
+    std::cout << "Error fetching portrait: " << result.exception << std::endl;
+    return;
+  }
+
   /* Generate filenames to store the fetched JPG and the destination PNG. */
   std::string confdir = Config::get_conf_dir();
   std::stringstream jpg_name;

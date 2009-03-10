@@ -151,7 +151,7 @@ VersionCheckerBase::request_versions (void)
 void
 VersionCheckerBase::handle_result (AsyncHttpData result)
 {
-  if (result.data.get() == 0)
+  if (result.data.get() == 0 || result.data->http_code != 200)
   {
     this->handle_version_error(result.exception);
     return;

@@ -44,7 +44,9 @@ class ApiCharacterList : public ApiBase
   protected:
     ApiCharacterList (void);
     void parse_xml (void);
-    void parse_recursive (xmlNodePtr node);
+    void parse_eveapi_tag (xmlNodePtr node);
+    void parse_result_tag (xmlNodePtr node);
+    void parse_characters (xmlNodePtr node);
 
   /* Publicly available collection of gathered data. */
   public:
@@ -65,8 +67,7 @@ ApiCharacterList::ApiCharacterList (void)
 inline ApiCharacterListPtr
 ApiCharacterList::create (void)
 {
-  ApiCharacterListPtr obj(new ApiCharacterList);
-  return obj;
+  return ApiCharacterListPtr(new ApiCharacterList);
 }
 
 inline void

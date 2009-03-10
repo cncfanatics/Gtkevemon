@@ -126,12 +126,11 @@ GuiAboutDialog::request_version_label (void)
 void
 GuiAboutDialog::set_version_label (AsyncHttpData result)
 {
-  if (result.data.get() == 0)
+  if (result.data.get() == 0 || result.data->http_code != 200)
   {
     this->version_label.set_text("Error fetchting version!");
     this->version_status_image.set(Gtk::Stock::NO, Gtk::ICON_SIZE_BUTTON);
-    std::cout << "Could not fetch version: "
-        << result.exception << std::endl;
+    std::cout << "Could not fetch version: " << result.exception << std::endl;
   }
   else
   {

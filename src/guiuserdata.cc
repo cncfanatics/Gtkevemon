@@ -176,10 +176,9 @@ GuiUserData::on_charlist_available (EveApiData data)
     return;
   }
 
-  ApiCharacterListPtr clist;
+  ApiCharacterListPtr clist = ApiCharacterList::create();
   try
   {
-    clist = ApiCharacterList::create();
     clist->set_api_data(data);
     if (clist->is_locally_cached())
       this->print_error(data.exception, true);
@@ -195,6 +194,12 @@ GuiUserData::on_charlist_available (EveApiData data)
   this->char_store->clear();
   std::string char_string;
 
+  if (chars.empty())
+  {
+    this->print_error("No characters found for that account!");
+    return;
+  }
+
   //std::cout << "Character list has " << chars.size()
   //    << " entries:" << std::endl;
   for (unsigned int i = 0; i < chars.size(); ++i)
@@ -209,7 +214,7 @@ GuiUserData::on_charlist_available (EveApiData data)
     row[this->char_cols.charid] = chars[i].char_id;
     row[this->char_cols.corp] = chars[i].corp;
 
-    if (!char_string.empty())
+    if (i != 0)
       char_string += ", ";
     char_string += chars[i].name;
   }

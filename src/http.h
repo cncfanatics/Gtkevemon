@@ -18,11 +18,24 @@
 #include <stdint.h>
 
 #include "ref_ptr.h"
+#include "httpstatus.h"
 
 enum HttpMethod
 {
   HTTP_METHOD_GET,
   HTTP_METHOD_POST
+};
+
+/* ---------------------------------------------------------------- */
+
+enum HttpState
+{
+  HTTP_STATE_READY,
+  HTTP_STATE_CONNECTING,
+  HTTP_STATE_REQUESTING,
+  HTTP_STATE_RECEIVING,
+  HTTP_STATE_DONE,
+  HTTP_STATE_ERROR
 };
 
 /* ---------------------------------------------------------------- */
@@ -36,23 +49,16 @@ class HttpData
     HttpData (void);
 
   public:
+    HttpStatusCode http_code;
     std::vector<std::string> headers;
     std::vector<char> data;
 
   public:
     static HttpDataPtr create (void);
-};
 
-/* ---------------------------------------------------------------- */
-
-enum HttpState
-{
-  HTTP_STATE_READY,
-  HTTP_STATE_CONNECTING,
-  HTTP_STATE_REQUESTING,
-  HTTP_STATE_RECEIVING,
-  HTTP_STATE_DONE,
-  HTTP_STATE_ERROR
+    /* This is for debugging purposes. */
+    void dump_headers (void);
+    void dump_data (void);
 };
 
 /* ---------------------------------------------------------------- */
@@ -90,6 +96,7 @@ class Http
     unsigned int get_uint_from_str (std::string const& str);
     ssize_t socket_read_line (int sock, std::string& line);
     ssize_t http_data_read (int sock, char* buf, size_t size);
+    HttpStatusCode get_http_status_code (std::string const& header);
 
   public:
     Http (void);

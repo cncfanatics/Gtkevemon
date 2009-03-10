@@ -1,5 +1,6 @@
 #include <sys/stat.h>
 #include <stdint.h>
+#include <sstream>
 #include <cerrno>
 #include <cstring>
 #include <fstream>
@@ -148,7 +149,10 @@ EveApiFetcher::process_caching (EveApiData& data)
   file += "_";
   file += xmlname;
 
-  if (data.data.get() != 0)
+  if (!data.exception.empty())
+    std::cout << "Warning: " << data.exception << std::endl;
+
+  if (data.data.get() != 0 && data.data->http_code == 200)
   {
     /* Cache successful request to file. */
     //std::cout << "Should cache to file: " << file << std::endl;

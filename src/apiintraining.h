@@ -29,7 +29,8 @@ class ApiInTraining : public ApiBase
   protected:
     ApiInTraining (void);
     void parse_xml (void);
-    void parse_recursive (xmlNodePtr node);
+    void parse_eveapi_tag (xmlNodePtr node);
+    void parse_result_tag (xmlNodePtr node);
 
   /* Publicly available collection of gathered data. */
   public:
@@ -64,8 +65,7 @@ ApiInTraining::ApiInTraining (void) : valid(false), in_training(false)
 inline ApiInTrainingPtr
 ApiInTraining::create (void)
 {
-  ApiInTrainingPtr obj(new ApiInTraining);
-  return obj;
+  return ApiInTrainingPtr(new ApiInTraining);
 }
 
 #endif /* API_TRAINING_HEADER */

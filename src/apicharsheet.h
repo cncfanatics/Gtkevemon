@@ -130,8 +130,7 @@ ApiCharSheet::ApiCharSheet (void) : valid(false)
 inline ApiCharSheetPtr
 ApiCharSheet::create (void)
 {
-  ApiCharSheetPtr obj(new ApiCharSheet);
-  return obj;
+  return ApiCharSheetPtr(new ApiCharSheet);
 }
 
 inline double
