@@ -456,8 +456,8 @@ ApiCharSheet::calc_dest_sp (int level, int rank)
 
 /* ---------------------------------------------------------------- */
 
-double
-ApiCharSheet::get_sppm_for_skill (ApiSkill const* skill,
+unsigned int
+ApiCharSheet::get_spph_for_skill (ApiSkill const* skill,
     ApiCharAttribs const& attribs)
 {
   double pri;
@@ -483,7 +483,8 @@ ApiCharSheet::get_sppm_for_skill (ApiSkill const* skill,
     default: sec = 0.0;
   }
 
-  return (pri + sec / 2.0);
+  double sppm = (pri + sec / 2.0);
+  return (unsigned int)(sppm * 60.0 + 0.5);
 }
 
 /* ---------------------------------------------------------------- */

@@ -536,7 +536,7 @@ GtkSkillDetails::set_skill (ApiSkill const* skill)
 
   ApiCharSheetSkill* cskill = this->charsheet->get_skill_for_id(skill->id);
   time_t timediff = 0;
-  double spps = this->charsheet->get_sppm_for_skill(skill) / 60.0;
+  double spps = (double)this->charsheet->get_spph_for_skill(skill) / 3600.0;
 
   for (unsigned int i = 0; i < 5; ++i)
   {

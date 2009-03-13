@@ -51,6 +51,8 @@ class ApiInTraining : public ApiBase
   public:
     static ApiInTrainingPtr create (void);
     void set_api_data (EveApiData const& data);
+
+    unsigned int get_current_spph (void);
 };
 
 /* ---------------------------------------------------------------- */

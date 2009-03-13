@@ -176,7 +176,6 @@ class GtkCharPage : public Gtk::VBox
     std::string get_char_name (void);
     std::string get_tooltip_text (bool detailed);
     std::string get_skill_in_training (void);
-    double get_spph_in_training (void);
     std::string get_skill_remaining (bool slim = false);
     void set_parent_window (Gtk::Window* parent);
     void open_skill_planner (void);

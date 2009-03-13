@@ -4,6 +4,7 @@
 #include <gtkmm/stock.h>
 #include <gtkmm/separator.h>
 #include <gtkmm/scrolledwindow.h>
+#include <gtkmm/filechooserdialog.h>
 #include <gtkmm/box.h>
 #include <gtkmm/frame.h>
 #include <gtkmm/button.h>
@@ -71,9 +72,10 @@ GuiConfiguration::GuiConfiguration (void)
   launch_info_label->set_line_wrap(true);
 
   Gtk::Table* launch_table = Gtk::manage(new Gtk::Table
-      (LAUNCHER_CMD_AMOUNT, 2, false));
-  launch_table->set_col_spacings(5);
+      (LAUNCHER_CMD_AMOUNT, 3, false));
+  launch_table->set_col_spacings(1);
   launch_table->set_row_spacings(1);
+  launch_table->set_col_spacing(0, 5);
 
   for (unsigned int i = 0; i < LAUNCHER_CMD_AMOUNT; ++i)
   {
@@ -89,8 +91,15 @@ GuiConfiguration::GuiConfiguration (void)
     GtkConfTextEntry* eve_cmd_entry = Gtk::manage
         (new GtkConfTextEntry("settings." + key));
 
+    Gtk::Button* eve_cmd_choose = MK_BUT0;
+    eve_cmd_choose->set_image(*MK_IMG(Gtk::Stock::OPEN, Gtk::ICON_SIZE_MENU));
+
+    eve_cmd_choose->signal_clicked().connect(sigc::bind(sigc::mem_fun
+        (*this, &GuiConfiguration::select_launcher_file), eve_cmd_entry));
+
     launch_table->attach(*eve_cmd_label, 0, 1, i, i + 1, Gtk::FILL);
     launch_table->attach(*eve_cmd_entry, 1, 2, i, i + 1, Gtk::EXPAND|Gtk::FILL);
+    launch_table->attach(*eve_cmd_choose, 2, 3, i, i + 1, Gtk::FILL);
   }
 
   Gtk::VBox* page_launch = MK_VBOX;
@@ -545,4 +554,19 @@ GuiConfiguration::update_time_example (void)
   Glib::ustring example(buffer);
 
   this->time_example.set_text(buffer);
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GuiConfiguration::select_launcher_file (Gtk::Entry* cmd_entry)
+{
+  Gtk::FileChooserDialog fcd(*this, "Select file to execute...",
+      Gtk::FILE_CHOOSER_ACTION_OPEN);
+  fcd.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
+  fcd.add_button(Gtk::Stock::SAVE, Gtk::RESPONSE_OK);
+
+  int ret = fcd.run();
+  if (ret == Gtk::RESPONSE_OK)
+    cmd_entry->set_text(fcd.get_filename());
 }

@@ -89,7 +89,7 @@ ApiSkillTree::parse_xml (std::string const& filename)
 
   std::cout << " Version " << this->version
       << (this->version == 0 ? " (not set)" : "")
-      << "." << std::endl;
+      << ", " << this->skills.size() << " skills." << std::endl;
 }
 
 /* ---------------------------------------------------------------- */

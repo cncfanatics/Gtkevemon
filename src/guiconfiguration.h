@@ -14,6 +14,7 @@
 #define GUI_OPTIONS_HEADER
 
 #include <gtkmm/label.h>
+#include <gtkmm/entry.h>
 
 #include "winbase.h"
 #include "gtkconfwidgets.h"
@@ -26,6 +27,7 @@ class GuiConfiguration : public WinBase
 
     void close (void);
     void update_time_example (void);
+    void select_launcher_file (Gtk::Entry* cmd_entry);
 
   public:
     GuiConfiguration (void);

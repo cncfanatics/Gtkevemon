@@ -195,7 +195,8 @@ GtkSkillList::calc_details (void)
     bool active = (skill->id == train_skill && info.plan_level == train_level);
 
     /* SP per second. */
-    double spps = this->charsheet->get_sppm_for_skill(skill, attribs) / 60.0;
+    unsigned int spph = this->charsheet->get_spph_for_skill(skill, attribs);
+    double spps = spph / 3600.0;
 
     /* Start SP, dest SP and current SP. */
     int ssp = this->charsheet->calc_start_sp(info.plan_level - 1, skill->rank);
@@ -219,7 +220,7 @@ GtkSkillList::calc_details (void)
     info.train_duration = duration + timediff;
     info.skill_duration = timediff;
     info.completed = (double)(csp - ssp) / (double)(dsp - ssp);
-    info.spph = (int)(spps * 3600.0);
+    info.spph = spph;
 
     duration += timediff;
 
@@ -228,7 +229,7 @@ GtkSkillList::calc_details (void)
     if (cskill == 0 || cskill->level < info.plan_level)
     {
       this->apply_attributes(skill, attribs, training_level);
-      if (skill->id == 3374)
+      if (skill->id == 3374) /* 3374 is the learning skill. */
         training_level += 1;
     }
   }

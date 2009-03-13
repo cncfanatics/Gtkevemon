@@ -773,7 +773,7 @@ GtkCharPage::api_info_changed (void)
     /* Cache current skill in training and the SP/h. */
     this->skill_info.char_skill = this->sheet->get_skill_for_id
         (this->training->skill);
-    this->skill_info.sp_per_hour = this->get_spph_in_training();
+    this->skill_info.sp_per_hour = this->training->get_current_spph();
     this->spph_label.set_text(Helpers::get_string_from_uint
         ((unsigned int)this->skill_info.sp_per_hour) + " SP per hour");
 
@@ -1136,10 +1136,29 @@ GtkCharPage::calc_live_values (double& level_sp, double& total_sp, double& frac)
 
   double spps = this->skill_info.sp_per_hour / 3600.0;
 
-  /* Assign values. */
+  /* Assign values. Do sanity checks, e.g. if SP/s is wrong. */
   total_sp = skill->points_dest - diff * spps;
+  //if (total_sp < 0.0) total_sp = 0.0;
   level_sp = total_sp - skill->points_start;
+  //if (level_sp < 0.0) level_sp = 0.0;
   frac = level_sp / (skill->points_dest - skill->points_start);
+
+  #if 0
+  std::cout << "Live SP debugging for " << this->sheet->name << std::endl;
+  std::cout << "  EVE time: " << evetime << ", finish time: " << finish
+      << ", diff: " << diff << ", diff * SP/s: " << (int)(diff * spps)
+      << std::endl
+      << "  Start SP: " << skill->points_start << ", Dest SP: "
+      << skill->points_dest << ", SP/s: " << spps << std::endl
+
+      << "  1) Total skill SP: " << (int)total_sp
+      << ", level skill SP: " << (int)level_sp
+      << ", SP/h: " << (int)(spps * 3600.0)
+      << std::endl
+      << "  2) Total skill SP: " << this->training->get_current_total_sp()
+      << ", level skill SP: " << this->training->get_current_level_sp()
+      << ", SP/h: " << this->training->get_current_spph() << std::endl;
+  #endif
 
   return true;
 }
@@ -1312,30 +1331,6 @@ GtkCharPage::get_skill_in_training (void)
   else
   {
     return "No skill in training!";
-  }
-}
-
-/* ---------------------------------------------------------------- */
-
-double
-GtkCharPage::get_spph_in_training (void)
-{
-  if (!this->training->valid
-      || !this->training->in_training
-      || !this->sheet->valid)
-    return 0;
-
-  try
-  {
-    int skill_id = this->training->skill;
-    ApiSkillTreePtr skills = ApiSkillTree::request();
-    ApiSkill const* skill = skills->get_skill_for_id(skill_id);
-    return this->sheet->get_sppm_for_skill(skill) * 60.0;
-  }
-  catch (Exception& e)
-  {
-    /* This happens if the ID is not found. */
-    return 0;
   }
 }
 

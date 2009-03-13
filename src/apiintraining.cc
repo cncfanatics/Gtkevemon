@@ -96,3 +96,33 @@ ApiInTraining::parse_result_tag (xmlNodePtr node)
     this->set_bool_if_node_text(node, "skillInTraining", this->in_training);
   }
 }
+
+/* ---------------------------------------------------------------- */
+
+#if 0
+unsigned int
+ApiInTraining::get_current_level_sp (void)
+{
+  time_t evetime = EveTime::get_eve_time();
+  if (evetime > this->end_time_t)
+    return this->dest_sp;
+  if (evetime < this->start_time_t)
+    return this->start_sp;
+
+  double fraction = ((double)evetime - (double)this->start_time_t)
+      / ((double)this->end_time_t - (double)this->start_time_t);
+  return (unsigned int)(fraction * ((double)this->dest_sp
+      - (double)this->start_sp));
+}
+#endif
+
+/* ---------------------------------------------------------------- */
+
+unsigned int
+ApiInTraining::get_current_spph (void)
+{
+  double total_sp = this->dest_sp - this->start_sp;
+  double total_time = this->end_time_t - this->start_time_t;
+
+  return (unsigned int)(total_sp * 3600.0 / total_time);
+}

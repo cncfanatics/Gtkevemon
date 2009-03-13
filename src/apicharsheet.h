@@ -112,8 +112,8 @@ class ApiCharSheet : public ApiBase
     ApiCharSheetCert* get_cert_for_id (int id);
     int get_grade_for_class (int class_id);
 
-    double get_sppm_for_skill (ApiSkill const* skill);
-    double get_sppm_for_skill (ApiSkill const* skill,
+    unsigned int get_spph_for_skill (ApiSkill const* skill);
+    unsigned int get_spph_for_skill (ApiSkill const* skill,
         ApiCharAttribs const& attribs);
 
     static int calc_start_sp (int level, int rank);
@@ -133,10 +133,10 @@ ApiCharSheet::create (void)
   return ApiCharSheetPtr(new ApiCharSheet);
 }
 
-inline double
-ApiCharSheet::get_sppm_for_skill (ApiSkill const* skill)
+inline unsigned int
+ApiCharSheet::get_spph_for_skill (ApiSkill const* skill)
 {
-  return this->get_sppm_for_skill(skill, this->total);
+  return this->get_spph_for_skill(skill, this->total);
 }
 
 #endif /* API_CHAR_SHEET_HEADER */
