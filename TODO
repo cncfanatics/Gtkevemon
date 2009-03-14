@@ -1,9 +1,10 @@
 User interface
 --------------
  - Make links clickable (about dialog)
- - Implant viewer
-
+ - Warning if char needs a new clone
  - Underline labels that have tooltips
+ - Implant viewer
+ - Skill queue
 
 
 Skill Browser / Planner
@@ -20,7 +21,7 @@ Skill Browser / Planner
 
 Notifications
 -------------
-- Notification a few miniutes before actual finish
+ - Notification a few miniutes before actual finish
 
 
 Imporve calculations

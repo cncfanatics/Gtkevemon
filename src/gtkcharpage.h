@@ -61,7 +61,7 @@ struct SkillInTrainingInfo
 {
   /* Updated on refresh. */
   ApiCharSheetSkill* char_skill;
-  double sp_per_hour;
+  unsigned int sp_per_hour;
   unsigned int total_sp;
   unsigned int skills_at[6];
   unsigned int skill_group_sp;
@@ -127,6 +127,7 @@ class GtkCharPage : public Gtk::VBox
     void update_charsheet_details (void);
     void update_training_details (void);
     void update_skill_list (void);
+    void delete_skill_completed_dialog (int response, Gtk::Widget* widget);
 
     /* Request and process EVE API documents. */
     void request_documents (void);
@@ -232,6 +233,13 @@ inline sigc::signal<void, EveApiAuth>&
 GtkCharPage::signal_sheet_updated (void)
 {
   return this->sig_sheet_updated;
+}
+
+inline void
+GtkCharPage::delete_skill_completed_dialog (int, Gtk::Widget* widget)
+{
+  delete widget;
+  this->remove_tray_notify();
 }
 
 #endif /* GTK_CHAR_PAGE_HEADER */

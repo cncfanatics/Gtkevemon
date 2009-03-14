@@ -1,0 +1,10 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=GtkEveMon
+Comment=EVE-Online Character Monitor
+Exec=gtkevemon
+Icon=gtkevemon.xpm
+Terminal=false
+X-MultipleArgs=false
+Type=Application
+Categories=Game;

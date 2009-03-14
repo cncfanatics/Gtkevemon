@@ -775,7 +775,13 @@ GtkCharPage::api_info_changed (void)
         (this->training->skill);
     this->skill_info.sp_per_hour = this->training->get_current_spph();
     this->spph_label.set_text(Helpers::get_string_from_uint
-        ((unsigned int)this->skill_info.sp_per_hour) + " SP per hour");
+        (this->skill_info.sp_per_hour) + " SP per hour");
+    this->spph_label.set_tooltip_markup("<b><u>Attribute based</u></b>\n"
+        + Helpers::get_string_from_uint(this->sheet->get_spph_for_skill
+        (this->skill_info.char_skill->details))
+        + " SP/h\n<b><u>Training based</u></b>\n"
+        + Helpers::get_string_from_uint(this->skill_info.sp_per_hour)
+        + " SP/h");
 
     /* Cache the total skill points for the skill in training. */
     ApiCharSheetSkill* training_skill = this->skill_info.char_skill;
@@ -997,6 +1003,19 @@ GtkCharPage::on_skill_completed (void)
 
   if (show_popup->get_bool())
   {
+    Gtk::MessageDialog* md = new Gtk::MessageDialog
+        ("Skill training completed!",
+        false, Gtk::MESSAGE_INFO, Gtk::BUTTONS_OK);
+    md->set_secondary_text("Congratulations. <b>" + this->get_char_name()
+        + "</b> has just completed the skill training for <b>"
+        + this->training_label.get_text() + "</b>.", true);
+    md->set_title("Skill training completed!");
+    md->set_transient_for(*this->parent_window);
+    md->show_all();
+    md->signal_response().connect(sigc::bind(sigc::mem_fun
+        (*this, &GtkCharPage::delete_skill_completed_dialog), md));
+
+    #if 0
     Gtk::MessageDialog md("Skill training completed!",
         false, Gtk::MESSAGE_INFO, Gtk::BUTTONS_OK);
     md.set_secondary_text("Congratulations. <b>" + this->get_char_name()
@@ -1004,9 +1023,11 @@ GtkCharPage::on_skill_completed (void)
         + this->training_label.get_text() + "</b>.", true);
     md.set_title("Skill training completed!");
     md.set_transient_for(*this->parent_window);
+    //md.set_type_hint(Gdk::WINDOW_TYPE_HINT_DIALOG);
+    //md.set_position(Gtk::WIN_POS_CENTER_ON_PARENT);
     md.run();
-
     this->remove_tray_notify();
+    #endif
   }
 }
 
