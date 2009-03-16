@@ -20,6 +20,9 @@
 #include "http.h"
 #include "apibase.h"
 
+/* The minimum amount of seconds the sheet is cached. */
+#define API_IN_TRAINING_MIN_CACHE_TIME 600
+
 class ApiInTraining;
 typedef ref_ptr<ApiInTraining> ApiInTrainingPtr;
 

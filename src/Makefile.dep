@@ -1,93 +1,98 @@
 maingui.o: maingui.cc argumentsettings.h helpers.h evetime.h eveapi.h \
-  asynchttp.h http.h ref_ptr.h httpstatus.h thread.h exception.h server.h \
-  serverlist.h imagestore.h gtkdefines.h gtkserver.h gtkcharpage.h \
-  apiintraining.h apibase.h xml.h apicharsheet.h apiskilltree.h \
-  apicerttree.h gtkportrait.h gtkinfodisplay.h winbase.h versionchecker.h \
-  config.h conf.h guiuserdata.h guiconfiguration.h gtkconfwidgets.h \
-  guiaboutdialog.h guievelauncher.h guiversionchecker.h gtkdownloader.h \
-  maingui.h
+  asynchttp.h http.h ref_ptr.h httpstatus.h thread.h thread_posix.h \
+  exception.h server.h serverlist.h imagestore.h gtkdefines.h gtkserver.h \
+  gtkcharpage.h apiintraining.h apibase.h xml.h apicharsheet.h \
+  apiskilltree.h apicerttree.h gtkportrait.h gtkinfodisplay.h winbase.h \
+  versionchecker.h config.h conf.h guiuserdata.h guiconfiguration.h \
+  gtkconfwidgets.h guiaboutdialog.h guievelauncher.h guiversionchecker.h \
+  gtkdownloader.h maingui.h
 guiuserdata.o: guiuserdata.cc gtkdefines.h gtkhelpers.h apiskilltree.h \
   ref_ptr.h apibase.h eveapi.h asynchttp.h http.h httpstatus.h thread.h \
-  exception.h xml.h apicharsheet.h apicerttree.h apicharlist.h config.h \
-  conf.h guiuserdata.h winbase.h
+  thread_posix.h exception.h xml.h apicharsheet.h apicerttree.h \
+  apicharlist.h config.h conf.h guiuserdata.h winbase.h
 guiconfiguration.o: guiconfiguration.cc defines.h helpers.h gtkdefines.h \
   imagestore.h guiconfiguration.h winbase.h gtkconfwidgets.h config.h \
-  asynchttp.h http.h ref_ptr.h httpstatus.h thread.h exception.h conf.h
+  asynchttp.h http.h ref_ptr.h httpstatus.h thread.h thread_posix.h \
+  exception.h conf.h
 guiaboutdialog.o: guiaboutdialog.cc config.h asynchttp.h http.h ref_ptr.h \
-  httpstatus.h thread.h exception.h conf.h defines.h gtkdefines.h \
-  imagestore.h guiaboutdialog.h winbase.h
+  httpstatus.h thread.h thread_posix.h exception.h conf.h defines.h \
+  gtkdefines.h imagestore.h guiaboutdialog.h winbase.h
 guiskill.o: guiskill.cc apiskilltree.h ref_ptr.h apibase.h eveapi.h \
-  asynchttp.h http.h httpstatus.h thread.h exception.h xml.h helpers.h \
-  gtkdefines.h guiskill.h winbase.h
+  asynchttp.h http.h httpstatus.h thread.h thread_posix.h exception.h \
+  xml.h helpers.h gtkdefines.h guiskill.h winbase.h
 guiskillplanner.o: guiskillplanner.cc helpers.h imagestore.h \
   gtkportrait.h asynchttp.h http.h ref_ptr.h httpstatus.h thread.h \
-  exception.h gtkdefines.h guiskillplanner.h winbase.h gtkitemdetails.h \
-  apicharsheet.h apibase.h eveapi.h xml.h apiskilltree.h apicerttree.h \
-  apiitemtree.h gtkplannerbase.h gtkitembrowser.h gtktrainingplan.h \
-  gtkcolumnsbase.h config.h conf.h gtkconfwidgets.h apiintraining.h
+  thread_posix.h exception.h gtkdefines.h guiskillplanner.h winbase.h \
+  gtkitemdetails.h apicharsheet.h apibase.h eveapi.h xml.h apiskilltree.h \
+  apicerttree.h apiitemtree.h gtkplannerbase.h gtkitembrowser.h \
+  gtktrainingplan.h gtkcolumnsbase.h config.h conf.h gtkconfwidgets.h \
+  apiintraining.h
 guixmlsource.o: guixmlsource.cc gtkdefines.h guixmlsource.h winbase.h \
   http.h ref_ptr.h httpstatus.h
 guievelauncher.o: guievelauncher.cc defines.h gtkdefines.h exception.h \
-  helpers.h bgprocess.h thread.h config.h asynchttp.h http.h ref_ptr.h \
-  httpstatus.h conf.h guievelauncher.h winbase.h
+  helpers.h bgprocess.h thread.h thread_posix.h config.h asynchttp.h \
+  http.h ref_ptr.h httpstatus.h conf.h guievelauncher.h winbase.h
 guiversionchecker.o: guiversionchecker.cc config.h asynchttp.h http.h \
-  ref_ptr.h httpstatus.h thread.h exception.h conf.h helpers.h \
-  imagestore.h gtkdefines.h guiconfiguration.h winbase.h gtkconfwidgets.h \
-  guiversionchecker.h gtkdownloader.h versionchecker.h gtkinfodisplay.h \
-  xml.h
+  ref_ptr.h httpstatus.h thread.h thread_posix.h exception.h conf.h \
+  helpers.h imagestore.h gtkdefines.h argumentsettings.h \
+  guiconfiguration.h winbase.h gtkconfwidgets.h guiversionchecker.h \
+  gtkdownloader.h versionchecker.h gtkinfodisplay.h xml.h
 guicharexport.o: guicharexport.cc helpers.h gtkdefines.h guicharexport.h \
   apicharsheet.h ref_ptr.h http.h httpstatus.h apibase.h eveapi.h \
-  asynchttp.h thread.h exception.h xml.h apiskilltree.h apicerttree.h \
-  winbase.h
+  asynchttp.h thread.h thread_posix.h exception.h xml.h apiskilltree.h \
+  apicerttree.h winbase.h
 gtkevemon.o: gtkevemon.cc argumentsettings.h versionchecker.h \
   gtkinfodisplay.h winbase.h exception.h asynchttp.h http.h ref_ptr.h \
-  httpstatus.h thread.h xml.h imagestore.h serverlist.h server.h \
-  evetime.h config.h conf.h maingui.h gtkserver.h eveapi.h
+  httpstatus.h thread.h thread_posix.h xml.h imagestore.h serverlist.h \
+  server.h evetime.h config.h conf.h maingui.h gtkserver.h eveapi.h
 gtkserver.o: gtkserver.cc exception.h serverlist.h server.h helpers.h \
-  thread.h gtkserver.h
+  thread.h thread_posix.h gtkserver.h
 gtkconfwidgets.o: gtkconfwidgets.cc gtkportrait.h asynchttp.h http.h \
-  ref_ptr.h httpstatus.h thread.h exception.h config.h conf.h \
-  gtkconfwidgets.h
+  ref_ptr.h httpstatus.h thread.h thread_posix.h exception.h config.h \
+  conf.h gtkconfwidgets.h
 gtkcharpage.o: gtkcharpage.cc config.h asynchttp.h http.h ref_ptr.h \
-  httpstatus.h thread.h exception.h conf.h evetime.h helpers.h notifier.h \
-  apicharsheet.h apibase.h eveapi.h xml.h apiskilltree.h apicerttree.h \
-  apiintraining.h imagestore.h gtkdefines.h gtkhelpers.h guiskill.h \
-  winbase.h guiskillplanner.h gtkitemdetails.h apiitemtree.h \
-  gtkplannerbase.h gtkitembrowser.h gtktrainingplan.h gtkportrait.h \
-  gtkcolumnsbase.h gtkconfwidgets.h guixmlsource.h guicharexport.h \
-  gtkcharpage.h gtkinfodisplay.h
+  httpstatus.h thread.h thread_posix.h exception.h conf.h evetime.h \
+  helpers.h notifier.h apicharsheet.h apibase.h eveapi.h xml.h \
+  apiskilltree.h apicerttree.h apiintraining.h imagestore.h gtkdefines.h \
+  gtkhelpers.h guiskill.h winbase.h guiskillplanner.h gtkitemdetails.h \
+  apiitemtree.h gtkplannerbase.h gtkitembrowser.h gtktrainingplan.h \
+  gtkportrait.h gtkcolumnsbase.h gtkconfwidgets.h guixmlsource.h \
+  guicharexport.h gtkcharpage.h gtkinfodisplay.h
 gtkportrait.o: gtkportrait.cc http.h ref_ptr.h httpstatus.h config.h \
-  asynchttp.h thread.h exception.h conf.h imagestore.h gtkportrait.h
+  asynchttp.h thread.h thread_posix.h exception.h conf.h imagestore.h \
+  gtkportrait.h
 gtkinfodisplay.o: gtkinfodisplay.cc evetime.h exception.h gtkdefines.h \
   gtkhelpers.h apiskilltree.h ref_ptr.h apibase.h eveapi.h asynchttp.h \
-  http.h httpstatus.h thread.h xml.h apicharsheet.h apicerttree.h \
-  gtkinfodisplay.h winbase.h
+  http.h httpstatus.h thread.h thread_posix.h xml.h apicharsheet.h \
+  apicerttree.h gtkinfodisplay.h winbase.h
 gtkplannerbase.o: gtkplannerbase.cc imagestore.h helpers.h \
   gtkplannerbase.h apiskilltree.h ref_ptr.h apibase.h eveapi.h \
-  asynchttp.h http.h httpstatus.h thread.h exception.h xml.h \
-  apicerttree.h
+  asynchttp.h http.h httpstatus.h thread.h thread_posix.h exception.h \
+  xml.h apicerttree.h
 gtkcolumnsbase.o: gtkcolumnsbase.cc exception.h helpers.h \
   gtkcolumnsbase.h
 gtkhelpers.o: gtkhelpers.cc evetime.h imagestore.h helpers.h gtkhelpers.h \
   apiskilltree.h ref_ptr.h apibase.h eveapi.h asynchttp.h http.h \
-  httpstatus.h thread.h exception.h xml.h apicharsheet.h apicerttree.h
+  httpstatus.h thread.h thread_posix.h exception.h xml.h apicharsheet.h \
+  apicerttree.h
 gtkdownloader.o: gtkdownloader.cc http.h ref_ptr.h httpstatus.h config.h \
-  asynchttp.h thread.h exception.h conf.h helpers.h gtkdefines.h \
-  gtkdownloader.h
+  asynchttp.h thread.h thread_posix.h exception.h conf.h helpers.h \
+  gtkdefines.h gtkdownloader.h
 gtkitemdetails.o: gtkitemdetails.cc imagestore.h helpers.h evetime.h \
   gtkhelpers.h apiskilltree.h ref_ptr.h apibase.h eveapi.h asynchttp.h \
-  http.h httpstatus.h thread.h exception.h xml.h apicharsheet.h \
-  apicerttree.h gtkdefines.h gtkitemdetails.h apiitemtree.h \
-  gtkplannerbase.h
+  http.h httpstatus.h thread.h thread_posix.h exception.h xml.h \
+  apicharsheet.h apicerttree.h gtkdefines.h gtkitemdetails.h \
+  apiitemtree.h gtkplannerbase.h
 gtkitembrowser.o: gtkitembrowser.cc helpers.h gtkhelpers.h apiskilltree.h \
   ref_ptr.h apibase.h eveapi.h asynchttp.h http.h httpstatus.h thread.h \
-  exception.h xml.h apicharsheet.h apicerttree.h gtkdefines.h \
-  imagestore.h gtkitembrowser.h gtkplannerbase.h
+  thread_posix.h exception.h xml.h apicharsheet.h apicerttree.h \
+  gtkdefines.h imagestore.h gtkitembrowser.h gtkplannerbase.h
 gtktrainingplan.o: gtktrainingplan.cc helpers.h evetime.h \
   gtkcolumnsbase.h gtkportrait.h asynchttp.h http.h ref_ptr.h \
-  httpstatus.h thread.h exception.h gtkhelpers.h apiskilltree.h apibase.h \
-  eveapi.h xml.h apicharsheet.h apicerttree.h gtkconfwidgets.h config.h \
-  conf.h gtkdefines.h imagestore.h gtktrainingplan.h apiintraining.h
+  httpstatus.h thread.h thread_posix.h exception.h gtkhelpers.h \
+  apiskilltree.h apibase.h eveapi.h xml.h apicharsheet.h apicerttree.h \
+  gtkconfwidgets.h config.h conf.h gtkdefines.h imagestore.h \
+  gtktrainingplan.h apiintraining.h
 imagestore.o: imagestore.cc images/skill.h images/img_skill.h \
   images/certificate.h images/img_certificate.h images/skillstatus.h \
   images/img_skillstatus_at0.xpm images/img_skillstatus_at1.xpm \
@@ -116,45 +121,49 @@ imagestore.o: imagestore.cc images/skill.h images/img_skill.h \
   images/img_columnconf_faded.h exception.h imagestore.h
 server.o: server.cc exception.h server.h
 serverlist.o: serverlist.cc config.h asynchttp.h http.h ref_ptr.h \
-  httpstatus.h thread.h exception.h conf.h serverlist.h server.h
+  httpstatus.h thread.h thread_posix.h exception.h conf.h serverlist.h \
+  server.h
 helpers.o: helpers.cc helpers.h
 conf.o: conf.cc exception.h conf.h ref_ptr.h
 config.o: config.cc argumentsettings.h config.h asynchttp.h http.h \
-  ref_ptr.h httpstatus.h thread.h exception.h conf.h
+  ref_ptr.h httpstatus.h thread.h thread_posix.h exception.h conf.h
 xml.o: xml.cc exception.h helpers.h xml.h ref_ptr.h
 evetime.o: evetime.cc evetime.h config.h asynchttp.h http.h ref_ptr.h \
-  httpstatus.h thread.h exception.h conf.h
-bgprocess.o: bgprocess.cc exception.h helpers.h bgprocess.h thread.h
+  httpstatus.h thread.h thread_posix.h exception.h conf.h
+bgprocess.o: bgprocess.cc exception.h helpers.h bgprocess.h thread.h \
+  thread_posix.h
 pipedexec.o: pipedexec.cc helpers.h exception.h pipedexec.h
 notifier.o: notifier.cc config.h asynchttp.h http.h ref_ptr.h \
-  httpstatus.h thread.h exception.h conf.h evetime.h apiskilltree.h \
-  apibase.h eveapi.h xml.h pipedexec.h helpers.h notifier.h \
-  apicharsheet.h apicerttree.h apiintraining.h
+  httpstatus.h thread.h thread_posix.h exception.h conf.h evetime.h \
+  apiskilltree.h apibase.h eveapi.h xml.h pipedexec.h helpers.h \
+  notifier.h apicharsheet.h apicerttree.h apiintraining.h
 http.o: http.cc exception.h http.h ref_ptr.h httpstatus.h
 asynchttp.o: asynchttp.cc httpstatus.h asynchttp.h http.h ref_ptr.h \
-  thread.h exception.h
+  thread.h thread_posix.h exception.h
 eveapi.o: eveapi.cc config.h asynchttp.h http.h ref_ptr.h httpstatus.h \
-  thread.h exception.h conf.h eveapi.h
+  thread.h thread_posix.h exception.h conf.h eveapi.h
 versionchecker.o: versionchecker.cc config.h asynchttp.h http.h ref_ptr.h \
-  httpstatus.h thread.h exception.h conf.h defines.h guiversionchecker.h \
-  winbase.h gtkdownloader.h versionchecker.h gtkinfodisplay.h xml.h
+  httpstatus.h thread.h thread_posix.h exception.h conf.h defines.h \
+  guiversionchecker.h winbase.h gtkdownloader.h versionchecker.h \
+  gtkinfodisplay.h xml.h
 apibase.o: apibase.cc helpers.h evetime.h exception.h apibase.h eveapi.h \
-  asynchttp.h http.h ref_ptr.h httpstatus.h thread.h xml.h
+  asynchttp.h http.h ref_ptr.h httpstatus.h thread.h thread_posix.h xml.h
 apicharlist.o: apicharlist.cc xml.h ref_ptr.h exception.h apicharlist.h \
-  http.h httpstatus.h apibase.h eveapi.h asynchttp.h thread.h
+  http.h httpstatus.h apibase.h eveapi.h asynchttp.h thread.h \
+  thread_posix.h
 apicharsheet.o: apicharsheet.cc exception.h helpers.h xml.h ref_ptr.h \
   apibase.h eveapi.h asynchttp.h http.h httpstatus.h thread.h \
-  apiskilltree.h apicerttree.h apicharsheet.h
+  thread_posix.h apiskilltree.h apicerttree.h apicharsheet.h
 apiintraining.o: apiintraining.cc xml.h ref_ptr.h evetime.h \
   apiintraining.h http.h httpstatus.h apibase.h eveapi.h asynchttp.h \
-  thread.h exception.h
+  thread.h thread_posix.h exception.h
 apiskilltree.o: apiskilltree.cc xml.h ref_ptr.h config.h asynchttp.h \
-  http.h httpstatus.h thread.h exception.h conf.h helpers.h \
-  apiskilltree.h apibase.h eveapi.h
+  http.h httpstatus.h thread.h thread_posix.h exception.h conf.h \
+  helpers.h apiskilltree.h apibase.h eveapi.h
 apicerttree.o: apicerttree.cc xml.h ref_ptr.h config.h asynchttp.h http.h \
-  httpstatus.h thread.h exception.h conf.h helpers.h apicerttree.h \
-  apibase.h eveapi.h
+  httpstatus.h thread.h thread_posix.h exception.h conf.h helpers.h \
+  apicerttree.h apibase.h eveapi.h
 apiitemtree.o: apiitemtree.cc xml.h ref_ptr.h config.h asynchttp.h http.h \
-  httpstatus.h thread.h exception.h conf.h helpers.h apiitemtree.h \
-  apibase.h eveapi.h
+  httpstatus.h thread.h thread_posix.h exception.h conf.h helpers.h \
+  apiitemtree.h apibase.h eveapi.h
 argumentsettings.o: argumentsettings.cc defines.h argumentsettings.h

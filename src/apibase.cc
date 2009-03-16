@@ -40,3 +40,17 @@ ApiBase::check_node (xmlNodePtr node)
     throw Exception("Error document received. Code: " + error + "\n" + text);
   }
 }
+
+/* ---------------------------------------------------------------- */
+
+void
+ApiBase::enforce_cache_time (time_t min_cache_time)
+{
+  time_t evenow = EveTime::get_eve_time();
+  time_t min_cached = evenow + min_cache_time;
+  if (min_cached > this->cached_until_t)
+  {
+    this->cached_until_t = min_cached;
+    this->cached_until = EveTime::get_gm_time_string(min_cached, false);
+  }
+}

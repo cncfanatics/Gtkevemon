@@ -23,6 +23,9 @@
 #include "apiskilltree.h"
 #include "apicerttree.h"
 
+/* The minimum amount of seconds the sheet is cached. */
+#define API_CHAR_SHEET_MIN_CACHE_TIME 1800
+
 struct ApiCharSheetSkill
 {
   int id;

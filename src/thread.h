@@ -13,7 +13,7 @@
 #ifndef THREAD_HEADER
 #define THREAD_HEADER
 
-#if defined(_POSIX_THREADS)
+#if defined(_POSIX_THREADS) || defined(__SunOS)
 #  include "thread_posix.h"
 #elif defined(WIN32)
 #  include "thread_win32.h"

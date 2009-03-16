@@ -1,4 +1,4 @@
-COMPILER = sunCC
+CXX ?= sunCC
 
 CORES = $(shell psrinfo -p)
 
@@ -10,7 +10,8 @@ SOLARIS_LIBS = -lnsl -lresolv -lsocket -lz
 XML_FLAGS = $(shell pkg-config --cflags libxml-2.0)
 XML_LIBS = $(shell pkg-config --libs libxml-2.0)
 
-CXXFLAGS = ${GCC_FLAGS} ${GTK_FLAGS} ${XML_FLAGS}
-LIBS = ${GTK_LIBS} ${PTH_LIBS} ${SOLARIS_LIBS} ${XML_LIBS}
+CXXFLAGS ?= ${GCC_FLAGS}
+CXXFLAGS += ${GTK_FLAGS} ${XML_FLAGS}
+LDFLAGS += ${GTK_LIBS} ${PTH_LIBS} ${SOLARIS_LIBS} ${XML_LIBS}
 
 BINARY = gtkevemon

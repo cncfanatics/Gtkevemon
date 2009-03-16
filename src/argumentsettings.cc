@@ -5,6 +5,8 @@
 #include "defines.h"
 #include "argumentsettings.h"
 
+int ArgumentSettings::argc = 0;
+char** ArgumentSettings::argv = 0;
 bool ArgumentSettings::start_minimized = false;
 std::string ArgumentSettings::config_dir = "";
 
@@ -26,6 +28,8 @@ ArgumentSettings::show_help (void)
 void
 ArgumentSettings::init (int argc, char** argv)
 {
+  ArgumentSettings::argc = argc;
+  ArgumentSettings::argv = argv;
   for (int optind = 1; optind < argc; ++optind)
   {
     if (argv[optind][0] != '-')

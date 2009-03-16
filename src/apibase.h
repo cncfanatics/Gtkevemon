@@ -48,6 +48,10 @@ class ApiBase : public XmlBase
      * the EVE time and the cache time. */
     void check_node (xmlNodePtr node);
 
+    /* Sets cached_until to the given value if the cache time
+     * from the sheet is earlier. */
+    void enforce_cache_time (time_t min_cache_time);
+
   public:
     virtual ~ApiBase (void);
     virtual void set_api_data (EveApiData const& data);

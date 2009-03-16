@@ -27,6 +27,9 @@ ApiCharSheet::set_api_data (EveApiData const& data)
   /* Parse the data. */
   this->parse_xml();
 
+  /* Force the sheet to have at least 30 minutes cache time. */
+  this->enforce_cache_time(API_CHAR_SHEET_MIN_CACHE_TIME);
+
   /* Find bonus attributes for skills. */
 
   /* Analytical Mind (int): 3377

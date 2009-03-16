@@ -15,6 +15,9 @@ ApiInTraining::set_api_data (EveApiData const& data)
   this->ApiBase::set_api_data(data);
   this->parse_xml();
 
+  /* Force the training sheet to have at least 10 minutes cache time. */
+  this->enforce_cache_time(API_IN_TRAINING_MIN_CACHE_TIME);
+
   /* Do some checking if end time is expired. In this case we mark
    * the sheet as not in training but also indicate that it holds
    * a valid, completed skill. */

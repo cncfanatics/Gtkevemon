@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include <fstream>
 #include <cerrno>
 #include <cstring>
@@ -13,6 +14,7 @@
 #include "helpers.h"
 #include "imagestore.h"
 #include "gtkdefines.h"
+#include "argumentsettings.h"
 #include "guiconfiguration.h"
 #include "guiversionchecker.h"
 
@@ -271,7 +273,10 @@ GuiVersionChecker::on_update_clicked (void)
     if (this->startup_mode)
       this->close();
     else
-      Gtk::Main::quit();
+    {
+      ::execv(ArgumentSettings::argv[0], ArgumentSettings::argv);
+      //Gtk::Main::quit(); /* Quit application */
+    }
   }
 }
 
@@ -299,7 +304,7 @@ GuiVersionChecker::on_update_done (void)
     this->close_but->set_sensitive(false);
     this->update_but->set_image(*MK_IMG(Gtk::Stock::QUIT,
          Gtk::ICON_SIZE_BUTTON));
-    this->update_but->set_label("Quit");
+    this->update_but->set_label("Restart");
   }
 }
 

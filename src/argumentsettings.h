@@ -21,6 +21,9 @@ class ArgumentSettings
     static void show_help (void);
 
   public:
+    static int argc;
+    static char** argv;
+
     static bool start_minimized;
     static std::string config_dir;
 

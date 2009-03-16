@@ -24,16 +24,16 @@ SOURCES = maingui.cc guiuserdata.cc guiconfiguration.cc guiaboutdialog.cc \
 OBJECTS = $(foreach file,$(SOURCES),$(subst .cc,.o,$(file)))
 
 gtkevemon: ${OBJECTS}
-	${COMPILER} -o ${BINARY} ${OBJECTS} ${LIBS}
+	${CXX} -o ${BINARY} ${OBJECTS} ${LDFLAGS}
 
 multicore:
 	$(MAKE) -j${CORES} gtkevemon
 
 depend:
-	${COMPILER} -MM ${SOURCES} > Makefile.dep
+	${CXX} -MM ${SOURCES} > Makefile.dep
 
 %.o: %.cc
-	${COMPILER} -c -o $@ $< ${CXXFLAGS}
+	${CXX} -c -o $@ $< ${CXXFLAGS}
 
 clean: FORCE
 	${RM} ${BINARY} ${OBJECTS}
