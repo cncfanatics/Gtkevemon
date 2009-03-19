@@ -22,6 +22,7 @@ class ImageStore
 
   public:
     static Glib::RefPtr<Gdk::Pixbuf> skill;
+    static Glib::RefPtr<Gdk::Pixbuf> skillqueue;
     static Glib::RefPtr<Gdk::Pixbuf> certificate;
     static Glib::RefPtr<Gdk::Pixbuf> certificate_small;
     static Glib::RefPtr<Gdk::Pixbuf> applogo;

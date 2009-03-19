@@ -28,6 +28,7 @@
 #include "guiskillplanner.h"
 #include "guixmlsource.h"
 #include "guicharexport.h"
+#include "guiskillqueue.h"
 #include "gtkcharpage.h"
 
 GtkCharPage::GtkCharPage (void)
@@ -136,7 +137,7 @@ GtkCharPage::GtkCharPage (void)
   Gtk::HBox* char_buts_hbox = MK_HBOX;
   char_buts_hbox->pack_end(*char_buts_vbox, false, false, 0);
 
-  info_table->attach(this->char_image, 0, 1, 0, 5, Gtk::FILL, Gtk::FILL);
+  info_table->attach(this->char_image, 0, 1, 0, 5, Gtk::SHRINK, Gtk::SHRINK);
   info_table->attach(this->char_name_label, 1, 2, 0, 1, Gtk::FILL, Gtk::FILL);
   info_table->attach(*corp_desc, 1, 2, 1, 2, Gtk::FILL, Gtk::FILL);
   info_table->attach(*isk_desc, 1, 2, 2, 3, Gtk::FILL, Gtk::FILL);
@@ -166,8 +167,8 @@ GtkCharPage::GtkCharPage (void)
   /* Prepare training table. */
   Gtk::Label* train_desc = MK_LABEL("<b>Training:</b>");
   Gtk::Label* remain_desc = MK_LABEL("Remaining:");
-  Gtk::Label* finish_eve_desc = MK_LABEL("Finish (EVE):");
-  Gtk::Label* finish_local_desc = MK_LABEL("Finish (local):");
+  Gtk::Label* finish_eve_desc = MK_LABEL("Finish (EVE time):");
+  Gtk::Label* finish_local_desc = MK_LABEL("Finish (local time):");
   train_desc->set_use_markup(true);
   train_desc->set_alignment(Gtk::ALIGN_LEFT);
   remain_desc->set_alignment(Gtk::ALIGN_LEFT);
@@ -184,10 +185,20 @@ GtkCharPage::GtkCharPage (void)
   trainsheet_info_hbox->pack_end(*trainsheet_info_desc, false, false, 0);
 
   /* Setup training table. */
-  Gtk::Table* train_table = Gtk::manage(new Gtk::Table(4, 3));
+  Gtk::Button* skillqueue_but = MK_BUT0;
+  skillqueue_but->add(*MK_IMG_PB(ImageStore::skillqueue));
+  skillqueue_but->set_relief(Gtk::RELIEF_NONE);
+  skillqueue_but->set_tooltip_text("Show training queue");
+
+  Gtk::Table* train_sub_tbl = MK_TABLE(2, 2);
+  train_sub_tbl->set_col_spacings(5);
+  train_sub_tbl->attach(*skillqueue_but, 0, 1, 0, 2, Gtk::SHRINK, Gtk::SHRINK);
+  train_sub_tbl->attach(*train_desc, 1, 2, 0, 1, Gtk::FILL | Gtk::EXPAND);
+  train_sub_tbl->attach(*remain_desc, 1, 2, 1, 2, Gtk::FILL | Gtk::EXPAND);
+
+  Gtk::Table* train_table = MK_TABLE(4, 3);
   train_table->set_col_spacings(10);
-  train_table->attach(*train_desc, 0, 1, 0, 1, Gtk::FILL, Gtk::FILL);
-  train_table->attach(*remain_desc, 0, 1, 1, 2, Gtk::FILL, Gtk::FILL);
+  train_table->attach(*train_sub_tbl, 0, 1, 0, 2, Gtk::FILL, Gtk::FILL);
   train_table->attach(*finish_eve_desc, 0, 1, 2, 3, Gtk::FILL, Gtk::FILL);
   train_table->attach(*finish_local_desc, 0, 1, 3, 4, Gtk::FILL, Gtk::FILL);
   train_table->attach(this->training_label, 1, 2, 0, 1, Gtk::FILL);
@@ -218,6 +229,8 @@ GtkCharPage::GtkCharPage (void)
   /* Signals. */
   close_but->signal_clicked().connect(sigc::mem_fun
       (*this, &GtkCharPage::on_close_clicked));
+  skillqueue_but->signal_clicked().connect(sigc::mem_fun
+      (*this, &GtkCharPage::on_skillqueue_clicked));
   this->refresh_but.signal_clicked().connect(sigc::mem_fun
       (*this, &GtkCharPage::request_documents));
   this->info_but.signal_clicked().connect(sigc::mem_fun
@@ -1283,6 +1296,15 @@ GtkCharPage::on_info_clicked (void)
   md.set_title("Cache Status - GtkEveMon");
   md.set_transient_for(*this->parent_window);
   md.run();
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GtkCharPage::on_skillqueue_clicked (void)
+{
+  Gtk::Window* skillqueue = new GuiSkillQueue(this->character);
+  skillqueue->set_transient_for(*this->parent_window);
 }
 
 /* ---------------------------------------------------------------- */

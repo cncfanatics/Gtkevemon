@@ -152,6 +152,7 @@ class GtkCharPage : public Gtk::VBox
     void on_skill_completed (void);
     void on_close_clicked (void);
     void on_info_clicked (void);
+    void on_skillqueue_clicked (void);
     bool on_query_skillview_tooltip (int x, int y, bool key,
         Glib::RefPtr<Gtk::Tooltip> const& tooltip);
     void on_skill_activated (Gtk::TreeModel::Path const& path,

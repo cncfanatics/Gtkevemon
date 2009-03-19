@@ -491,7 +491,9 @@ GtkTrainingPlan::GtkTrainingPlan (void)
 
   this->clean_plan_but.set_image(*MK_IMG
       (Gtk::Stock::CLEAR, Gtk::ICON_SIZE_MENU));
+  this->clean_plan_but.set_label("Clean finished skills");
   this->column_conf_but.set_image(*MK_IMG_PB(ImageStore::columnconf[0]));
+  this->column_conf_but.set_label("Configure columns");
 
   this->total_time.set_text("n/a");
   this->total_time.set_alignment(Gtk::ALIGN_LEFT);
@@ -504,7 +506,7 @@ GtkTrainingPlan::GtkTrainingPlan (void)
   this->treeview.set_headers_visible(true);
   this->treeview.set_rules_hint(true);
   this->treeview.set_reorderable(true);
-  this->viewcols.set_format("+0 +1 +2 +3 -4 -5 -6 -7 -8");
+  //this->viewcols.set_format("+0 +1 +2 +3 -4 -5 -6 -7 -8");
   this->updating_liststore = false;
 
   Gtk::ScrolledWindow* scwin = MK_SCWIN;

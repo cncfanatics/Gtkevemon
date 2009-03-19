@@ -190,7 +190,7 @@ GuiUserData::on_charlist_available (EveApiData data)
   }
 
   /* Successfully requested character list. */
-  ApiCharList& chars = clist->chars;
+  ApiCharList const& chars = clist->chars;
   this->char_store->clear();
   std::string char_string;
 

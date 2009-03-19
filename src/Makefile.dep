@@ -41,6 +41,9 @@ guicharexport.o: guicharexport.cc helpers.h gtkdefines.h guicharexport.h \
   apicharsheet.h ref_ptr.h http.h httpstatus.h apibase.h eveapi.h \
   asynchttp.h thread.h thread_posix.h exception.h xml.h apiskilltree.h \
   apicerttree.h winbase.h
+guiskillqueue.o: guiskillqueue.cc gtkdefines.h guiskillqueue.h winbase.h \
+  gtkskillqueue.h eveapi.h asynchttp.h http.h ref_ptr.h httpstatus.h \
+  thread.h thread_posix.h exception.h gtkcolumnsbase.h
 gtkevemon.o: gtkevemon.cc argumentsettings.h versionchecker.h \
   gtkinfodisplay.h winbase.h exception.h asynchttp.h http.h ref_ptr.h \
   httpstatus.h thread.h thread_posix.h xml.h imagestore.h serverlist.h \
@@ -57,7 +60,8 @@ gtkcharpage.o: gtkcharpage.cc config.h asynchttp.h http.h ref_ptr.h \
   gtkhelpers.h guiskill.h winbase.h guiskillplanner.h gtkitemdetails.h \
   apiitemtree.h gtkplannerbase.h gtkitembrowser.h gtktrainingplan.h \
   gtkportrait.h gtkcolumnsbase.h gtkconfwidgets.h guixmlsource.h \
-  guicharexport.h gtkcharpage.h gtkinfodisplay.h
+  guicharexport.h guiskillqueue.h gtkskillqueue.h gtkcharpage.h \
+  gtkinfodisplay.h
 gtkportrait.o: gtkportrait.cc http.h ref_ptr.h httpstatus.h config.h \
   asynchttp.h thread.h thread_posix.h exception.h conf.h imagestore.h \
   gtkportrait.h
@@ -69,12 +73,12 @@ gtkplannerbase.o: gtkplannerbase.cc imagestore.h helpers.h \
   gtkplannerbase.h apiskilltree.h ref_ptr.h apibase.h eveapi.h \
   asynchttp.h http.h httpstatus.h thread.h thread_posix.h exception.h \
   xml.h apicerttree.h
-gtkcolumnsbase.o: gtkcolumnsbase.cc exception.h helpers.h \
-  gtkcolumnsbase.h
 gtkhelpers.o: gtkhelpers.cc evetime.h imagestore.h helpers.h gtkhelpers.h \
   apiskilltree.h ref_ptr.h apibase.h eveapi.h asynchttp.h http.h \
   httpstatus.h thread.h thread_posix.h exception.h xml.h apicharsheet.h \
   apicerttree.h
+gtkcolumnsbase.o: gtkcolumnsbase.cc exception.h helpers.h \
+  gtkcolumnsbase.h
 gtkdownloader.o: gtkdownloader.cc http.h ref_ptr.h httpstatus.h config.h \
   asynchttp.h thread.h thread_posix.h exception.h conf.h helpers.h \
   gtkdefines.h gtkdownloader.h
@@ -93,6 +97,11 @@ gtktrainingplan.o: gtktrainingplan.cc helpers.h evetime.h \
   apiskilltree.h apibase.h eveapi.h xml.h apicharsheet.h apicerttree.h \
   gtkconfwidgets.h config.h conf.h gtkdefines.h imagestore.h \
   gtktrainingplan.h apiintraining.h
+gtkskillqueue.o: gtkskillqueue.cc config.h asynchttp.h http.h ref_ptr.h \
+  httpstatus.h thread.h thread_posix.h exception.h conf.h evetime.h \
+  imagestore.h gtkhelpers.h apiskilltree.h apibase.h eveapi.h xml.h \
+  apicharsheet.h apicerttree.h gtkdefines.h apiskillqueue.h \
+  gtkskillqueue.h gtkcolumnsbase.h
 imagestore.o: imagestore.cc images/skill.h images/img_skill.h \
   images/certificate.h images/img_certificate.h images/skillstatus.h \
   images/img_skillstatus_at0.xpm images/img_skillstatus_at1.xpm \
@@ -108,17 +117,18 @@ imagestore.o: imagestore.cc images/skill.h images/img_skill.h \
   images/img_skilldeps_have.h images/skillplan.h \
   images/img_skillplan_trained.h images/img_skillplan_training.h \
   images/img_skillplan_trainable.h images/img_skillplan_untrainable.h \
-  images/img_skillplan_deperror.h images/certgrades.h \
-  images/img_certgrades_1.xpm images/img_certgrades_2.xpm \
-  images/img_certgrades_3.xpm images/img_certgrades_4.xpm \
-  images/certstatus.h images/img_certstatus_claimed.h \
-  images/img_certstatus_claimable.h images/img_certstatus_partial.h \
-  images/img_certstatus_unavail.h images/eveportrait.h \
-  images/img_eveportrait.xpm images/applogo.h images/img_applogo.xpm \
-  images/aboutlogo.h images/img_aboutlogo.xpm images/menuicons.h \
-  images/img_menu_evemon.xpm images/img_menu_char.xpm \
+  images/img_skillplan_deperror.h images/skillqueue.h \
+  images/img_skillqueue.h images/certgrades.h images/img_certgrades_1.xpm \
+  images/img_certgrades_2.xpm images/img_certgrades_3.xpm \
+  images/img_certgrades_4.xpm images/certstatus.h \
+  images/img_certstatus_claimed.h images/img_certstatus_claimable.h \
+  images/img_certstatus_partial.h images/img_certstatus_unavail.h \
+  images/eveportrait.h images/img_eveportrait.xpm images/applogo.h \
+  images/img_applogo.xpm images/aboutlogo.h images/img_aboutlogo.xpm \
+  images/menuicons.h images/img_menu_evemon.xpm images/img_menu_char.xpm \
   images/img_menu_help.xpm images/guiimages.h images/img_columnconf.h \
   images/img_columnconf_faded.h exception.h imagestore.h
+argumentsettings.o: argumentsettings.cc defines.h argumentsettings.h
 server.o: server.cc exception.h server.h
 serverlist.o: serverlist.cc config.h asynchttp.h http.h ref_ptr.h \
   httpstatus.h thread.h thread_posix.h exception.h conf.h serverlist.h \
@@ -166,4 +176,6 @@ apicerttree.o: apicerttree.cc xml.h ref_ptr.h config.h asynchttp.h http.h \
 apiitemtree.o: apiitemtree.cc xml.h ref_ptr.h config.h asynchttp.h http.h \
   httpstatus.h thread.h thread_posix.h exception.h conf.h helpers.h \
   apiitemtree.h apibase.h eveapi.h
-argumentsettings.o: argumentsettings.cc defines.h argumentsettings.h
+apiskillqueue.o: apiskillqueue.cc xml.h ref_ptr.h helpers.h evetime.h \
+  apiskillqueue.h eveapi.h asynchttp.h http.h httpstatus.h thread.h \
+  thread_posix.h exception.h apibase.h

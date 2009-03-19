@@ -24,13 +24,12 @@
 class ApiCharListEntry;
 typedef std::vector<ApiCharListEntry> ApiCharList;
 
-class ApiCharListEntry
+struct ApiCharListEntry
 {
-  public:
-    std::string name;
-    std::string char_id;
-    std::string corp;
-    std::string corp_id;
+  std::string name;
+  std::string char_id;
+  std::string corp;
+  std::string corp_id;
 };
 
 /* ---------------------------------------------------------------- */

@@ -48,6 +48,9 @@ EveApiFetcher::setup_fetcher (void)
     case EVE_API_DOCTYPE_INTRAINING:
       fetcher->set_path("/char/SkillInTraining.xml.aspx");
       break;
+    case EVE_API_DOCTYPE_SKILLQUEUE:
+      fetcher->set_path("/char/SkillQueue.xml.aspx");
+      break;
     default:
       delete fetcher;
       std::cout << "Bug: Invalid API document type" << std::endl;
@@ -138,6 +141,7 @@ EveApiFetcher::process_caching (EveApiData& data)
     case EVE_API_DOCTYPE_CHARLIST:
       file += this->auth.user_id;
       break;
+    case EVE_API_DOCTYPE_SKILLQUEUE:
     case EVE_API_DOCTYPE_INTRAINING:
     case EVE_API_DOCTYPE_CHARSHEET:
       file += this->auth.char_id;
@@ -224,6 +228,8 @@ EveApiFetcher::get_doc_name (void)
       return "SkillInTraining.xml";
     case EVE_API_DOCTYPE_CHARSHEET:
       return "CharacterSheet.xml";
+    case EVE_API_DOCTYPE_SKILLQUEUE:
+      return "SkillQueue.xml";
     default:
       return "Unknown";
   }

@@ -54,15 +54,15 @@ ApiInTraining::parse_eveapi_tag (xmlNodePtr node)
       || xmlStrcmp(node->name, (xmlChar const*)"eveapi"))
     throw Exception("Invalid XML root. Expecting <eveapi> node.");
 
-  node = node->children;
-
-  for (; node != 0; node = node->next)
+  for (node = node->children; node != 0; node = node->next)
   {
+    if (node->type != XML_ELEMENT_NODE)
+      continue;
+
     /* Let the base class know of some fields. */
     this->check_node(node);
 
-    if (node->type == XML_ELEMENT_NODE
-        && !xmlStrcmp(node->name, (xmlChar const*)"result"))
+    if (!xmlStrcmp(node->name, (xmlChar const*)"result"))
     {
       //std::cout << "Found <result> tag" << std::endl;
       this->parse_result_tag(node->children);

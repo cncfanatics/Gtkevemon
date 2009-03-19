@@ -110,10 +110,8 @@ ApiCertTree::parse_eveapi_tag (xmlNodePtr node)
   catch (...)
   { }
 
-  node = node->children;
-
   /* Look for the result and version tag. */
-  while (node != 0)
+  for (node = node->children; node != 0; node = node->next)
   {
     if (node->type == XML_ELEMENT_NODE
         && !xmlStrcmp(node->name, (xmlChar const*)"result"))
@@ -121,8 +119,6 @@ ApiCertTree::parse_eveapi_tag (xmlNodePtr node)
       //std::cout << "Found <result> tag" << std::endl;
       this->parse_result_tag(node->children);
     }
-
-    node = node->next;
   }
 }
 
@@ -132,7 +128,7 @@ void
 ApiCertTree::parse_result_tag (xmlNodePtr node)
 {
   /* Look for the rowset tag. It's for the cert category rowset. */
-  while (node != 0)
+  for (; node != 0; node = node->next)
   {
     if (node->type == XML_ELEMENT_NODE
         && !xmlStrcmp(node->name, (xmlChar const*)"rowset"))
@@ -140,7 +136,6 @@ ApiCertTree::parse_result_tag (xmlNodePtr node)
       //std::cout << "Found <rowset> tag for cert categories" << std::endl;
       this->parse_categories_rowset(node->children);
     }
-    node = node->next;
   }
 }
 
@@ -150,7 +145,7 @@ void
 ApiCertTree::parse_categories_rowset (xmlNodePtr node)
 {
   /* Look for row tags. These are for the cert categories. */
-  while (node != 0)
+  for (; node != 0; node = node->next)
   {
     if (node->type == XML_ELEMENT_NODE
         && !xmlStrcmp(node->name, (xmlChar const*)"row"))
@@ -164,7 +159,6 @@ ApiCertTree::parse_categories_rowset (xmlNodePtr node)
           (std::make_pair(category.id, category)).first;
       this->parse_categories_row(&ins->second, node->children);
     }
-    node = node->next;
   }
 }
 
@@ -174,7 +168,7 @@ void
 ApiCertTree::parse_categories_row (ApiCertCategory* category, xmlNodePtr node)
 {
   /* Look for the rowset tag. It's for the classes rowset. */
-  while (node != 0)
+  for (; node != 0; node = node->next)
   {
     if (node->type == XML_ELEMENT_NODE
         && !xmlStrcmp(node->name, (xmlChar const*)"rowset"))
@@ -182,7 +176,6 @@ ApiCertTree::parse_categories_row (ApiCertCategory* category, xmlNodePtr node)
       //std::cout << "Found <rowset> tag for classes" << std::endl;
       this->parse_classes_rowset(category, node->children);
     }
-    node = node->next;
   }
 }
 
@@ -192,7 +185,7 @@ void
 ApiCertTree::parse_classes_rowset (ApiCertCategory* category, xmlNodePtr node)
 {
   /* Look for row tags. These are for the cert classes. */
-  while (node != 0)
+  for (; node != 0; node = node->next)
   {
     if (node->type == XML_ELEMENT_NODE
         && !xmlStrcmp(node->name, (xmlChar const*)"row"))
@@ -207,7 +200,6 @@ ApiCertTree::parse_classes_rowset (ApiCertCategory* category, xmlNodePtr node)
           (std::make_pair(certclass.id, certclass)).first;
       this->parse_classes_row(&ins->second, node->children);
     }
-    node = node->next;
   }
 }
 
@@ -217,7 +209,7 @@ void
 ApiCertTree::parse_classes_row (ApiCertClass* cclass, xmlNodePtr node)
 {
   /* Look for the rowset tag. It's for the certificates rowset (at last!). */
-  while (node != 0)
+  for (; node != 0; node = node->next)
   {
     if (node->type == XML_ELEMENT_NODE
         && !xmlStrcmp(node->name, (xmlChar const*)"rowset"))
@@ -225,7 +217,6 @@ ApiCertTree::parse_classes_row (ApiCertClass* cclass, xmlNodePtr node)
       //std::cout << "Found <rowset> tag for certificates" << std::endl;
       this->parse_certificates_rowset(cclass, node->children);
     }
-    node = node->next;
   }
 }
 
@@ -235,7 +226,7 @@ void
 ApiCertTree::parse_certificates_rowset (ApiCertClass* cclass, xmlNodePtr node)
 {
   /* Look for row tags. These are for the certificates. */
-  while (node != 0)
+  for (; node != 0; node = node->next)
   {
     if (node->type == XML_ELEMENT_NODE
         && !xmlStrcmp(node->name, (xmlChar const*)"row"))
@@ -251,7 +242,6 @@ ApiCertTree::parse_certificates_rowset (ApiCertClass* cclass, xmlNodePtr node)
           (std::make_pair(certificate.id, certificate)).first;
       this->parse_certificate_row(&ins->second, node->children);
     }
-    node = node->next;
   }
 }
 

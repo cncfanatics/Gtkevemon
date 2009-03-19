@@ -48,8 +48,9 @@ class ApiBase : public XmlBase
      * the EVE time and the cache time. */
     void check_node (xmlNodePtr node);
 
-    /* Sets cached_until to the given value if the cache time
-     * from the sheet is earlier. */
+    /* Sets cached_until and cached_until_t with respect
+     * to min_cache_time to ensure a minimum cache time.
+     * Does not overwrite greater cache times. */
     void enforce_cache_time (time_t min_cache_time);
 
   public:

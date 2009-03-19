@@ -152,9 +152,7 @@ ApiCharSheet::parse_eveapi_tag (xmlNodePtr node)
       || xmlStrcmp(node->name, (xmlChar const*)"eveapi"))
     throw Exception("Invalid XML root. Expecting <eveapi> node.");
 
-  node = node->children;
-
-  for (; node != 0; node = node->next)
+  for (node = node->children; node != 0; node = node->next)
   {
     /* Let the base class know of some fields. */
     this->check_node(node);

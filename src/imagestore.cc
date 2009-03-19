@@ -5,6 +5,7 @@
 #include "images/skillprogress.h"
 #include "images/skilldeps.h"
 #include "images/skillplan.h"
+#include "images/skillqueue.h"
 #include "images/certgrades.h"
 #include "images/certstatus.h"
 #include "images/eveportrait.h"
@@ -17,6 +18,7 @@
 #include "imagestore.h"
 
 Glib::RefPtr<Gdk::Pixbuf> ImageStore::skill;
+Glib::RefPtr<Gdk::Pixbuf> ImageStore::skillqueue;
 Glib::RefPtr<Gdk::Pixbuf> ImageStore::certificate;
 Glib::RefPtr<Gdk::Pixbuf> ImageStore::certificate_small;
 Glib::RefPtr<Gdk::Pixbuf> ImageStore::applogo;
@@ -37,6 +39,8 @@ void
 ImageStore::init (void)
 {
   ImageStore::skill = ImageStore::create_from_inline(img_skill);
+  ImageStore::skillqueue = ImageStore::create_from_inline
+      (img_skillqueue);
   ImageStore::certificate = ImageStore::create_from_inline
       (img_certificate)->scale_simple(54, 54, Gdk::INTERP_BILINEAR);
   ImageStore::certificate_small = ImageStore::create_from_inline

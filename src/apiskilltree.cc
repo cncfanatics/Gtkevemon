@@ -108,19 +108,17 @@ ApiSkillTree::parse_eveapi_tag (xmlNodePtr node)
   catch (...)
   { }
 
-  node = node->children;
-
   /* Look for the result and version tag. */
-  while (node != 0)
+  for (node = node->children; node != 0; node = node->next)
   {
-    if (node->type == XML_ELEMENT_NODE
-        && !xmlStrcmp(node->name, (xmlChar const*)"result"))
+    if (node->type != XML_ELEMENT_NODE)
+      continue;
+
+    if (!xmlStrcmp(node->name, (xmlChar const*)"result"))
     {
       //std::cout << "Found <result> tag" << std::endl;
       this->parse_result_tag(node->children);
     }
-
-    node = node->next;
   }
 }
 
@@ -130,15 +128,16 @@ void
 ApiSkillTree::parse_result_tag (xmlNodePtr node)
 {
   /* Look for the rowset tag. It's for the skill group rowset. */
-  while (node != 0)
+  for (; node != 0; node = node->next)
   {
-    if (node->type == XML_ELEMENT_NODE
-        && !xmlStrcmp(node->name, (xmlChar const*)"rowset"))
+    if (node->type != XML_ELEMENT_NODE)
+      continue;
+
+    if (!xmlStrcmp(node->name, (xmlChar const*)"rowset"))
     {
       //std::cout << "Found <rowset> tag for skillgroups" << std::endl;
       this->parse_groups_rowset(node->children);
     }
-    node = node->next;
   }
 }
 
@@ -148,7 +147,7 @@ void
 ApiSkillTree::parse_groups_rowset (xmlNodePtr node)
 {
   /* Look for row tags. These are for the skill groups. */
-  while (node != 0)
+  for (; node != 0; node = node->next)
   {
     if (node->type == XML_ELEMENT_NODE
         && !xmlStrcmp(node->name, (xmlChar const*)"row"))
@@ -162,7 +161,6 @@ ApiSkillTree::parse_groups_rowset (xmlNodePtr node)
 
       this->parse_groups_row(node->children);
     }
-    node = node->next;
   }
 }
 
@@ -172,7 +170,7 @@ void
 ApiSkillTree::parse_groups_row (xmlNodePtr node)
 {
   /* Look for the rowset tag. It's forthe skills rowset. */
-  while (node != 0)
+  for (; node != 0; node = node->next)
   {
     if (node->type == XML_ELEMENT_NODE
         && !xmlStrcmp(node->name, (xmlChar const*)"rowset"))
@@ -180,7 +178,6 @@ ApiSkillTree::parse_groups_row (xmlNodePtr node)
       //std::cout << "Found <rowset> tag for skills" << std::endl;
       this->parse_skills_rowset(node->children);
     }
-    node = node->next;
   }
 }
 
@@ -190,7 +187,7 @@ void
 ApiSkillTree::parse_skills_rowset (xmlNodePtr node)
 {
   /* Look for row tags. These are for the skills. */
-  while (node != 0)
+  for (; node != 0; node = node->next)
   {
     if (node->type == XML_ELEMENT_NODE
         && !xmlStrcmp(node->name, (xmlChar const*)"row"))
@@ -206,7 +203,6 @@ ApiSkillTree::parse_skills_rowset (xmlNodePtr node)
       this->skills.insert(std::make_pair(skill.id, skill));
 
     }
-    node = node->next;
   }
 }
 
@@ -215,21 +211,20 @@ ApiSkillTree::parse_skills_rowset (xmlNodePtr node)
 void
 ApiSkillTree::parse_skills_row (ApiSkill& skill, xmlNodePtr node)
 {
-  while (node != 0)
+  for (; node != 0; node = node->next)
   {
-    if (node->type == XML_ELEMENT_NODE)
-    {
-      this->set_string_if_node_text(node, "description", skill.desc);
-      this->set_int_if_node_text(node, "rank", skill.rank);
+    if (node->type != XML_ELEMENT_NODE)
+      continue;
 
-      if (!xmlStrcmp(node->name, (xmlChar const*)"rowset")
-          && this->get_property(node, "name") == "requiredSkills")
-        this->parse_skill_requirements(skill, node->children);
+    this->set_string_if_node_text(node, "description", skill.desc);
+    this->set_int_if_node_text(node, "rank", skill.rank);
 
-      if (!xmlStrcmp(node->name, (xmlChar const*)"requiredAttributes"))
-        this->parse_skill_attribs(skill, node->children);
-    }
-    node = node->next;
+    if (!xmlStrcmp(node->name, (xmlChar const*)"rowset")
+        && this->get_property(node, "name") == "requiredSkills")
+      this->parse_skill_requirements(skill, node->children);
+
+    if (!xmlStrcmp(node->name, (xmlChar const*)"requiredAttributes"))
+      this->parse_skill_attribs(skill, node->children);
   }
 }
 
@@ -238,7 +233,7 @@ ApiSkillTree::parse_skills_row (ApiSkill& skill, xmlNodePtr node)
 void
 ApiSkillTree::parse_skill_requirements (ApiSkill& skill, xmlNodePtr node)
 {
-  while (node != 0)
+  for (; node != 0; node = node->next)
   {
     if (node->type == XML_ELEMENT_NODE)
     {
@@ -249,7 +244,6 @@ ApiSkillTree::parse_skill_requirements (ApiSkill& skill, xmlNodePtr node)
         skill.deps.push_back(std::make_pair(type_id, level));
       }
     }
-    node = node->next;
   }
 }
 
@@ -261,14 +255,13 @@ ApiSkillTree::parse_skill_attribs (ApiSkill& skill, xmlNodePtr node)
   std::string primary;
   std::string secondary;
 
-  while (node != 0)
+  for (; node != 0; node = node->next)
   {
     if (node->type == XML_ELEMENT_NODE)
     {
       this->set_string_if_node_text(node, "primaryAttribute", primary);
       this->set_string_if_node_text(node, "secondaryAttribute", secondary);
     }
-    node = node->next;
   }
 
   if (primary.empty() || secondary.empty())

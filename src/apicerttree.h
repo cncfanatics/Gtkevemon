@@ -21,23 +21,19 @@
 #include "ref_ptr.h"
 #include "apibase.h"
 
-/* ---------------------------------------------------------------- */
-
-class ApiCertCategory
+struct ApiCertCategory
 {
-  public:
-    int id;
-    std::string name;
+  int id;
+  std::string name;
 };
 
 /* ---------------------------------------------------------------- */
 
-class ApiCertClass
+struct ApiCertClass
 {
-  public:
-    int id;
-    std::string name;
-    ApiCertCategory const* cat_details;
+  int id;
+  std::string name;
+  ApiCertCategory const* cat_details;
 };
 
 /* ---------------------------------------------------------------- */

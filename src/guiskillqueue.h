@@ -10,10 +10,19 @@
  * along with GtkEveMon. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DEFINES_HEADER
-#define DEFINES_HEADER
+#ifndef GUI_SKILL_QUEUE_HEADER
+#define GUI_SKILL_QUEUE_HEADER
 
-#define GTKEVEMON_VERSION_STR "Revision 1.7-95"
-#define LAUNCHER_CMD_AMOUNT 5
+#include "winbase.h"
+#include "gtkskillqueue.h"
 
-#endif /* DEFINES_HEADER */
+class GuiSkillQueue : public WinBase
+{
+  private:
+    GtkSkillQueue queue;
+
+  public:
+    GuiSkillQueue (EveApiAuth const& auth);
+};
+
+#endif /* GUI_SKILL_QUEUE_HEADER */

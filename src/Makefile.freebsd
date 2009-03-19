@@ -5,7 +5,7 @@ CORES = $(shell sysctl -n hw.ncpu)
 GCC_FLAGS = -Wall -Wextra -ansi -Wcast-align -Wcast-qual -Wpointer-arith -Wundef -Wconversion -g -pedantic
 GTK_FLAGS = $(shell pkg-config --cflags gtkmm-2.4)
 GTK_LIBS = $(shell pkg-config --libs gtkmm-2.4)
-PTH_LIBS = -lpthread
+PTH_LIBS = -pthread
 XML_FLAGS = $(shell pkg-config --cflags libxml-2.0)
 XML_LIBS = $(shell pkg-config --libs libxml-2.0)
 

@@ -31,6 +31,14 @@ enum ApiAttrib
 
 /* ---------------------------------------------------------------- */
 
+struct ApiSkillGroup
+{
+  int id;
+  std::string name;
+};
+
+/* ---------------------------------------------------------------- */
+
 class ApiSkill : public ApiElement
 {
   public:
@@ -48,15 +56,6 @@ class ApiSkill : public ApiElement
     ~ApiSkill (void) {}
     ApiElementType get_type (void) const;
     void debug (void) const;
-};
-
-/* ---------------------------------------------------------------- */
-
-class ApiSkillGroup
-{
-  public:
-    int id;
-    std::string name;
 };
 
 /* ---------------------------------------------------------------- */

@@ -49,6 +49,8 @@ char const* default_config =
     "  startup_servercheck = true\n"
     "  tray_usage = never\n"
     "  verbose_wintitle = true\n"
+    "[skillqueue]\n"
+    "  columns_format = +0 +1 -2 -3 -4 +5 -6 +7\n"
     "[versionchecker]\n"
     "  enabled = true\n"
     "  raise_updater = true\n"

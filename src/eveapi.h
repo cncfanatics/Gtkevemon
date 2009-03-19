@@ -43,7 +43,8 @@ enum EveApiDocType
 {
   EVE_API_DOCTYPE_CHARLIST,
   EVE_API_DOCTYPE_CHARSHEET,
-  EVE_API_DOCTYPE_INTRAINING
+  EVE_API_DOCTYPE_INTRAINING,
+  EVE_API_DOCTYPE_SKILLQUEUE
 };
 
 /* ---------------------------------------------------------------- */
