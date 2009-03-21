@@ -18,7 +18,6 @@
 #include "eveapi.h"
 #include "apibase.h"
 
-// queuePosition="1" typeID="11441" level="3" startSP="7072" endSP="40000" startTime="2009-03-18 02:01:06" endTime="2009-03-18 15:19:21"
 struct ApiSkillQueueItem
 {
   int queue_pos;

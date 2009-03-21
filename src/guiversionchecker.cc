@@ -348,7 +348,7 @@ GuiVersionChecker::on_download_done (DownloadItem dl, AsyncHttpData data)
   std::string conf_dir = Config::get_conf_dir();
   std::string dest_name = conf_dir + "/" + vif.name;
 
-  std::ofstream dlf(dest_name.c_str());
+  std::ofstream dlf(dest_name.c_str(), std::ios::binary);
   if (dlf.fail())
   {
     std::cout << std::endl << "Error: " << ::strerror(errno) << std::endl;

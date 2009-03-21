@@ -38,6 +38,7 @@ class Helpers
     static StringVector split_string (std::string const& str, char delim);
     static StringVector tokenize_cmd (std::string const& str);
     static char** create_argv (std::vector<std::string> const& cmd);
+    static void delete_argv (char** argv);
 };
 
 #endif /* HELPERS_HEADER */

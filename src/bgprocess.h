@@ -35,7 +35,8 @@ class BGProcess : public Thread
     void* run (void);
 
   public:
-    BGProcess (std::vector<std::string>& cmd, std::string const& chdir = "");
+    BGProcess (std::vector<std::string> const& cmd,
+        std::string const& chdir = "");
 };
 
 #endif /* BG_PROCESS_HEADER */

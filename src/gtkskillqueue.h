@@ -99,7 +99,6 @@ GtkSkillQueueColumns::GtkSkillQueueColumns (void)
 inline void
 GtkSkillQueue::set_auth_data (EveApiAuth const& auth)
 {
-  this->queue_fetcher.set_doctype(EVE_API_DOCTYPE_SKILLQUEUE);
   this->queue_fetcher.set_auth(auth);
 }
 

@@ -142,7 +142,7 @@ GtkPortrait::set_from_eve_online (AsyncHttpData result)
 
   try
   {
-    std::ofstream out(jpg_name.str().c_str());
+    std::ofstream out(jpg_name.str().c_str(), std::ios::binary);
     out.write(&result.data->data[0], result.data->data.size() - 1);
     out.close();
 

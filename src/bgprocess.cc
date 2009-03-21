@@ -4,14 +4,21 @@
 #include <cstring>
 #include <cerrno>
 #include <cstdlib>
-#include <sys/wait.h>
-#include <unistd.h>
+
+#ifdef WIN32
+#  include <direct.h>
+#  include <process.h>
+#else
+#  include <sys/wait.h>
+#  include <unistd.h>
+#endif
 
 #include "exception.h"
 #include "helpers.h"
 #include "bgprocess.h"
 
-BGProcess::BGProcess (std::vector<std::string>& cmd, std::string const& chdir)
+BGProcess::BGProcess (std::vector<std::string> const& cmd,
+    std::string const& chdir)
 {
   /*
    * We need to store the arguments in the object because
@@ -34,6 +41,37 @@ BGProcess::BGProcess (std::vector<std::string>& cmd, std::string const& chdir)
 void*
 BGProcess::run (void)
 {
+#ifdef WIN32
+
+  /* Set cwd if requested. */
+  if (this->chdir.size() > 0)
+    if (::_chdir(this->chdir.c_str()) < 0)
+       std::cout << "_chdir() failed: " << ::strerror(errno) << std::endl;
+
+  /* Let the utils build an arguemnt array for the new process. */
+  char** args = Helpers::create_argv(this->cmd);
+
+  /* Create the new progress. */
+  intptr_t retval = ::_spawnv(_P_WAIT, args[0], args);
+  if (retval == -1)
+  {
+    std::cout << "Couldn't create process: "
+        << std::string(::strerror(errno)) << std::endl;
+  }
+
+  Helpers::delete_argv(args);
+
+  /* Release directory. */
+  ::_chdir("C:\\");
+
+  std::cout << "Child process terminated. Status: " << retval << std::endl;
+
+  /* Destroy the thread object and exit thread. */
+  delete this;
+  return 0;
+
+#else /* Not WIN32 */
+
   /* Create the new progress. */
   pid_t pid = ::fork();
   if (pid < 0)
@@ -76,4 +114,6 @@ BGProcess::run (void)
   /* Destory the thread object and exit thread. */
   delete this;
   return 0;
+
+#endif
 }

@@ -21,9 +21,6 @@
 #include "http.h"
 #include "apibase.h"
 
-class ApiCharListEntry;
-typedef std::vector<ApiCharListEntry> ApiCharList;
-
 struct ApiCharListEntry
 {
   std::string name;
@@ -36,6 +33,7 @@ struct ApiCharListEntry
 
 class ApiCharacterList;
 typedef ref_ptr<ApiCharacterList> ApiCharacterListPtr;
+typedef std::vector<ApiCharListEntry> ApiCharList;
 
 class ApiCharacterList : public ApiBase
 {

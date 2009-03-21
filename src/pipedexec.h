@@ -16,15 +16,26 @@
 #include <vector>
 #include <string>
 
+#ifdef WIN32
+#  define WIN32_LEAN_AND_MEAN
+#  include <windows.h>
+#endif
+
 class PipedExec
 {
   private:
+#ifdef WIN32
+    DWORD child_pid;
+    HANDLE child_proc;
+    HANDLE child_thr;
+    HANDLE p2c_pipe[2];
+    HANDLE c2p_pipe[2];
+#else
     pid_t child_pid;
     int p2c_pipe[2];
     int c2p_pipe[2];
+#endif
     int child_ret;
-
-    //void set_nonblock_flag (int fd, bool value = true);
 
   public:
     PipedExec (void);
@@ -43,5 +54,13 @@ class PipedExec
 
     void terminate (void);
 };
+
+/* ---------------------------------------------------------------- */
+
+inline int
+PipedExec::get_return_val (void)
+{
+  return this->child_ret;
+}
 
 #endif /* PIPED_EXEC_HEADER */

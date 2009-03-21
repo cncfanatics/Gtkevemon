@@ -220,3 +220,13 @@ Helpers::create_argv (const std::vector<std::string>& cmd)
   args[cmd.size()] = 0;
   return args;
 }
+
+/* ---------------------------------------------------------------- */
+
+void
+Helpers::delete_argv (char** argv)
+{
+  for (std::size_t i = 0; argv[i] != 0; ++i)
+    delete [] argv[i];
+  delete [] argv;
+}

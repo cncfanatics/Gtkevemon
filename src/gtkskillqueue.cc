@@ -41,7 +41,7 @@ GtkSkillQueueViewCols::GtkSkillQueueViewCols (Gtk::TreeView* view,
   this->skill_name.set_expand(true);
   this->start_sp.get_first_cell_renderer()->set_property("xalign", 1.0f);
   this->end_sp.get_first_cell_renderer()->set_property("xalign", 1.0f);
-};
+}
 
 /* ================================================================ */
 
@@ -50,6 +50,11 @@ GtkSkillQueue::GtkSkillQueue (void)
     queue_view(queue_store),
     queue_view_cols(&queue_view, &queue_cols)
 {
+  /* Setup EVE API fetcher. */
+  this->queue_fetcher.set_doctype(EVE_API_DOCTYPE_SKILLQUEUE);
+  this->queue_fetcher.signal_done().connect(sigc::mem_fun
+      (*this, &GtkSkillQueue::on_apidata_available));
+
   Gtk::ScrolledWindow* scwin = MK_SCWIN;
   scwin->add(this->queue_view);
 
@@ -77,8 +82,6 @@ GtkSkillQueue::~GtkSkillQueue (void)
 void
 GtkSkillQueue::refresh (void)
 {
-  this->queue_fetcher.signal_done().connect(sigc::mem_fun
-      (*this, &GtkSkillQueue::on_apidata_available));
   this->queue_fetcher.async_request();
 }
 
