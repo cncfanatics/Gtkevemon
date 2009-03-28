@@ -274,8 +274,9 @@ GuiVersionChecker::on_update_clicked (void)
       this->close();
     else
     {
-      ::execv(ArgumentSettings::argv[0], ArgumentSettings::argv);
-      //Gtk::Main::quit(); /* Quit application */
+      //std::cout << "Should restart" << std::endl;
+      //::execv(ArgumentSettings::argv[0], ArgumentSettings::argv);
+      Gtk::Main::quit(); /* Quit application */
     }
   }
 }
@@ -304,7 +305,7 @@ GuiVersionChecker::on_update_done (void)
     this->close_but->set_sensitive(false);
     this->update_but->set_image(*MK_IMG(Gtk::Stock::QUIT,
          Gtk::ICON_SIZE_BUTTON));
-    this->update_but->set_label("Restart");
+    this->update_but->set_label("Quit");
   }
 }
 

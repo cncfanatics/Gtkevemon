@@ -49,7 +49,7 @@ MainGui::MainGui (void)
       Gtk::Stock::PREFERENCES, "_Configuration..."),
       sigc::mem_fun(*this, &MainGui::configuration));
   this->actions->add(Gtk::Action::create("CheckUpdates",
-      Gtk::Stock::NETWORK, "_Check for updates..."),
+      Gtk::Stock::NETWORK, "Check for _updates..."),
       sigc::mem_fun(*this, &MainGui::version_checker));
   this->actions->add(Gtk::Action::create("QuitEveMon", Gtk::Stock::QUIT),
       sigc::mem_fun(*this, &MainGui::close));
@@ -58,15 +58,15 @@ MainGui::MainGui (void)
       sigc::mem_fun(*this, &MainGui::launch_eve));
 
   this->actions->add(Gtk::Action::create("MenuCharacter",
-      Gtk::Stock::JUSTIFY_FILL, "Character"));
+      Gtk::Stock::JUSTIFY_FILL, "_Character"));
   this->actions->add(Gtk::Action::create("MenuCharPlanning",
-      Gtk::Stock::OK, "Training planner..."),
+      Gtk::Stock::OK, "_Training planner..."),
       sigc::mem_fun(*this, &MainGui::create_skillplan));
   this->actions->add(Gtk::Action::create("MenuCharXMLSource",
-      Gtk::Stock::OK, "View XML source..."),
+      Gtk::Stock::OK, "View _XML source..."),
       sigc::mem_fun(*this, &MainGui::view_xml_source));
   this->actions->add(Gtk::Action::create("MenuCharInfoExport",
-      Gtk::Stock::PRINT, "Export character..."),
+      Gtk::Stock::PRINT, "_Export character..."),
       sigc::mem_fun(*this, &MainGui::export_char_info));
 
   this->actions->add(Gtk::Action::create("MenuHelp",
