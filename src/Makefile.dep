@@ -92,11 +92,11 @@ gtkitembrowser.o: gtkitembrowser.cc helpers.h gtkhelpers.h apiskilltree.h \
   thread_posix.h exception.h xml.h apicharsheet.h apicerttree.h \
   gtkdefines.h imagestore.h gtkitembrowser.h gtkplannerbase.h
 gtktrainingplan.o: gtktrainingplan.cc helpers.h evetime.h \
-  gtkcolumnsbase.h gtkportrait.h asynchttp.h http.h ref_ptr.h \
-  httpstatus.h thread.h thread_posix.h exception.h gtkhelpers.h \
-  apiskilltree.h apibase.h eveapi.h xml.h apicharsheet.h apicerttree.h \
-  gtkconfwidgets.h config.h conf.h gtkdefines.h imagestore.h \
-  gtktrainingplan.h apiintraining.h
+  xmltrainingplan.h xml.h ref_ptr.h apiskilltree.h apibase.h eveapi.h \
+  asynchttp.h http.h httpstatus.h thread.h thread_posix.h exception.h \
+  gtkcolumnsbase.h gtkportrait.h gtkhelpers.h apicharsheet.h \
+  apicerttree.h gtkconfwidgets.h config.h conf.h gtkdefines.h \
+  imagestore.h gtktrainingplan.h apiintraining.h
 gtkskillqueue.o: gtkskillqueue.cc config.h asynchttp.h http.h ref_ptr.h \
   httpstatus.h thread.h thread_posix.h exception.h conf.h evetime.h \
   imagestore.h gtkhelpers.h apiskilltree.h apibase.h eveapi.h xml.h \
@@ -129,6 +129,9 @@ imagestore.o: imagestore.cc images/skill.h images/img_skill.h \
   images/img_menu_help.xpm images/guiimages.h images/img_columnconf.h \
   images/img_columnconf_faded.h exception.h imagestore.h
 argumentsettings.o: argumentsettings.cc defines.h argumentsettings.h
+xmltrainingplan.o: xmltrainingplan.cc xmltrainingplan.h xml.h ref_ptr.h \
+  apiskilltree.h apibase.h eveapi.h asynchttp.h http.h httpstatus.h \
+  thread.h thread_posix.h exception.h
 server.o: server.cc exception.h server.h
 serverlist.o: serverlist.cc config.h asynchttp.h http.h ref_ptr.h \
   httpstatus.h thread.h thread_posix.h exception.h conf.h serverlist.h \
@@ -142,7 +145,8 @@ evetime.o: evetime.cc evetime.h config.h asynchttp.h http.h ref_ptr.h \
   httpstatus.h thread.h thread_posix.h exception.h conf.h
 bgprocess.o: bgprocess.cc exception.h helpers.h bgprocess.h thread.h \
   thread_posix.h
-pipedexec.o: pipedexec.cc helpers.h exception.h pipedexec.h
+pipedexec.o: pipedexec.cc pipedexec_posix.cc helpers.h exception.h \
+  pipedexec.h
 notifier.o: notifier.cc config.h asynchttp.h http.h ref_ptr.h \
   httpstatus.h thread.h thread_posix.h exception.h conf.h evetime.h \
   apiskilltree.h apibase.h eveapi.h xml.h pipedexec.h helpers.h \

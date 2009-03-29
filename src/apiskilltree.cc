@@ -307,6 +307,21 @@ ApiSkillTree::get_skill_for_id (int id) const
 
 /* ---------------------------------------------------------------- */
 
+ApiSkill const*
+ApiSkillTree::get_skill_for_name (std::string const& name) const
+{
+  for (ApiSkillMap::const_iterator iter = this->skills.begin();
+      iter != this->skills.end(); iter++)
+  {
+    if (iter->second.name == name)
+      return &iter->second;
+  }
+
+  return 0;
+}
+
+/* ---------------------------------------------------------------- */
+
 ApiSkillGroup const*
 ApiSkillTree::get_group_for_id (int id) const
 {

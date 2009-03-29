@@ -33,5 +33,6 @@
 #define MK_IMG(id,size) Gtk::manage(new Gtk::Image(id, size))
 #define MK_IMG_PB(pixbuf) Gtk::manage(new Gtk::Image(pixbuf))
 #define MK_TABLE(rows,cols) Gtk::manage(new Gtk::Table(rows, cols, false))
+#define MK_RADIO(label) Gtk::manage(new Gtk::RadioButton(label));
 
 #endif /* GTK_DEFINES_HEADER */

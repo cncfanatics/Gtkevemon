@@ -14,7 +14,7 @@ SOURCES = maingui.cc guiuserdata.cc guiconfiguration.cc guiaboutdialog.cc \
           gtkportrait.cc gtkinfodisplay.cc gtkplannerbase.cc gtkhelpers.cc \
           gtkcolumnsbase.cc gtkdownloader.cc gtkitemdetails.cc \
 	  gtkitembrowser.cc gtktrainingplan.cc gtkskillqueue.cc \
-          imagestore.cc argumentsettings.cc \
+          imagestore.cc argumentsettings.cc xmltrainingplan.cc \
           server.cc serverlist.cc helpers.cc conf.cc config.cc \
           xml.cc evetime.cc bgprocess.cc pipedexec.cc notifier.cc \
           http.cc asynchttp.cc eveapi.cc versionchecker.cc \

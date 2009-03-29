@@ -94,6 +94,7 @@ class ApiSkillTree : public ApiBase
     void refresh (void);
 
     ApiSkill const* get_skill_for_id (int id) const;
+    ApiSkill const* get_skill_for_name (std::string const& name) const;
     ApiSkillGroup const* get_group_for_id (int id) const;
 
     static char const* get_attrib_name (ApiAttrib const& attrib);

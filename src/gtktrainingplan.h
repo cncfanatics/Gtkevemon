@@ -144,6 +144,8 @@ class GtkTrainingPlan : public Gtk::VBox
     Gtk::Button rename_plan_but;
     Gtk::Button clean_plan_but;
     Gtk::Button column_conf_but;
+    Gtk::Button export_plan_but;
+    Gtk::Button import_plan_but;
     Gtk::Label total_time;
 
     GtkTreeModelColumns cols;
@@ -168,6 +170,8 @@ class GtkTrainingPlan : public Gtk::VBox
     void on_rename_skill_plan (void);
     void on_cleanup_skill_plan (void);
     void on_objective_toggled (Glib::ustring const& path);
+    void on_export_plan (void);
+    void on_import_plan (void);
 
     void on_row_inserted (Gtk::TreePath const& path,
         Gtk::TreeModel::iterator const& iter);

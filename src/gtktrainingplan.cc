@@ -7,6 +7,7 @@
 
 #include "helpers.h"
 #include "evetime.h"
+#include "xmltrainingplan.h"
 #include "gtkcolumnsbase.h"
 #include "gtkportrait.h"
 #include "gtkhelpers.h"
@@ -485,13 +486,19 @@ GtkTrainingPlan::GtkTrainingPlan (void)
       (Gtk::Stock::NEW, Gtk::ICON_SIZE_MENU));
   this->rename_plan_but.set_image(*MK_IMG
       (Gtk::Stock::EDIT, Gtk::ICON_SIZE_MENU));
+  this->export_plan_but.set_image(*MK_IMG
+      (Gtk::Stock::SAVE_AS, Gtk::ICON_SIZE_MENU));
+  this->import_plan_but.set_image(*MK_IMG
+      (Gtk::Stock::REVERT_TO_SAVED, Gtk::ICON_SIZE_MENU));
   //this->delete_plan_but.set_relief(Gtk::RELIEF_NONE);
   //this->create_plan_but.set_relief(Gtk::RELIEF_NONE);
   //this->rename_plan_but.set_relief(Gtk::RELIEF_NONE);
+  this->export_plan_but.set_label("Export");
+  this->import_plan_but.set_label("Import");
 
   this->clean_plan_but.set_image(*MK_IMG
       (Gtk::Stock::CLEAR, Gtk::ICON_SIZE_MENU));
-  this->clean_plan_but.set_label("Clean finished skills");
+  this->clean_plan_but.set_label("Clean finished");
   this->column_conf_but.set_image(*MK_IMG_PB(ImageStore::columnconf[0]));
   this->column_conf_but.set_label("Configure columns");
 
@@ -518,6 +525,8 @@ GtkTrainingPlan::GtkTrainingPlan (void)
   Gtk::HBox* button_box = MK_HBOX;
   button_box->pack_start(this->clean_plan_but, false, false, 0);
   button_box->pack_start(this->column_conf_but, false, false, 0);
+  button_box->pack_end(this->import_plan_but, false, false, 0);
+  button_box->pack_end(this->export_plan_but, false, false, 0);
   Gtk::VBox* button_vbox = MK_VBOX;
   button_vbox->pack_end(*button_box, false, false, 0);
 
@@ -552,7 +561,9 @@ GtkTrainingPlan::GtkTrainingPlan (void)
   this->create_plan_but.set_tooltip_text("Create a new plan");
   this->rename_plan_but.set_tooltip_text("Rename the current plan");
   this->clean_plan_but.set_tooltip_text("Remove finished skills");
-  this->column_conf_but.set_tooltip_text("Configure list columns");
+  this->column_conf_but.set_tooltip_text("Configure training plan columns");
+  this->export_plan_but.set_tooltip_text("Export training plan");
+  this->import_plan_but.set_tooltip_text("Import training plan");
 
   this->pack_start(*gui_table, false, false, 0);
   this->pack_start(*scwin, true, true, 0);
@@ -570,6 +581,10 @@ GtkTrainingPlan::GtkTrainingPlan (void)
       (sigc::mem_fun(*this, &GtkTrainingPlan::on_cleanup_skill_plan));
   this->column_conf_but.signal_clicked().connect(sigc::mem_fun
       (this->viewcols, &GtkColumnsBase::toggle_edit_context));
+  this->import_plan_but.signal_clicked().connect(sigc::mem_fun
+      (*this, &GtkTrainingPlan::on_import_plan));
+  this->export_plan_but.signal_clicked().connect(sigc::mem_fun
+      (*this, &GtkTrainingPlan::on_export_plan));
 
   this->liststore->signal_row_inserted().connect
       (sigc::mem_fun(*this, &GtkTrainingPlan::on_row_inserted));
@@ -1080,4 +1095,210 @@ GtkTrainingPlan::on_query_skillview_tooltip (int x, int y, bool key,
 
   GtkHelpers::create_tooltip(tooltip, skill);
   return true;
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GtkTrainingPlan::on_import_plan (void)
+{
+  // TODO Ask if import to current plan or to new plan
+  Gtk::Window* toplevel = (Gtk::Window*)this->get_toplevel();
+
+  Gtk::MessageDialog dialog(*toplevel, "How to import the skill plan?",
+      false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_OK_CANCEL);
+  dialog.set_secondary_text("Please select if you want to import the "
+      "skill plan into the current plan or into a brand new one.");
+  dialog.set_title("Import plan - GtkEveMon");
+  dialog.set_default_response(Gtk::RESPONSE_OK);
+
+  /* Create widgets to select between new or existing plan. */
+  Gtk::RadioButtonGroup rbg;
+  Gtk::RadioButton* rb_current = MK_RADIO("Import into the current plan");
+  Gtk::RadioButton* rb_new = MK_RADIO("Import into a new skill plan");
+  rb_current->set_group(rbg);
+  rb_new->set_group(rbg);
+  Gtk::Label* label_new = MK_LABEL("Plan name:");
+  Gtk::Entry* entry_new = MK_ENTRY;
+
+  Gtk::Table* dialog_tbl = MK_TABLE(3, 2);
+  dialog_tbl->attach(*rb_current, 1, 2, 0, 1, Gtk::EXPAND | Gtk::FILL);
+  dialog_tbl->attach(*rb_new, 1, 2, 1, 2, Gtk::EXPAND | Gtk::FILL);
+  dialog_tbl->attach(*label_new, 0, 1, 2, 3, Gtk::SHRINK | Gtk::FILL);
+  dialog_tbl->attach(*entry_new, 1, 2, 2, 3, Gtk::EXPAND | Gtk::FILL);
+
+  Gtk::VBox* dialog_box = dialog.get_vbox();
+  dialog_box->pack_start(*dialog_tbl, false, false, 0);
+  dialog_box->show_all();
+
+  /* Check if there is a current plan, if not disable the choice. */
+  if (this->plan_section.get() == 0)
+  {
+    rb_current->set_sensitive(false);
+    rb_new->set_active(true);
+  }
+
+  int ret = dialog.run();
+  dialog.hide();
+  if (ret != Gtk::RESPONSE_OK)
+    return;
+
+  if (rb_new->get_active() && entry_new->get_text().empty())
+  {
+    Gtk::MessageDialog md(*toplevel, "No name for new plan given!",
+        false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+    md.set_secondary_text("You selected to create a new plan but "
+        "did not give a name for the new plan.");
+    md.set_title("Import failed - GtkEveMon");
+    md.run();
+    return;
+  }
+
+  /* Open file chooser dialog. */
+  Gtk::FileChooserDialog fcd(*toplevel, "Export skill plan...",
+      Gtk::FILE_CHOOSER_ACTION_SAVE);
+  fcd.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
+  fcd.add_button(Gtk::Stock::OPEN, Gtk::RESPONSE_OK);
+
+  {
+    Gtk::FileFilter filter;
+    filter.add_pattern("*.emp");
+    filter.set_name("EveMon Plan (*.emp)");
+    fcd.add_filter(filter);
+  }
+
+  {
+    Gtk::FileFilter filter;
+    filter.add_pattern("*.xml");
+    filter.set_name("EveMon Uncompressed Plan (*.xml)");
+    fcd.add_filter(filter);
+  }
+
+  ret = fcd.run();
+  if (ret != Gtk::RESPONSE_OK)
+    return;
+
+  fcd.hide();
+
+  std::string filename = fcd.get_filename();
+  XmlTrainingPlanImport plan_import;
+  try
+  {
+    plan_import.import_from_file(filename);
+  }
+  catch (Exception& e)
+  {
+    Gtk::MessageDialog md(*toplevel, "Error reading the plan from file!",
+        false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+    md.set_secondary_text("The import of the training plan failed. "
+        "The error message was:\n" + e);
+    md.set_title("Import failed - GtkEveMon");
+    md.run();
+    return;
+  }
+
+  /* Append loaded skills to a plan. */
+  if (rb_new->get_active())
+  {
+    Glib::ustring plan_name = entry_new->get_text();
+    this->plan_selection.create_new_section(plan_name);
+  }
+
+  TrainingPlan const& plan = plan_import.get_training_plan();
+  std::cout << "Plan size: " << plan.size() << std::endl;
+  for (std::size_t i = 0; i < plan.size(); ++i)
+  {
+    if (plan[i].prerequisite)
+      continue;
+
+    this->append_skill(plan[i].skill, plan[i].level);
+  }
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GtkTrainingPlan::on_export_plan (void)
+{
+  Gtk::Window* toplevel = (Gtk::Window*)this->get_toplevel();
+
+  Gtk::FileChooserDialog fcb(*toplevel, "Export skill plan...",
+      Gtk::FILE_CHOOSER_ACTION_SAVE);
+  fcb.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
+  fcb.add_button(Gtk::Stock::SAVE, Gtk::RESPONSE_OK);
+  fcb.set_do_overwrite_confirmation(true);
+
+  {
+    Gtk::FileFilter filter;
+    filter.add_pattern("*.emp");
+    filter.set_name("EveMon Plan (*.emp)");
+    fcb.add_filter(filter);
+  }
+
+  {
+    Gtk::FileFilter filter;
+    filter.add_pattern("*.xml");
+    filter.set_name("EveMon Uncompressed Plan (*.xml)");
+    fcb.add_filter(filter);
+  }
+
+  std::string filename;
+  while (true)
+  {
+    int ret = fcb.run();
+    if (ret != Gtk::RESPONSE_OK)
+      return;
+
+    filename = fcb.get_filename();
+    bool filename_changed = false;
+
+    if (filename.size() < 4)
+    {
+      filename += ".emp";
+      filename_changed = true;
+    }
+    else
+    {
+      std::string extension = filename.substr(filename.size() - 4);
+      if (extension != ".emp" && extension != ".xml")
+      {
+        filename += ".emp";
+        filename_changed = true;
+      }
+    }
+
+    if (filename_changed)
+    {
+      fcb.set_current_name(filename);
+      fcb.response(Gtk::RESPONSE_OK);
+    }
+    else
+      break;
+  }
+
+  fcb.hide();
+
+  XmlTrainingPlanExport plan_export;
+  for (std::size_t i = 0; i < this->skills.size(); ++i)
+  {
+    if (!this->skills[i].is_objective)
+      continue;
+
+    plan_export.append_training_item(XmlTrainingItem
+        (this->skills[i].skill, this->skills[i].plan_level, false));
+  }
+
+  try
+  {
+    plan_export.write_to_file(filename);
+  }
+  catch (Exception& e)
+  {
+    Gtk::MessageDialog md(*toplevel, "Training plan export failed!",
+        false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+    md.set_secondary_text("The export of the training plan failed. "
+        "The error message was:\n" + e);
+    md.set_title("Export failed - GtkEveMon");
+    md.run();
+  }
 }
