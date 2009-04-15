@@ -8,11 +8,8 @@
 #include <iostream>
 
 #include "exception.h"
+#include "nettcpsocket.h"
 #include "server.h"
-
-int Server::current_socket = 0;
-
-/* ---------------------------------------------------------------- */
 
 Server::Server (std::string const& name, std::string const& host, uint16_t port)
 {
@@ -57,86 +54,54 @@ Server::refresh_intern (void)
   this->online = false;
   this->players = 0;
 
-  /* Create socket. */
-  int sock = ::socket(PF_INET, SOCK_STREAM, 0);
-  if (sock < 0)
+  Net::TCPSocket sock;
+  try
   {
-    this->refreshing = false;
-    throw Exception(std::string("socket() failed: ") + ::strerror(errno));
+    /* Connect and see if it's online or not. */
+    sock.set_connect_timeout(SERVER_TIMEOUT * 1000);
+    sock.connect(this->host, this->port);
   }
-
-  /* Prepare for internet. */
-  struct sockaddr_in remote;
-
-  remote.sin_family = AF_INET;
-  remote.sin_port = htons(this->port);
-
-  /* Set host and port. */
-  if (::inet_aton(this->host.c_str(), &remote.sin_addr) == 0)
+  catch (Exception& e)
   {
-    this->refreshing = false;
-    ::close(sock);
-    throw Exception(std::string("inet_aton() failed: ") + ::strerror(errno));
-  }
-
-  /* Set timeout handler. */
-  Server::current_socket = sock;
-  std::signal(SIGALRM, Server::alarm_expired);
-  ::alarm(SERVER_TIMEOUT);
-
-  //std::cout << "Connecting to " << this->name << "..." << std::endl;
-
-  /* Connect and see if it's online or not. */
-  if (::connect(sock, (struct sockaddr*)&remote,
-      sizeof(struct sockaddr_in)) < 0)
-  {
+    /* Nope. Not online or some error occured. */
+    sock.close();
     this->refreshing = false;
     this->online = false;
     this->players = 0;
-    ::alarm(0);
-    Server::current_socket = 0;
-    ::close(sock);
 
-    std::cout << "Server info: " << this->name << " offline. "
-        << ::strerror(errno) << std::endl;
+    std::cout << "Server info: " << this->name
+        << " offline. " << e << std::endl;
 
     return;
   }
-
-  /* Deactivate timer. */
-  ::alarm(0);
-  Server::current_socket = 0;
 
   /* Cool. Online. */
   this->online = true;
 
   /* Try to get the amount of players. */
   unsigned char buffer[SERVER_READ_BYTES + 1];
-  size_t offset = 0;
 
-  while (offset < SERVER_READ_BYTES)
+  try
   {
-    ssize_t ret = ::read(sock, buffer + offset, SERVER_READ_BYTES - offset);
-    offset += ret;
+    std::size_t nbytes = sock.full_read(buffer, SERVER_READ_BYTES);
+    buffer[SERVER_READ_BYTES] = '\0';
 
-    if (ret < 0)
-    {
-      /* Read failed. This may be a temporary issue. */
-      ::close(sock);
-      this->refreshing = false;
-      this->players = -2;
+    if (nbytes < SERVER_READ_BYTES)
+      throw Exception("Server protocol not recognized");
+  }
+  catch (Exception& e)
+  {
+    sock.close();
+    this->refreshing = false;
+    this->players = -2;
 
-      std::cout << "Server info: " << this->name << " online. "
-          << "Players: Unknown (" << ::strerror(errno) << ")" << std::endl;
+    std::cout << "Server info: " << this->name << " online. "
+        << "Players: Unknown (" << e << ")" << std::endl;
 
-      return;
-    }
-
-    if (ret == 0)
-      break;
+    return;
   }
 
-  buffer[SERVER_READ_BYTES] = '\0';
+  sock.close();
 
   // Amended usercount checks, info from clef on iRC
   // [16:01] <clef> BradStone: for the moment, take that byte[19]
@@ -162,20 +127,8 @@ Server::refresh_intern (void)
       this->players = 0;
   }
 
-  ::close(sock);
   this->refreshing = false;
 
   std::cout << "Server info: " << this->name << " online. "
       << "Players: " << this->players << std::endl;
-}
-
-/* ---------------------------------------------------------------- */
-
-void
-Server::alarm_expired (int signal)
-{
-  signal = 0;
-
-  /* Just close the socket, that will connect force to return with error. */
-  ::shutdown(Server::current_socket, SHUT_RDWR);
 }

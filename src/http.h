@@ -18,6 +18,7 @@
 #include <stdint.h>
 
 #include "ref_ptr.h"
+#include "nettcpsocket.h"
 #include "httpstatus.h"
 
 enum HttpMethod
@@ -87,15 +88,16 @@ class Http
     void initialize_defaults (void);
 
     /* Stages of the HTTP request. */
-    int initialize_connection (void);
-    void send_http_headers (int sock);
-    HttpDataPtr read_http_reply (int sock);
+    Net::TCPSocket initialize_connection (void);
+    void send_http_headers (Net::TCPSocket& sock);
+    HttpDataPtr read_http_reply (Net::TCPSocket& sock);
 
     /* Helpers. */
     unsigned int get_uint_from_hex (std::string const& str);
     unsigned int get_uint_from_str (std::string const& str);
-    ssize_t socket_read_line (int sock, std::string& line);
-    ssize_t http_data_read (int sock, char* buf, size_t size);
+    //ssize_t socket_read_line (int sock, std::string& line);
+    std::size_t http_data_read (Net::TCPSocket& sock, char* buf,
+        std::size_t size);
     HttpStatusCode get_http_status_code (std::string const& header);
 
   public:

@@ -103,22 +103,33 @@ class ApiCharSheet : public ApiBase
     std::vector<ApiCharSheetSkill> skills;
     std::vector<ApiCharSheetCert> certs;
 
+    /* Statistics. */
+    unsigned int total_sp;
+    unsigned int skills_at[6];
+
   public:
     static ApiCharSheetPtr create (void);
     void set_api_data (EveApiData const& data);
 
+    /* Lookup methods for skills. This is expensive. */
+    ApiCharSheetSkill* get_skill_for_id (int id);
+    int get_level_for_skill (int id) const;
+
+    /* Lookup methods for certificates. This is expensive. */
+    ApiCharSheetCert* get_cert_for_id (int id);
+    int get_grade_for_class (int class_id) const;
+
+    /* Adds a new skill to the character if it's not already
+     * present. Statistics are appropriately updated. */
     void add_char_skill (int skill_id, int level);
 
-    ApiCharSheetSkill* get_skill_for_id (int id);
-    int get_level_for_skill (int id);
-
-    ApiCharSheetCert* get_cert_for_id (int id);
-    int get_grade_for_class (int class_id);
-
+    /* Calculates the SP/h for the given skill based on the
+     * character total attributes or the specified attributes. */
     unsigned int get_spph_for_skill (ApiSkill const* skill);
     unsigned int get_spph_for_skill (ApiSkill const* skill,
         ApiCharAttribs const& attribs);
 
+    /* Generic calculation of skill start and destination SP. */
     static int calc_start_sp (int level, int rank);
     static int calc_dest_sp (int level, int rank);
 };

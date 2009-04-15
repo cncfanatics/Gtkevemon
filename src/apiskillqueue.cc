@@ -8,8 +8,15 @@
 void
 ApiSkillQueue::set_api_data (EveApiData const& data)
 {
+  this->valid = false;
+
   this->ApiBase::set_api_data(data);
   this->parse_xml();
+
+  /* Force the skill queue to have a minimum cache time. */
+  this->enforce_cache_time(API_SKILL_QUEUE_MIN_CACHE_TIME);
+
+  this->valid = true;
 }
 
 /* ---------------------------------------------------------------- */
@@ -91,15 +98,59 @@ ApiSkillQueue::parse_queue_rowset (xmlNodePtr node)
       item.end_time = this->get_property(node, "endTime");
       item.queue_pos = Helpers::get_int_from_string(pos);
       item.skill_id = Helpers::get_int_from_string(type_id);
-      item.skill_level = Helpers::get_int_from_string(level);
+      item.to_level = Helpers::get_int_from_string(level);
       item.start_sp = Helpers::get_int_from_string(startsp);
       item.end_sp = Helpers::get_int_from_string(endsp);
       item.start_time_t = EveTime::get_time_for_string(item.start_time);
       item.end_time_t = EveTime::get_time_for_string(item.end_time);
 
-      this->items.push_back(item);
+      this->queue.push_back(item);
     }
   }
+}
+
+/* ---------------------------------------------------------------- */
+
+bool
+ApiSkillQueue::in_training (void) const
+{
+  if (this->queue.empty())
+    return false;
+
+  if (this->queue.back().end_time_t < EveTime::get_eve_time())
+    return false;
+
+  return true;
+}
+
+/* ---------------------------------------------------------------- */
+
+ApiSkillQueueItem const*
+ApiSkillQueue::get_training_skill (void) const
+{
+  if (this->queue.empty())
+    return 0;
+
+  time_t eve_time = EveTime::get_eve_time();
+  for (std::size_t i = 0; i < this->queue.size(); ++i)
+    if (this->queue[i].end_time_t >= eve_time)
+      return &this->queue[i];
+
+  return 0;
+}
+
+/* ---------------------------------------------------------------- */
+
+unsigned int
+ApiSkillQueue::get_spph_for_current (void) const
+{
+  ApiSkillQueueItem const* item = this->get_training_skill();
+  if (item == 0)
+    return 0;
+
+  double skill_sp = item->end_sp - item->start_sp;
+  double train_time = item->end_time_t - item->start_time_t;
+  return (unsigned int)(skill_sp * 3600.0 / train_time);
 }
 
 /* ---------------------------------------------------------------- */
@@ -108,11 +159,11 @@ void
 ApiSkillQueue::debug_dump (void)
 {
   std::cout << "=== Skill Queue dump ===" << std::endl;
-  for (std::size_t i = 0; i < this->items.size(); ++i)
+  for (std::size_t i = 0; i < this->queue.size(); ++i)
   {
-    ApiSkillQueueItem const& item = this->items[i];
+    ApiSkillQueueItem const& item = this->queue[i];
     std::cout << "Element " << i << ": Position " << item.queue_pos
-        << ", Skill ID " << item.skill_id << " (" << item.skill_level << ")"
+        << ", Skill ID " << item.skill_id << " (" << item.to_level << ")"
         << ", from " << item.start_sp << " to " << item.end_sp << " SP"
         << ", from unix time " << item.start_time_t
         << " to " << item.end_time_t << std::endl;

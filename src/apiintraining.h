@@ -17,7 +17,7 @@
 #include <libxml/parser.h>
 
 #include "ref_ptr.h"
-#include "http.h"
+#include "eveapi.h"
 #include "apibase.h"
 
 /* The minimum amount of seconds the sheet is cached. */
@@ -61,7 +61,8 @@ class ApiInTraining : public ApiBase
 /* ---------------------------------------------------------------- */
 
 inline
-ApiInTraining::ApiInTraining (void) : valid(false), in_training(false)
+ApiInTraining::ApiInTraining (void)
+  : valid(false), in_training(false), holds_completed(false)
 {
 }
 

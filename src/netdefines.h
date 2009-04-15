@@ -10,19 +10,20 @@
  * along with GtkEveMon. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DEFINES_HEADER
-#define DEFINES_HEADER
+#ifndef NET_DEFINES_HEADER
+#define NET_DEFINES_HEADER
 
-/* The version string used in the application. */
-#define GTKEVEMON_VERSION_STR "Revision 1.7-99"
+/* Namespace for the networking. */
+#define NET_NAMESPACE_BEGIN namespace Net {
+#define NET_NAMESPACE_END }
 
-/* General compile-time configuration. */
-#define LAUNCHER_CMD_AMOUNT 5
-
-#ifndef WIN32
-# define CONF_HOME_DIR ".gtkevemon"
+#ifdef WIN32
+  typedef ULONG in_addr_t;
+  typedef SOCKET NetSocketFD;
+# define NET_INVALID_SOCKET INVALID_SOCKET;
 #else
-# define CONF_HOME_DIR "GtkEveMon"
+  typedef int NetSocketFD;
+# define NET_INVALID_SOCKET -1
 #endif
 
-#endif /* DEFINES_HEADER */
+#endif /* NET_DEFINES_HEADER */

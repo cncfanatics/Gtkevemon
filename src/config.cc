@@ -6,9 +6,8 @@
 #include <string>
 
 #include "argumentsettings.h"
+#include "defines.h"
 #include "config.h"
-
-#define CONF_HOME_DIR ".gtkevemon"
 
 /* Default configuration is always loaded. The application
  * can rely on these keys to be there all the time even if
@@ -86,7 +85,7 @@ Config::init_defaults (void)
 /* ---------------------------------------------------------------- */
 
 void
-Config::init_user_config (void)
+Config::init_config_path (void)
 {
   /* The first part here determines the user's config directory.
    * If there is no home directory or any other error occures,
@@ -143,6 +142,15 @@ Config::init_user_config (void)
   /* Set the filename, make it official. */
   Config::conf_dir = user_conf_dir;
   Config::filename = user_conf_dir + "/gtkevemon.conf";
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+Config::init_user_config (void)
+{
+  if (Config::conf_dir.empty() || Config::filename.empty())
+    throw Exception("Error: Location of user configuration not available");
 
   /* Check if the config file is in-place. If not, dump the current
    * default configuration to file. */

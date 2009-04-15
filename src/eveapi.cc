@@ -80,12 +80,8 @@ EveApiFetcher::request (void)
   }
   catch (Exception& e)
   {
-    delete fetcher;
     ret.data.reset();
     ret.exception = e;
-    this->process_caching(ret);
-    this->sig_done.emit(ret);
-    return;
   }
 
   delete fetcher;

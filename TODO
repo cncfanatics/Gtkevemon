@@ -17,21 +17,38 @@ Skill Browser / Planner
    - Enabled skills through training
 
 
+Remove SkillInTraining.xml
+--------------------------
+ - Requires to update a lot of stuff
+
+   - Update GtkCharSheet
+     - Change training_fetcher to skillqueue fetcher
+     - Change trainsheet_info_label to skillqueue_info_label
+     - Change training (sheet) to skillqueue
+
+   - Update GuiSkillPlanner
+     - Simply forward the queue sheet instead of training sheet
+
+   - Update GtkTrainingPlan
+     - GtkSkillList
+       - Requires valid, in_training
+       - Requires skill_id, to_level, end_time
+       - Update GtkSkillIcon or add "bool inqueue"
+     - GtkTraininPlan
+       - Simply forwards the sheet
+       - Update icons
+
+   - Update notifier
+     - It simiply requires skill_id and to_level
+
+   - Update Skill Queue GUI
+     - Sheets needs to be passed
+     - Pay attention to training times
+
+
 Notifications
 -------------
  - Notification a few miniutes before actual finish
-
-
-Imporve calculations
---------------------
- - Calculate live SP and percentage with:
-     - current EVE time
-     - trainingStartTime
-     - trainingEndTime
-     - trainingStartSP
-     - trainingEndSP
-     - REQUIRES rank or real start SP
-       (trainingStartSP modified on training pause)
 
 
 Skill / Certificate Browser

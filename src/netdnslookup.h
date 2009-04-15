@@ -10,19 +10,22 @@
  * along with GtkEveMon. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DEFINES_HEADER
-#define DEFINES_HEADER
+#ifndef NET_DNS_LOOKUP_HEADER
+#define NET_DNS_LOOKUP_HEADER
 
-/* The version string used in the application. */
-#define GTKEVEMON_VERSION_STR "Revision 1.7-99"
+#include <netinet/in.h>
 
-/* General compile-time configuration. */
-#define LAUNCHER_CMD_AMOUNT 5
+#include "netdefines.h"
 
-#ifndef WIN32
-# define CONF_HOME_DIR ".gtkevemon"
-#else
-# define CONF_HOME_DIR "GtkEveMon"
-#endif
+NET_NAMESPACE_BEGIN
 
-#endif /* DEFINES_HEADER */
+class DNSLookup
+{
+  public:
+    static in_addr_t get_hostname (char const* dnsname);
+    static in_addr_t get_hostname (std::string const& dnsname);
+};
+
+NET_NAMESPACE_END
+
+#endif /* NET_DNS_LOOKUP_HEADER */

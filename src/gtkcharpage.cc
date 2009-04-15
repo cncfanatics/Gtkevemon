@@ -81,6 +81,7 @@ GtkCharPage::GtkCharPage (void)
   this->corp_label.set_alignment(Gtk::ALIGN_LEFT);
   this->balance_label.set_alignment(Gtk::ALIGN_LEFT);
   this->skill_points_label.set_alignment(Gtk::ALIGN_LEFT);
+  this->clone_warning_label.set_alignment(Gtk::ALIGN_LEFT);
   this->known_skills_label.set_alignment(Gtk::ALIGN_LEFT);
   this->attr_cha_label.set_alignment(Gtk::ALIGN_LEFT);
   this->attr_int_label.set_alignment(Gtk::ALIGN_LEFT);
@@ -137,6 +138,11 @@ GtkCharPage::GtkCharPage (void)
   Gtk::HBox* char_buts_hbox = MK_HBOX;
   char_buts_hbox->pack_end(*char_buts_vbox, false, false, 0);
 
+  /* Character SP and clone warning box. */
+  Gtk::HBox* char_skillpoints_box = MK_HBOX;
+  char_skillpoints_box->pack_start(this->skill_points_label, false, false, 0);
+  char_skillpoints_box->pack_start(this->clone_warning_label, false, false, 0);
+
   info_table->attach(this->char_image, 0, 1, 0, 5, Gtk::SHRINK, Gtk::SHRINK);
   info_table->attach(this->char_name_label, 1, 2, 0, 1, Gtk::FILL, Gtk::FILL);
   info_table->attach(*corp_desc, 1, 2, 1, 2, Gtk::FILL, Gtk::FILL);
@@ -146,8 +152,7 @@ GtkCharPage::GtkCharPage (void)
   info_table->attach(this->char_info_label, 2, 3, 0, 1, Gtk::FILL, Gtk::FILL);
   info_table->attach(this->corp_label, 2, 3, 1, 2, Gtk::FILL, Gtk::FILL);
   info_table->attach(this->balance_label, 2, 3, 2, 3, Gtk::FILL, Gtk::FILL);
-  info_table->attach(this->skill_points_label, 2, 3, 3, 4,
-      Gtk::FILL, Gtk::FILL);
+  info_table->attach(*char_skillpoints_box, 2, 3, 3, 4, Gtk::FILL, Gtk::FILL);
   info_table->attach(this->known_skills_label, 2, 3, 4, 5,
       Gtk::FILL, Gtk::FILL);
   info_table->attach(*MK_VSEP, 3, 4, 0, 5, Gtk::FILL, Gtk::FILL);
@@ -315,10 +320,10 @@ GtkCharPage::update_charsheet_details (void)
         (this->sheet->balance) + " ISK");
 
     this->skill_points_label.set_text(Helpers::get_dotted_str_from_uint
-        (this->skill_info.total_sp));
+        (this->sheet->total_sp));
     this->known_skills_label.set_text(Helpers::get_string_from_uint
         (this->sheet->skills.size()) + " known skills ("
-        + Helpers::get_string_from_uint(this->skill_info.skills_at[5])
+        + Helpers::get_string_from_uint(this->sheet->skills_at[5])
         + " at V)");
 
     this->attr_cha_label.set_text(Helpers::get_string_from_double
@@ -335,13 +340,13 @@ GtkCharPage::update_charsheet_details (void)
     /* Build list of known skills per level (tooltip). */
     Glib::ustring skills_at_tt;
     skills_at_tt = "<u><b>List of known skills</b></u>\n";
-    for (unsigned int i = 0; i < 6; ++i)
+    for (int i = 0; i < 6; ++i)
     {
       skills_at_tt += "Level ";
       skills_at_tt += Helpers::get_string_from_uint(i);
       skills_at_tt += ": ";
       skills_at_tt += Helpers::get_string_from_uint
-          (this->skill_info.skills_at[i]);
+          (this->sheet->skills_at[i]);
       if (i != 5)
         skills_at_tt += "\n";
     }
@@ -352,6 +357,17 @@ GtkCharPage::update_charsheet_details (void)
     clone_tt += this->sheet->clone_name + "\nKeeps: ";
     clone_tt += Helpers::get_dotted_str_from_str(this->sheet->clone_sp);
     clone_tt += " SP";
+
+    unsigned int clone_sp = Helpers::get_int_from_string(this->sheet->clone_sp);
+    if (this->sheet->total_sp > clone_sp)
+    {
+      clone_tt += "\n\n<b>Warning:</b> Your clone is outdated!";
+      this->clone_warning_label.set_markup("<b>(outdated)</b>");
+    }
+    else
+    {
+      this->clone_warning_label.set_text("");
+    }
 
     /* Build detailed attribute information (tooltip). */
     Glib::ustring attr_cha_tt;
@@ -397,6 +413,7 @@ GtkCharPage::update_charsheet_details (void)
     /* Update some character sheet related skills. */
     this->known_skills_label.set_tooltip_markup(skills_at_tt);
     this->skill_points_label.set_tooltip_markup(clone_tt);
+    this->clone_warning_label.set_tooltip_markup(clone_tt);
     this->attr_cha_label.set_tooltip_markup(attr_cha_tt);
     this->attr_int_label.set_tooltip_markup(attr_int_tt);
     this->attr_per_label.set_tooltip_markup(attr_per_tt);
@@ -755,22 +772,9 @@ GtkCharPage::on_intraining_available (EveApiData data)
 void
 GtkCharPage::api_info_changed (void)
 {
+  /* If we got a valid character sheet, emit a signal for notification. */
   if (this->sheet->valid)
-  {
-    /* Update worked-up information. */
-    this->skill_info.total_sp = 0;
-    for (unsigned int i = 0; i < 6; ++i)
-      this->skill_info.skills_at[i] = 0;
-
-    for (unsigned int i = 0; i < this->sheet->skills.size(); ++i)
-    {
-      ApiCharSheetSkill& skill = this->sheet->skills[i];
-      this->skill_info.total_sp += skill.points;
-      this->skill_info.skills_at[skill.level] += 1;
-    }
-
     this->sig_sheet_updated.emit(this->character);
-  }
 
   /* Update worked-up information. */
   if (this->sheet->valid
@@ -786,6 +790,7 @@ GtkCharPage::api_info_changed (void)
     /* Cache current skill in training and the SP/h. */
     this->skill_info.char_skill = this->sheet->get_skill_for_id
         (this->training->skill);
+    this->skill_info.total_sp = this->sheet->total_sp;
     this->skill_info.sp_per_hour = this->training->get_current_spph();
     this->spph_label.set_text(Helpers::get_string_from_uint
         (this->skill_info.sp_per_hour) + " SP per hour");

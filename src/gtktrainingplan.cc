@@ -1228,17 +1228,20 @@ GtkTrainingPlan::on_export_plan (void)
   fcb.add_button(Gtk::Stock::SAVE, Gtk::RESPONSE_OK);
   fcb.set_do_overwrite_confirmation(true);
 
+#define PLAN_FILTER_EMP "EveMon Plan (*.emp)"
+#define PLAN_FILTER_XML "EveMon Uncompressed Plan (*.xml)"
+
   {
     Gtk::FileFilter filter;
     filter.add_pattern("*.emp");
-    filter.set_name("EveMon Plan (*.emp)");
+    filter.set_name(PLAN_FILTER_EMP);
     fcb.add_filter(filter);
   }
 
   {
     Gtk::FileFilter filter;
     filter.add_pattern("*.xml");
-    filter.set_name("EveMon Uncompressed Plan (*.xml)");
+    filter.set_name(PLAN_FILTER_XML);
     fcb.add_filter(filter);
   }
 
@@ -1250,19 +1253,27 @@ GtkTrainingPlan::on_export_plan (void)
       return;
 
     filename = fcb.get_filename();
+    std::string extension = ".emp";
     bool filename_changed = false;
+
+    /* FIXME: Fetch extension from filter. */
+    #if 0
+    Gtk::FileFilter* filter = fcb.get_filter();
+    if (filter->get_name() == PLAN_FILTER_XML)
+      extension = ".xml";
+    #endif
 
     if (filename.size() < 4)
     {
-      filename += ".emp";
+      filename += extension;
       filename_changed = true;
     }
     else
     {
-      std::string extension = filename.substr(filename.size() - 4);
-      if (extension != ".emp" && extension != ".xml")
+      std::string file_ext = filename.substr(filename.size() - 4);
+      if (file_ext != ".emp" && file_ext != ".xml")
       {
-        filename += ".emp";
+        filename += extension;
         filename_changed = true;
       }
     }

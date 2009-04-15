@@ -12,113 +12,9 @@
 #include <sstream>
 #include <string>
 
+#include "netdnslookup.h"
 #include "exception.h"
 #include "http.h"
-
-/* Holds a struct hostent with magical dynamically allocated data.
- * This is thread safe in contrast to the gethostbyname() function.
- */
-class GetHostByName
-{
-  private:
-    char* strange_data;
-
-  public:
-    struct hostent result;
-
-  public:
-    GetHostByName (char const* host);
-    ~GetHostByName (void);
-};
-
-/* Some comment about this function I found on the internet:
- *
- *   "Oh boy, this interface sucks so badly, there are no words for it.
- *   Not one, not two, but _three_ error signalling methods!  (*h_errnop
- *   nonzero?  return value nonzero?  *RESULT zero?)  The glibc goons
- *   really outdid themselves with this one."
- */
-GetHostByName::GetHostByName (char const* host)
-{
-  this->strange_data = 0;
-
-#if defined(_GNU_SOURCE) || defined(__FreeBSD__)
-
-  /* If this is compiled as GNU source, assume that
-   * gethostbyname_r is available. */
-  struct hostent* hp;
-  int res;
-  int herr;
-
-  /* Define initial buffer length and alloc space. */
-  size_t buffer_len = 1024;
-  this->strange_data = (char*)::malloc(buffer_len);
-
-  while ((res = ::gethostbyname_r(host, &this->result,
-      this->strange_data, buffer_len, &hp, &herr)) == ERANGE)
-  {
-    /* Enlarge the buffer.  */
-    buffer_len *= 2;
-    this->strange_data = (char*)::realloc(this->strange_data, buffer_len);
-  }
-
-  /*  Check for errors.  */
-  if (res || hp == 0)
-    throw Exception("gethostbyname_r() failed: "
-        + std::string(::hstrerror(herr)));
-
-#elif defined(__APPLE__)
-
-  /* Under MacOS X the gethostbyname function is already thread safe. */
-  this->result = *::gethostbyname(host);
-
-#elif defined(WIN32)
-
-  /* Under Win32 the gethostbyname function is already thread safe. */
-  this->result = *::gethostbyname(host);
-
-#elif defined(__SunOS)
-
-  /* Solaris has 1 argument fewer than Linux. */
-  struct hostent* res;
-  int herr;
-
-  /* Define initial buffer length and alloc space. */
-  size_t buffer_len = 1024;
-  this->strange_data = (char*)::malloc(buffer_len);
-
-  do
-  {
-    res = ::gethostbyname_r(host, &this->result,
-        this->strange_data, buffer_len, &herr);
-    /*  Check for errors.  */
-    if (res == 0 && herr == ERANGE)
-    {
-      /* Enlarge the buffer.  */
-      buffer_len *= 2;
-      this->strange_data = (char*)::realloc(this->strange_data, buffer_len);
-    }
-  }
-  while (res == 0 && herr == ERANGE);
-
-  if (res == 0 && herr != 0)
-    throw Exception("gethostbyname_r() failed: "
-        + std::string(::hstrerror(herr)));
-
-#else
-
-  /* There is no solution for other systems yet. */
-# error "gethostbyname_r(): no implementation available. PLEASE REPORT THIS!"
-
-#endif
-}
-
-GetHostByName::~GetHostByName (void)
-{
-  ::free(this->strange_data);
-}
-
-/* ================================================================ */
 
 void
 HttpData::dump_headers (void)
@@ -211,7 +107,7 @@ Http::request (void)
   this->bytes_read = 0;
   this->bytes_total = 0;
 
-  int sock = -1;
+  Net::TCPSocket sock;
   try
   {
     /* Initialize a valid HTTP connection. */
@@ -226,16 +122,18 @@ Http::request (void)
     this->http_state = HTTP_STATE_RECEIVING;
     HttpDataPtr result = this->read_http_reply(sock);
 
+    /* Close socket. */
+    sock.close();
+
     /* Done reading the reply. */
     this->http_state = HTTP_STATE_DONE;
-    ::close(sock);
     return result;
   }
   catch (Exception& e)
   {
     this->http_state = HTTP_STATE_ERROR;
-    if (sock >= 0)
-      ::close(sock);
+    if (sock.is_connected())
+      sock.close();
     throw e;
   }
 }
@@ -243,7 +141,7 @@ Http::request (void)
 /* ---------------------------------------------------------------- */
 
 /* Initializes a valid HTTP connection or throws an exception. */
-int
+Net::TCPSocket
 Http::initialize_connection (void)
 {
   /* Some error checking. */
@@ -253,49 +151,16 @@ Http::initialize_connection (void)
   if (this->path.size() == 0)
     throw Exception("Internal: Path not set");
 
-  /* Create socket. */
-  int sock = ::socket(PF_INET, SOCK_STREAM, 0);
-  if (sock < 0)
-    throw Exception(std::string("socket() failed: ") + ::strerror(errno));
-
-  /* Prepare for internet. */
-  struct sockaddr_in remote;
+  Net::TCPSocket sock;
 
   if (this->proxy.empty())
   {
-    /* The no-proxy-case. Get IP adress for the host. */
-    try
-    {
-      GetHostByName hn(this->host.c_str());
-      remote.sin_family = AF_INET;
-      remote.sin_port = htons(this->port);
-      remote.sin_addr.s_addr = *(uint32_t*)hn.result.h_addr;
-    }
-    catch (Exception& e)
-    {
-      ::close(sock);
-      throw Exception(e);
-    }
+    in_addr_t host_addr = Net::DNSLookup::get_hostname(this->host);
+    sock.connect(host_addr, this->port);
   }
   else
   {
-    /* The proxy case. Assume the proxy is given as IP address. */
-    remote.sin_family = AF_INET;
-    remote.sin_port = htons(this->proxy_port);
-
-    if (::inet_aton(this->proxy.c_str(), &remote.sin_addr) == 0)
-    {
-      ::close(sock);
-      throw Exception(std::string("inet_aton() failed: ") + ::strerror(errno));
-    }
-  }
-
-  /* Connect and see if it works. */
-  if (::connect(sock, (struct sockaddr*)&remote,
-      sizeof(struct sockaddr_in)) < 0)
-  {
-    ::close(sock);
-    throw Exception(std::string("connect() failed: ") + ::strerror(errno));
+    sock.connect(this->proxy, this->proxy_port);
   }
 
   return sock;
@@ -304,7 +169,7 @@ Http::initialize_connection (void)
 /* ---------------------------------------------------------------- */
 
 void
-Http::send_http_headers (int sock)
+Http::send_http_headers (Net::TCPSocket& sock)
 {
   std::string request_path;
   if (this->proxy.empty())
@@ -353,15 +218,13 @@ Http::send_http_headers (int sock)
   //std::cout << "Sending: " << header_str << std::endl;
 
   /* Send the headers. */
-  ssize_t nbytes = ::write(sock, header_str.c_str(), header_str.size());
-  if (nbytes < 0)
-    throw Exception(std::string("write() failed: ") + ::strerror(errno));
+  sock.full_write(header_str.c_str(), header_str.size());
 }
 
 /* ---------------------------------------------------------------- */
 
 HttpDataPtr
-Http::read_http_reply (int sock)
+Http::read_http_reply (Net::TCPSocket& sock)
 {
   HttpDataPtr result = HttpData::create();
   bool chunked_read = false;
@@ -370,10 +233,10 @@ Http::read_http_reply (int sock)
   while (true)
   {
     std::string line;
-    int ret = this->socket_read_line(sock, line);
+    sock.read_line(line, 1024);
 
     /* Exit loop if we read an empty line. */
-    if (ret == 0)
+    if (line.empty())
       break;
 
     result->headers.push_back(line);
@@ -393,20 +256,20 @@ Http::read_http_reply (int sock)
   if (chunked_read)
   {
     /* Deal with chunks *sigh*. */
-    unsigned int size = 512;
-    unsigned int pos = 0;
+    std::size_t size = 512;
+    std::size_t pos = 0;
     result->data.resize(size);
 
     while (true)
     {
       /* Read line with chunk size information. */
       std::string line;
-      int ret = this->socket_read_line(sock, line);
-      if (ret == 0)
+      sock.read_line(line, 32);
+      if (line.empty())
         break;
 
       /* Convert to number of bytes to be read. */
-      unsigned int chunk_size = this->get_uint_from_hex(line);
+      std::size_t chunk_size = this->get_uint_from_hex(line);
       if (chunk_size == 0)
         break;
 
@@ -418,10 +281,10 @@ Http::read_http_reply (int sock)
       }
 
       /* Read bytes. */
-      ssize_t nbytes = this->http_data_read(sock,
+      std::size_t nbytes = this->http_data_read(sock,
           &result->data[pos], chunk_size);
       pos += nbytes;
-      if (nbytes != (ssize_t)chunk_size)
+      if (nbytes != chunk_size)
         break;
     }
 
@@ -438,7 +301,7 @@ Http::read_http_reply (int sock)
       if (result->data.size() < pos + size)
         result->data.resize(pos + size, '\0');
 
-      ssize_t nbytes = this->http_data_read(sock, &result->data[pos], size);
+      std::size_t nbytes = this->http_data_read(sock, &result->data[pos], size);
       if (nbytes == 0)
         break;
       pos += nbytes;
@@ -536,58 +399,14 @@ Http::get_uint_from_str (std::string const& str)
 
 /* ---------------------------------------------------------------- */
 
-ssize_t
-Http::socket_read_line (int sock, std::string& line)
+std::size_t
+Http::http_data_read (Net::TCPSocket& sock, char* buf, std::size_t size)
 {
-  ssize_t i = 0;
-  /* whether the previous char was a \r */
-  bool cr = false;
-  char ch;
-
-  while (true)
+  std::size_t ret = 0;
+  while (ret < size)
   {
-    /* Read a character. */
-    ssize_t ret = ::read(sock, &ch, 1);
-    if (ret < 0)
-      throw Exception(::strerror(errno));
-    else if (ret == 0)
-      break;
-
-    /* Check for newlines. */
-    if (ch == '\n')
-    {
-      /* If preceded by a \r, remove it. */
-      if (cr)
-      {
-        line.erase(line.size() - 1);
-        i -= 1;
-      }
-      break;
-    }
-    else
-    {
-      cr = (ch == '\r');
-      line.push_back(ch);
-    }
-
-    i += 1;
-  }
-
-  return i;
-}
-
-/* ---------------------------------------------------------------- */
-
-ssize_t
-Http::http_data_read (int sock, char* buf, size_t size)
-{
-  ssize_t ret = 0;
-  while (ret < (ssize_t)size)
-  {
-    ssize_t new_read = ::read(sock, buf + ret, size - ret);
-    if (new_read < 0) /* Error */
-      throw Exception(::strerror(errno));
-    else if (new_read == 0) /* EOF */
+    ssize_t new_read = sock.read(buf + ret, size - ret);
+    if (new_read == 0)
       break;
 
     ret += new_read;

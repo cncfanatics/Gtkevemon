@@ -24,6 +24,10 @@ ApiCharSheet::set_api_data (EveApiData const& data)
   this->implant.per = 0;
   this->implant.wil = 0;
 
+  this->total_sp = 0;
+  for (int i = 0; i < 6; ++i)
+    this->skills_at[i] = 0;
+
   /* Parse the data. */
   this->parse_xml();
 
@@ -85,19 +89,20 @@ ApiCharSheet::set_api_data (EveApiData const& data)
 
   /* Calculate start SP, destination SP and completed. */
   ApiSkillTreePtr stree = ApiSkillTree::request();
-  for (unsigned int i = 0; i < this->skills.size(); ++i)
+  for (std::size_t i = 0; i < this->skills.size(); ++i)
   {
     ApiCharSheetSkill& cskill = this->skills[i];
     ApiSkill const* skill = stree->get_skill_for_id(cskill.id);
     if (skill == 0)
     {
       std::cout << "Warning: Ignoring unknown skill (ID " << cskill.id
-          << "). Update GtkEveMon or SkillTree.xml." << std::endl;
+          << "). Update SkillTree.xml." << std::endl;
       this->skills.erase(this->skills.begin() + i);
       i -= 1;
       continue;
     }
 
+    /* Update a few fields of the char sheet skill. */
     cskill.details = skill;
     cskill.points_start = ApiCharSheet::calc_start_sp
         (skills[i].level, skill->rank);
@@ -105,6 +110,10 @@ ApiCharSheet::set_api_data (EveApiData const& data)
         (skills[i].level, skill->rank);
     cskill.completed = (double)(skills[i].points - skills[i].points_start)
         / (double)(skills[i].points_dest - skills[i].points_start);
+
+    /* Sum up the total amount of SP for the character. */
+    this->total_sp += cskill.points;
+    this->skills_at[cskill.level] += 1;
   }
 
   /* Update certificate field "details". */
@@ -353,39 +362,54 @@ ApiCharSheet::add_char_skill (int skill_id, int level)
     ApiSkillTreePtr tree = ApiSkillTree::request();
     ApiSkill const* skill = tree->get_skill_for_id(skill_id);
 
+    int skill_start_sp = ApiCharSheet::calc_start_sp(level, skill->rank);
+    int skill_dest_sp = ApiCharSheet::calc_dest_sp(level, skill->rank);
+
     ApiCharSheetSkill new_cskill;
     new_cskill.id = skill->id;
     new_cskill.level = level;
-    new_cskill.points = 0;
-    new_cskill.points_start = ApiCharSheet::calc_start_sp(level, skill->rank);
-    new_cskill.points_dest = ApiCharSheet::calc_dest_sp(level, skill->rank);
+    new_cskill.points = skill_start_sp;
+    new_cskill.points_start = skill_start_sp;
+    new_cskill.points_dest = skill_dest_sp;
     new_cskill.completed = 0.0;
     new_cskill.details = skill;
 
     this->skills.push_back(new_cskill);
+    this->skills_at[level] += 1;
+    this->total_sp += skill_start_sp;
   }
   else
   {
     /* Update existing skill. */
     ApiSkill const* skill = cskill->details;
 
+    int old_level = cskill->level;
+    int old_points = cskill->points;
+
+    int skill_start_sp = ApiCharSheet::calc_start_sp(level, skill->rank);
+    int skill_dest_sp = ApiCharSheet::calc_dest_sp(level, skill->rank);
+
     cskill->level = level;
-    cskill->points = 0;
-    cskill->points_start = ApiCharSheet::calc_start_sp(level, skill->rank);
-    cskill->points_dest = ApiCharSheet::calc_dest_sp(level, skill->rank);
+    cskill->points = skill_start_sp;
+    cskill->points_start = skill_start_sp;
+    cskill->points_dest = skill_dest_sp;
     cskill->completed = 0.0;
+
+    this->skills_at[old_level] -= 1;
+    this->skills_at[level] += 1;
+    this->total_sp -= old_points;
+    this->total_sp += skill_start_sp;
   }
 }
 
 /* ---------------------------------------------------------------- */
 
 int
-ApiCharSheet::get_level_for_skill (int id)
+ApiCharSheet::get_level_for_skill (int id) const
 {
-  ApiCharSheetSkill* skill = this->get_skill_for_id(id);
-
-  if (skill != 0)
-    return skill->level;
+  for (std::size_t i = 0; i < this->skills.size(); ++i)
+    if (this->skills[i].id == id)
+      return this->skills[i].level;
 
   /* Return level 0 if skill is not in the list. */
   return 0;
@@ -396,11 +420,9 @@ ApiCharSheet::get_level_for_skill (int id)
 ApiCharSheetSkill*
 ApiCharSheet::get_skill_for_id (int id)
 {
-  for (unsigned int i = 0; i < this->skills.size(); ++i)
-  {
+  for (std::size_t i = 0; i < this->skills.size(); ++i)
     if (this->skills[i].id == id)
       return &this->skills[i];
-  }
 
   return 0;
 }
@@ -410,11 +432,9 @@ ApiCharSheet::get_skill_for_id (int id)
 ApiCharSheetCert*
 ApiCharSheet::get_cert_for_id (int id)
 {
-  for (unsigned int i = 0; i < this->certs.size(); ++i)
-  {
+  for (std::size_t i = 0; i < this->certs.size(); ++i)
     if (this->certs[i].id == id)
       return &this->certs[i];
-  }
 
   return 0;
 }
@@ -422,10 +442,10 @@ ApiCharSheet::get_cert_for_id (int id)
 /* ---------------------------------------------------------------- */
 
 int
-ApiCharSheet::get_grade_for_class (int class_id)
+ApiCharSheet::get_grade_for_class (int class_id) const
 {
   int grade = 0;
-  for (unsigned int i = 0; i < this->certs.size(); ++i)
+  for (std::size_t i = 0; i < this->certs.size(); ++i)
   {
     ApiCert const* cert = this->certs[i].details;
     ApiCertClass const* cclass = cert->class_details;
@@ -496,14 +516,14 @@ ApiCharSheet::debug_dump (void)
   std::cout << "Character dump for " << this->name << std::endl;
   std::cout << "List of all skills:" << std::endl;
 
-  for (unsigned int i = 0; i < this->skills.size(); ++i)
+  for (std::size_t i = 0; i < this->skills.size(); ++i)
   {
     std::cout << "  " << this->skills[i].details->name
         << " (" << this->skills[i].id << ")" << std::endl;
   }
 
   std::cout << "List of all certs:" << std::endl;
-  for (unsigned int i = 0; i < this->certs.size(); ++i)
+  for (std::size_t i = 0; i < this->certs.size(); ++i)
   {
     std::cout << "  " << /*this->certs[i].details->name*/ "Unnamed yet"
         << " (" << this->certs[i].id << ")" << std::endl;

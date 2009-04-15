@@ -13,13 +13,14 @@ SOURCES = maingui.cc guiuserdata.cc guiconfiguration.cc guiaboutdialog.cc \
           gtkevemon.cc gtkserver.cc gtkconfwidgets.cc gtkcharpage.cc \
           gtkportrait.cc gtkinfodisplay.cc gtkplannerbase.cc gtkhelpers.cc \
           gtkcolumnsbase.cc gtkdownloader.cc gtkitemdetails.cc \
-	  gtkitembrowser.cc gtktrainingplan.cc gtkskillqueue.cc \
+          gtkitembrowser.cc gtktrainingplan.cc gtkskillqueue.cc \
           imagestore.cc argumentsettings.cc xmltrainingplan.cc \
           server.cc serverlist.cc helpers.cc conf.cc config.cc \
           xml.cc evetime.cc bgprocess.cc pipedexec.cc notifier.cc \
           http.cc asynchttp.cc eveapi.cc versionchecker.cc \
           apibase.cc apicharlist.cc apicharsheet.cc apiintraining.cc \
-          apiskilltree.cc apicerttree.cc apiitemtree.cc apiskillqueue.cc
+          apiskilltree.cc apicerttree.cc apiitemtree.cc apiskillqueue.cc \
+          netsocket.cc nettcpsocket.cc netdnslookup.cc
 
 OBJECTS = $(foreach file,$(SOURCES),$(subst .cc,.o,$(file)))
 
@@ -31,6 +32,10 @@ multicore:
 
 depend:
 	${CXX} -MM ${SOURCES} > Makefile.dep
+
+gemcache:
+	${RM} gemcache
+	${CXX} -o gemcache gemcache.cc ${CXXFLAGS}
 
 %.o: %.cc
 	${CXX} -c -o $@ $< ${CXXFLAGS}

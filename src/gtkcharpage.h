@@ -63,7 +63,6 @@ struct SkillInTrainingInfo
   ApiCharSheetSkill* char_skill;
   unsigned int sp_per_hour;
   unsigned int total_sp;
-  unsigned int skills_at[6];
   unsigned int skill_group_sp;
   Gtk::TreeIter tree_skill_iter;
   Gtk::TreeIter tree_group_iter;
@@ -94,6 +93,7 @@ class GtkCharPage : public Gtk::VBox
     Gtk::Label corp_label;
     Gtk::Label balance_label;
     Gtk::Label skill_points_label;
+    Gtk::Label clone_warning_label;
     Gtk::Label known_skills_label;
     Gtk::Label attr_cha_label;
     Gtk::Label attr_int_label;
@@ -208,8 +208,6 @@ SkillInTrainingInfo::SkillInTrainingInfo (void)
   this->char_skill = 0;
   this->sp_per_hour = 0;
   this->total_sp = 0;
-  for (unsigned int i = 0; i < 6; ++i)
-    this->skills_at[i] = 0;
 }
 
 inline void

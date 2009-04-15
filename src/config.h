@@ -29,6 +29,7 @@ class Config
 
   public:
     static void init_defaults (void);
+    static void init_config_path (void);
     static void init_user_config (void);
     static void save_to_file (void);
     static void unload (void);

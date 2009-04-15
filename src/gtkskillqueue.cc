@@ -3,6 +3,7 @@
 
 #include "config.h"
 #include "evetime.h"
+#include "helpers.h"
 #include "imagestore.h"
 #include "gtkhelpers.h"
 #include "gtkdefines.h"
@@ -126,20 +127,26 @@ GtkSkillQueue::on_apidata_available (EveApiData data)
   /* Debugging. */
   //sq->debug_dump();
 
+  /* FIXME: Pay attention to training times. */
+
   this->queue_store->clear();
   ApiSkillTreePtr tree = ApiSkillTree::request();
   time_t training = 0;
-  for (std::size_t i = 0; i < sq->items.size(); ++i)
+  for (std::size_t i = 0; i < sq->queue.size(); ++i)
   {
-    ApiSkillQueueItem const& item = sq->items[i];
+    ApiSkillQueueItem const& item = sq->queue[i];
     ApiSkill const* skill = tree->get_skill_for_id(item.skill_id);
 
     time_t duration = item.end_time_t - item.start_time_t;
     training += duration;
 
+    std::string skill_name = skill->name;
+    skill_name += " ";
+    skill_name += Helpers::get_roman_from_int(item.to_level);
+
     Gtk::TreeModel::Row row = *this->queue_store->append();
     row[this->queue_cols.queue_pos] = item.queue_pos;
-    row[this->queue_cols.skill_name] = skill->name;
+    row[this->queue_cols.skill_name] = skill_name;
     row[this->queue_cols.skill_icon] = ImageStore::skillicons[1];
     row[this->queue_cols.start_sp] = item.start_sp;
     row[this->queue_cols.end_sp] = item.end_sp;

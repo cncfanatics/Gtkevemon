@@ -36,10 +36,6 @@
 class Server
 {
   private:
-    static int current_socket;
-    static void alarm_expired (int signal);
-
-  private:
     std::string name;
     std::string host;
     uint16_t port;
