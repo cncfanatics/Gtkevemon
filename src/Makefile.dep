@@ -24,13 +24,13 @@ guiskill.o: guiskill.cc apiskilltree.h ref_ptr.h apibase.h eveapi.h \
   asynchttp.h http.h nettcpsocket.h netdefines.h netsocket.h httpstatus.h \
   thread.h thread_posix.h exception.h xml.h helpers.h gtkdefines.h \
   guiskill.h winbase.h
-guiskillplanner.o: guiskillplanner.cc helpers.h imagestore.h \
-  gtkportrait.h asynchttp.h http.h ref_ptr.h nettcpsocket.h netdefines.h \
-  netsocket.h httpstatus.h thread.h thread_posix.h exception.h \
+guiskillplanner.o: guiskillplanner.cc helpers.h config.h asynchttp.h \
+  http.h ref_ptr.h nettcpsocket.h netdefines.h netsocket.h httpstatus.h \
+  thread.h thread_posix.h exception.h conf.h imagestore.h gtkportrait.h \
   gtkdefines.h guiskillplanner.h winbase.h gtkitemdetails.h \
   apicharsheet.h apibase.h eveapi.h xml.h apiskilltree.h apicerttree.h \
   apiitemtree.h gtkplannerbase.h gtkitembrowser.h gtktrainingplan.h \
-  gtkcolumnsbase.h config.h conf.h gtkconfwidgets.h apiintraining.h
+  gtkcolumnsbase.h gtkconfwidgets.h apiintraining.h
 guixmlsource.o: guixmlsource.cc gtkdefines.h guixmlsource.h winbase.h \
   http.h ref_ptr.h nettcpsocket.h netdefines.h netsocket.h httpstatus.h
 guievelauncher.o: guievelauncher.cc defines.h gtkdefines.h exception.h \
@@ -51,6 +51,13 @@ guiskillqueue.o: guiskillqueue.cc gtkdefines.h guiskillqueue.h winbase.h \
   gtkskillqueue.h eveapi.h asynchttp.h http.h ref_ptr.h nettcpsocket.h \
   netdefines.h netsocket.h httpstatus.h thread.h thread_posix.h \
   exception.h gtkcolumnsbase.h
+guiplanattribopt.o: guiplanattribopt.cc guiplanattribopt.h \
+  gtktrainingplan.h gtkportrait.h asynchttp.h http.h ref_ptr.h \
+  nettcpsocket.h netdefines.h netsocket.h httpstatus.h thread.h \
+  thread_posix.h exception.h gtkcolumnsbase.h config.h conf.h \
+  gtkconfwidgets.h apiskilltree.h apibase.h eveapi.h xml.h \
+  apiintraining.h apicharsheet.h apicerttree.h winbase.h gtkdefines.h \
+  evetime.h helpers.h imagestore.h
 gtkevemon.o: gtkevemon.cc argumentsettings.h versionchecker.h \
   gtkinfodisplay.h winbase.h exception.h asynchttp.h http.h ref_ptr.h \
   nettcpsocket.h netdefines.h netsocket.h httpstatus.h thread.h \
@@ -107,7 +114,8 @@ gtktrainingplan.o: gtktrainingplan.cc helpers.h evetime.h \
   asynchttp.h http.h nettcpsocket.h netdefines.h netsocket.h httpstatus.h \
   thread.h thread_posix.h exception.h gtkcolumnsbase.h gtkportrait.h \
   gtkhelpers.h apicharsheet.h apicerttree.h gtkconfwidgets.h config.h \
-  conf.h gtkdefines.h imagestore.h gtktrainingplan.h apiintraining.h
+  conf.h gtkdefines.h imagestore.h gtktrainingplan.h apiintraining.h \
+  guiplanattribopt.h winbase.h
 gtkskillqueue.o: gtkskillqueue.cc config.h asynchttp.h http.h ref_ptr.h \
   nettcpsocket.h netdefines.h netsocket.h httpstatus.h thread.h \
   thread_posix.h exception.h conf.h evetime.h helpers.h imagestore.h \

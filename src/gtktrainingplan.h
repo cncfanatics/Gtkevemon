@@ -45,6 +45,8 @@ struct GtkSkillInfo
   bool is_objective;
   int plan_level;
 
+  int start_sp;
+  int dest_sp;
   time_t train_duration;
   time_t skill_duration;
   time_t finish_time;
@@ -63,12 +65,15 @@ class GtkSkillList : public std::vector<GtkSkillInfo>
   protected:
     void append_skill (ApiSkill const* skill, int level, bool objective);
     void apply_attributes (ApiSkill const* skill, ApiCharAttribs& attribs,
-        unsigned int training_level);
+        int& learning_level);
 
   public:
     GtkSkillList (void);
     void set_character (ApiCharSheetPtr charsheet);
     void set_training (ApiInTrainingPtr training);
+
+    ApiCharSheetPtr get_character (void);
+    ApiInTrainingPtr get_training (void);
 
     void append_skill (ApiSkill const* skill, int level);
     void move_skill (unsigned int from, unsigned int to);
@@ -84,7 +89,13 @@ class GtkSkillList : public std::vector<GtkSkillInfo>
         bool make_objective = false);
     bool is_dependency (unsigned int index);
 
-    void calc_details (void);
+    /* Calculate all details for the skill plan. If attributes and
+     * the learning level are specified, these are used instead
+     * of the character ones. "use_active_spph" specifies if the SP/h
+     * for the skill in training is taken from the training sheet. */
+    void calc_details (bool use_active_spph = true);
+    void calc_details (ApiCharAttribs& attribs, int learning_level,
+        bool use_active_spph = true);
     //void simulate_select (unsigned int index);
 };
 
@@ -146,6 +157,7 @@ class GtkTrainingPlan : public Gtk::VBox
     Gtk::Button column_conf_but;
     Gtk::Button export_plan_but;
     Gtk::Button import_plan_but;
+    Gtk::Button optimize_att_but;
     Gtk::Label total_time;
 
     GtkTreeModelColumns cols;
@@ -172,6 +184,7 @@ class GtkTrainingPlan : public Gtk::VBox
     void on_objective_toggled (Glib::ustring const& path);
     void on_export_plan (void);
     void on_import_plan (void);
+    void on_optimize_att (void);
 
     void on_row_inserted (Gtk::TreePath const& path,
         Gtk::TreeModel::iterator const& iter);
@@ -195,6 +208,36 @@ class GtkTrainingPlan : public Gtk::VBox
 };
 
 /* ---------------------------------------------------------------- */
+
+inline void
+GtkSkillList::set_character (ApiCharSheetPtr charsheet)
+{
+  this->charsheet = charsheet;
+}
+
+inline void
+GtkSkillList::set_training (ApiInTrainingPtr training)
+{
+  this->training = training;
+}
+
+inline ApiCharSheetPtr
+GtkSkillList::get_character (void)
+{
+  return this->charsheet;
+}
+
+inline ApiInTrainingPtr
+GtkSkillList::get_training (void)
+{
+  return this->training;
+}
+
+inline void
+GtkSkillList::append_skill (ApiSkill const* skill, int level)
+{
+  this->append_skill(skill, level, true);
+}
 
 inline sigc::signal<void, ApiSkill const*>&
 GtkTrainingPlan::signal_skill_activated (void)

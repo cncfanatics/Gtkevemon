@@ -35,6 +35,8 @@ char const* default_config =
     "[planner]\n"
     "  columns_format = +0 +1 +2 -3 -4 -5 -6 -7\n"
     "  current_plan = \n"
+    "  gui_dimension = 800x550\n"
+    "  pane_position = 250\n"
     "[servermonitor]\n"
     "[settings]\n"
     "  auto_update_sheets = true\n"

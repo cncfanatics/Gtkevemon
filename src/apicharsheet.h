@@ -129,7 +129,13 @@ class ApiCharSheet : public ApiBase
     unsigned int get_spph_for_skill (ApiSkill const* skill,
         ApiCharAttribs const& attribs);
 
-    /* Generic calculation of skill start and destination SP. */
+    /* Attribute information for attribute boosting skills.
+     * The skill attributes are without the learning skill bonus. */
+    ApiCharAttribs get_skill_attributes (void) const;
+    int get_learning_skill_level (void) const;
+
+    /* Generic calculation of skill start and destination SP.
+     * This is character independent. */
     static int calc_start_sp (int level, int rank);
     static int calc_dest_sp (int level, int rank);
 };

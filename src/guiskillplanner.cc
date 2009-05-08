@@ -10,6 +10,7 @@
 #include <gtkmm/scrolledwindow.h>
 
 #include "helpers.h"
+#include "config.h"
 #include "imagestore.h"
 #include "gtkportrait.h"
 #include "gtkdefines.h"
@@ -36,13 +37,12 @@ GuiSkillPlanner::GuiSkillPlanner (void)
   details_panechild->pack_start(this->details_nb, true, true, 0);
   details_panechild->pack_start(*button_hbox, false, false, 0);
 
-  Gtk::HPaned* main_pane = MK_HPANED;
-  main_pane->add1(this->browser_nb);
-  main_pane->add2(*details_panechild);
+  this->main_pane.add1(this->browser_nb);
+  this->main_pane.add2(*details_panechild);
 
   Gtk::VBox* main_vbox = MK_VBOX;
   main_vbox->set_border_width(5);
-  main_vbox->pack_start(*main_pane, true, true, 0);
+  main_vbox->pack_start(this->main_pane, true, true, 0);
 
   /* Signals. */
   this->skill_browser.signal_element_selected().connect
@@ -67,7 +67,8 @@ GuiSkillPlanner::GuiSkillPlanner (void)
   this->add(*main_vbox);
   this->set_title("Skill browser - GtkEveMon");
   this->set_icon(ImageStore::applogo);
-  this->set_default_size(800, 550);
+  //this->set_default_size(800, 550);
+  this->init_from_config();
   this->show_all();
 }
 
@@ -75,6 +76,45 @@ GuiSkillPlanner::GuiSkillPlanner (void)
 
 GuiSkillPlanner::~GuiSkillPlanner (void)
 {
+  this->store_to_config();
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GuiSkillPlanner::init_from_config (void)
+{
+  ConfSectionPtr planner = Config::conf.get_section("planner");
+  ConfValuePtr gui_dimension = planner->get_value("gui_dimension");
+  ConfValuePtr pane_pos = planner->get_value("pane_position");
+
+  StringVector dim_xy = Helpers::split_string(**gui_dimension, 'x');
+  if (dim_xy.size() == 2)
+  {
+    int dim_x = Helpers::get_int_from_string(dim_xy[0]);
+    int dim_y = Helpers::get_int_from_string(dim_xy[1]);
+    this->set_default_size(dim_x, dim_y);
+  }
+
+  this->main_pane.set_position(pane_pos->get_int());
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GuiSkillPlanner::store_to_config (void)
+{
+  ConfSectionPtr planner = Config::conf.get_section("planner");
+  ConfValuePtr gui_dimension = planner->get_value("gui_dimension");
+  ConfValuePtr pane_pos = planner->get_value("pane_position");
+
+  int dim_x = 0;
+  int dim_y = 0;
+  this->get_size(dim_x, dim_y);
+  gui_dimension->set(Helpers::get_string_from_int(dim_x) + "x"
+      + Helpers::get_string_from_int(dim_y));
+
+  pane_pos->set(this->main_pane.get_position());
 }
 
 /* ---------------------------------------------------------------- */

@@ -15,6 +15,7 @@
 #include "gtkdefines.h"
 #include "imagestore.h"
 #include "gtktrainingplan.h"
+#include "guiplanattribopt.h"
 
 GtkSkillList::GtkSkillList (void)
 {
@@ -23,30 +24,6 @@ GtkSkillList::GtkSkillList (void)
   //this->append_skill(tree->get_skill_for_id(3369), 3);
   //this->append_skill(tree->get_skill_for_id(3369), 4);
   //this->append_skill(tree->get_skill_for_id(3369), 5);
-}
-
-/* ---------------------------------------------------------------- */
-
-void
-GtkSkillList::set_character (ApiCharSheetPtr charsheet)
-{
-  this->charsheet = charsheet;
-}
-
-/* ---------------------------------------------------------------- */
-
-void
-GtkSkillList::set_training (ApiInTrainingPtr training)
-{
-  this->training = training;
-}
-
-/* ---------------------------------------------------------------- */
-
-void
-GtkSkillList::append_skill (ApiSkill const* skill, int level)
-{
-  this->append_skill(skill, level, true);
 }
 
 /* ---------------------------------------------------------------- */
@@ -148,7 +125,20 @@ GtkSkillList::release_skill (unsigned int index)
 /* ---------------------------------------------------------------- */
 
 void
-GtkSkillList::calc_details (void)
+GtkSkillList::calc_details (bool use_active_spph)
+{
+  /* Get attribute values for the character and delegate work. We _really_
+   * need a copy of the attribs here, otherwise the character is modified! */
+  unsigned int learning_level = this->charsheet->get_learning_skill_level();
+  ApiCharAttribs attribs = this->charsheet->total;
+  this->calc_details(attribs, learning_level, use_active_spph);
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GtkSkillList::calc_details (ApiCharAttribs& attribs, int learning_level,
+    bool use_active_spph)
 {
   int train_skill = -1;
   int train_level = -1;
@@ -163,10 +153,6 @@ GtkSkillList::calc_details (void)
   time_t now = EveTime::get_local_time();
   time_t now_eve = EveTime::get_eve_time();
   time_t duration = 0;
-
-  /* Attribute values. */
-  unsigned int training_level = this->charsheet->get_level_for_skill(3374);
-  ApiCharAttribs attribs = this->charsheet->total;
 
   /* Go through list and do mighty things. Caching the cskill variable
    * will greatly reduce relookup of the charsheet skill. */
@@ -195,9 +181,14 @@ GtkSkillList::calc_details (void)
     /* Cache if the current skill is in training. */
     bool active = (skill->id == train_skill && info.plan_level == train_level);
 
-    /* SP per second. */
-    unsigned int spph = this->charsheet->get_spph_for_skill(skill, attribs);
-    double spps = spph / 3600.0;
+    /* SP per second and per hour. */
+    unsigned int spph;
+    double spps;
+    if (active && use_active_spph)
+      spph = this->training->get_current_spph();
+    else
+      spph = this->charsheet->get_spph_for_skill(skill, attribs);
+    spps = spph / 3600.0;
 
     /* Start SP, dest SP and current SP. */
     int ssp = this->charsheet->calc_start_sp(info.plan_level - 1, skill->rank);
@@ -206,7 +197,10 @@ GtkSkillList::calc_details (void)
 
     /* Set current SP only if in training or previous char level available. */
     if (active)
-      csp = dsp - (int)((this->training->end_time_t - now_eve) * spps);
+    {
+      double live_spps = this->training->get_current_spph() / 3600.0;
+      csp = dsp - (int)((this->training->end_time_t - now_eve) * live_spps);
+    }
     else if (cskill != 0)
     {
       if (cskill->level + 1 == info.plan_level)
@@ -216,6 +210,8 @@ GtkSkillList::calc_details (void)
     }
 
     time_t timediff = (time_t)((double)(dsp - csp) / spps);
+    info.start_sp = csp;
+    info.dest_sp = dsp;
     info.start_time = now + duration;
     info.finish_time = now + duration + timediff;
     info.train_duration = duration + timediff;
@@ -229,9 +225,7 @@ GtkSkillList::calc_details (void)
      * it has impact on the SP/h. Apply this impact. */
     if (cskill == 0 || cskill->level < info.plan_level)
     {
-      this->apply_attributes(skill, attribs, training_level);
-      if (skill->id == 3374) /* 3374 is the learning skill. */
-        training_level += 1;
+      this->apply_attributes(skill, attribs, learning_level);
     }
   }
 }
@@ -371,29 +365,46 @@ GtkSkillList::is_dependency (unsigned int index)
 /* ---------------------------------------------------------------- */
 
 void
-GtkSkillList::apply_attributes (ApiSkill const* skill, ApiCharAttribs& attribs,
-    unsigned int training_level)
+GtkSkillList::apply_attributes (ApiSkill const* skill,
+    ApiCharAttribs& attribs, int& learning_level)
 {
-  double factor = 1 + training_level * 0.02;
+  double factor = 1.0 + learning_level * 0.02;
 
-  if (skill->id == 3377 || skill->id == 12376)
-    attribs.intl += factor;
-  else if (skill->id == 3379 || skill->id == 12387)
-    attribs.per += factor;
-  else if (skill->id == 3376 || skill->id == 12383)
-    attribs.cha += factor;
-  else if (skill->id == 3378 || skill->id == 12385)
-    attribs.mem += factor;
-  else if (skill->id == 3375 || skill->id == 12386)
-    attribs.wil += factor;
-  else if (skill->id == 3374)
+  switch (skill->id)
   {
-    double rescale = (1 + (training_level + 1) * 0.02) / factor;
-    attribs.intl *= rescale;
-    attribs.per *= rescale;
-    attribs.cha *= rescale;
-    attribs.mem *= rescale;
-    attribs.wil *= rescale;
+    case API_SKILL_ID_ANALYTICAL_MIND:
+    case API_SKILL_ID_LOGIC:
+      attribs.intl += factor; break;
+
+    case API_SKILL_ID_AWARENESS:
+    case API_SKILL_ID_CLARITY:
+      attribs.per += factor; break;
+
+    case API_SKILL_ID_EMPATHY:
+    case API_SKILL_ID_PRESENCE:
+      attribs.cha += factor; break;
+
+    case API_SKILL_ID_INSTANT_RECALL:
+    case API_SKILL_ID_EIDETIC_MEMORY:
+      attribs.mem += factor; break;
+
+    case API_SKILL_ID_IRON_WILL:
+    case API_SKILL_ID_FOCUS:
+      attribs.wil += factor; break;
+
+    case API_SKILL_ID_LEARNING:
+    {
+      double rescale = (1.0 + (learning_level + 1) * 0.02) / factor;
+      attribs.intl *= rescale;
+      attribs.per *= rescale;
+      attribs.cha *= rescale;
+      attribs.mem *= rescale;
+      attribs.wil *= rescale;
+      learning_level += 1;
+      break;
+    }
+
+    default: break;
   }
 }
 
@@ -493,17 +504,20 @@ GtkTrainingPlan::GtkTrainingPlan (void)
   //this->delete_plan_but.set_relief(Gtk::RELIEF_NONE);
   //this->create_plan_but.set_relief(Gtk::RELIEF_NONE);
   //this->rename_plan_but.set_relief(Gtk::RELIEF_NONE);
-  this->export_plan_but.set_label("Export");
-  this->import_plan_but.set_label("Import");
+  //this->export_plan_but.set_label("Export");
+  //this->import_plan_but.set_label("Import");
 
   this->clean_plan_but.set_image(*MK_IMG
       (Gtk::Stock::CLEAR, Gtk::ICON_SIZE_MENU));
   this->clean_plan_but.set_label("Clean finished");
   this->column_conf_but.set_image(*MK_IMG_PB(ImageStore::columnconf[0]));
   this->column_conf_but.set_label("Configure columns");
+  this->optimize_att_but.set_image(*MK_IMG
+      (Gtk::Stock::NETWORK, Gtk::ICON_SIZE_MENU));
 
   this->total_time.set_text("n/a");
   this->total_time.set_alignment(Gtk::ALIGN_LEFT);
+  this->optimize_att_but.set_label("Optimize attributes");
 
   this->reorder_new_index = -1;
   //this->clean_plan_but.set_label("Clean up");
@@ -525,8 +539,8 @@ GtkTrainingPlan::GtkTrainingPlan (void)
   Gtk::HBox* button_box = MK_HBOX;
   button_box->pack_start(this->clean_plan_but, false, false, 0);
   button_box->pack_start(this->column_conf_but, false, false, 0);
-  button_box->pack_end(this->import_plan_but, false, false, 0);
-  button_box->pack_end(this->export_plan_but, false, false, 0);
+  button_box->pack_start(this->optimize_att_but, false, false, 0);
+
   Gtk::VBox* button_vbox = MK_VBOX;
   button_vbox->pack_end(*button_box, false, false, 0);
 
@@ -541,9 +555,14 @@ GtkTrainingPlan::GtkTrainingPlan (void)
   select_label->set_alignment(Gtk::ALIGN_LEFT);
   time_label->set_alignment(Gtk::ALIGN_LEFT);
 
+  Gtk::HBox* time_file_ops = MK_HBOX0;
+  time_file_ops->pack_start(this->total_time, false, false, 0);
+  time_file_ops->pack_end(this->import_plan_but, false, false, 0);
+  time_file_ops->pack_end(this->export_plan_but, false, false, 0);
+
   Gtk::Table* gui_table = MK_TABLE(3, 3);
   gui_table->set_col_spacings(5);
-  gui_table->set_row_spacings(5);
+  gui_table->set_row_spacing(1, 5);
   gui_table->attach(this->portrait, 0, 1, 0, 3,
       Gtk::SHRINK, Gtk::SHRINK);
   gui_table->attach(*select_label, 1, 2, 0, 1,
@@ -552,7 +571,7 @@ GtkTrainingPlan::GtkTrainingPlan (void)
       Gtk::EXPAND | Gtk::FILL, Gtk::SHRINK);
   gui_table->attach(*time_label, 1, 2, 1, 2,
       Gtk::SHRINK | Gtk::FILL, Gtk::SHRINK);
-  gui_table->attach(this->total_time, 2, 3, 1, 2,
+  gui_table->attach(*time_file_ops, 2, 3, 1, 2,
       Gtk::EXPAND | Gtk::FILL, Gtk::SHRINK);
   gui_table->attach(*button_vbox, 1, 3, 2, 3,
       Gtk::EXPAND | Gtk::FILL, Gtk::EXPAND | Gtk::FILL);
@@ -562,8 +581,10 @@ GtkTrainingPlan::GtkTrainingPlan (void)
   this->rename_plan_but.set_tooltip_text("Rename the current plan");
   this->clean_plan_but.set_tooltip_text("Remove finished skills");
   this->column_conf_but.set_tooltip_text("Configure training plan columns");
-  this->export_plan_but.set_tooltip_text("Export training plan");
-  this->import_plan_but.set_tooltip_text("Import training plan");
+  this->export_plan_but.set_tooltip_text("Export the training plan to file");
+  this->import_plan_but.set_tooltip_text("Import a training plan from file");
+  this->optimize_att_but.set_tooltip_text
+      ("Optimize the attributes for the current plan");
 
   this->pack_start(*gui_table, false, false, 0);
   this->pack_start(*scwin, true, true, 0);
@@ -585,6 +606,8 @@ GtkTrainingPlan::GtkTrainingPlan (void)
       (*this, &GtkTrainingPlan::on_import_plan));
   this->export_plan_but.signal_clicked().connect(sigc::mem_fun
       (*this, &GtkTrainingPlan::on_export_plan));
+  this->optimize_att_but.signal_clicked().connect(sigc::mem_fun
+      (*this, &GtkTrainingPlan::on_optimize_att));
 
   this->liststore->signal_row_inserted().connect
       (sigc::mem_fun(*this, &GtkTrainingPlan::on_row_inserted));
@@ -1312,4 +1335,103 @@ GtkTrainingPlan::on_export_plan (void)
     md.set_title("Export failed - GtkEveMon");
     md.run();
   }
+}
+
+/* ---------------------------------------------------------------- */
+
+void
+GtkTrainingPlan::on_optimize_att ()
+{
+  /* Create a short dialog to ask if the user wants to optimize the whole plan
+   * or only a part of it. */
+  Gtk::Window* toplevel = (Gtk::Window*)this->get_toplevel();
+
+  /* Abort the optimization if no valid plan is specified. */
+  if (this->skills.empty()) {
+    Gtk::MessageDialog md(*toplevel, "No valid plan!",
+        false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+    md.set_secondary_text("Please create a plan or add some skills before "
+        "using the optimizer.");
+    md.set_title("Empty skill plan - GtkEveMon");
+    md.run();
+    return;
+  }
+
+  GuiPlanAttribOpt* optimizer_dialog = new GuiPlanAttribOpt();
+  optimizer_dialog->set_transient_for(*((Gtk::Window*)(this->get_toplevel())));
+  optimizer_dialog->set_plan(this->skills);
+
+#if 0
+  Gtk::MessageDialog dialog(*toplevel, "Optimize whole plan?",
+      false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_OK_CANCEL);
+  dialog.set_secondary_text("Please select whether you want to optimize the "
+      "whole skill plan or just a part of it.");
+  dialog.set_title("Optimize plan - GtkEveMon");
+  dialog.set_default_response(Gtk::RESPONSE_OK);
+
+  /* Create widgets to select between optimizing the whole and a part of
+   * the plan. */
+  Gtk::RadioButtonGroup rbg;
+  Gtk::RadioButton* rb_whole = MK_RADIO("Optimize whole plan");
+  Gtk::RadioButton* rb_part = MK_RADIO("Optimize plan starting with skill");
+  rb_whole->set_group(rbg);
+  rb_part->set_group(rbg);
+
+  /* Create a combobox and fill it with all skills of the current plan. */
+  Gtk::ComboBoxText skill_selection;
+  for (unsigned int i = 0; i < this->skills.size(); i++)
+  {
+    GtkSkillInfo& info = (this->skills)[i];
+    ApiSkill const* skill = info.skill;
+    Glib::ustring skillname = skill->name;
+    skillname += " " + Helpers::get_roman_from_int(info.plan_level);
+    skill_selection.append_text(skillname);
+  }
+  skill_selection.set_active(0);
+  skill_selection.set_sensitive(false);
+
+  /* Create a table and add the widgets to it. */
+  Gtk::Table* dialog_tbl = MK_TABLE(3, 1);
+  dialog_tbl->attach(*rb_whole, 1, 2, 0, 1, Gtk::EXPAND | Gtk::FILL);
+  dialog_tbl->attach(*rb_part, 1, 2, 1, 2, Gtk::EXPAND | Gtk::FILL);
+  dialog_tbl->attach(skill_selection, 1, 2, 2, 3, Gtk::EXPAND | Gtk::FILL);
+
+  /* Add signal handlers to the radio buttons. */
+  rb_part->signal_clicked().connect(sigc::bind<bool>(
+      sigc::mem_fun(skill_selection, &Gtk::ComboBox::set_sensitive), true));
+  rb_whole->signal_clicked().connect(sigc::bind<bool>(
+      sigc::mem_fun(skill_selection, &Gtk::ComboBox::set_sensitive), false));
+
+  /* Add the table to the dialog and run it. */
+  Gtk::VBox* dialog_box = dialog.get_vbox();
+  dialog_box->pack_start(*dialog_tbl, false, false, 0);
+  dialog_box->show_all();
+  int ret = dialog.run();
+  dialog.hide();
+  if (ret != Gtk::RESPONSE_OK)
+    return;
+
+  /* Copy the current skill list to be able to remove a few entries in case
+   * the user wants to optimize only a part of the plan. */
+  GtkSkillList list_to_optimize = this->skills;
+
+  /* If the user wants to optimize only a part of the plan remove the entries
+   * that are not of interest. */
+  if (rb_part->get_active())
+  {
+    int startAt = skill_selection.get_active_row_number();
+    if (startAt > 0)
+    {
+      list_to_optimize.erase(list_to_optimize.begin(),
+          list_to_optimize.begin() + startAt);
+      list_to_optimize.calc_details();
+    }
+  }
+
+  /* Create an optimizer dialog and optimize the plan. */
+  GuiPlanAttribOpt* optimizer_dialog = new GuiPlanAttribOpt();
+  optimizer_dialog->set_transient_for(*((Gtk::Window*)(this->get_toplevel())));
+  optimizer_dialog->set_plan(this->skills);
+  optimizer_dialog->optimize_plan();
+#endif
 }

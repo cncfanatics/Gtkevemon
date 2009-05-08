@@ -26,9 +26,7 @@ class Thread
     bool cleanup;
 
     static void* stub (void* arg)
-    {
-      return ((Thread*)arg)->run();
-    }
+    { return ((Thread*)arg)->run(); }
 
   protected:
     virtual void* run (void) = 0;
@@ -61,9 +59,7 @@ class Thread
 
     /* Sends a cancelation request to the thread. */
     void pt_cancel (void)
-    {
-      SetEvent(this->cancel_event);
-    }
+    { SetEvent(this->cancel_event); }
 
     /* Blocks and waits for termination of the thread. */
     void pt_join (void)

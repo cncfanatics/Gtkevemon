@@ -20,6 +20,19 @@
 #include "ref_ptr.h"
 #include "apibase.h"
 
+/* Skill ID's for some skills explicitly needed. */
+#define API_SKILL_ID_LEARNING 3374
+#define API_SKILL_ID_ANALYTICAL_MIND 3377
+#define API_SKILL_ID_LOGIC 12376
+#define API_SKILL_ID_AWARENESS 3379
+#define API_SKILL_ID_CLARITY 12387
+#define API_SKILL_ID_EMPATHY 3376
+#define API_SKILL_ID_PRESENCE 12383
+#define API_SKILL_ID_INSTANT_RECALL 3378
+#define API_SKILL_ID_EIDETIC_MEMORY 12385
+#define API_SKILL_ID_IRON_WILL 3375
+#define API_SKILL_ID_FOCUS 12386
+
 enum ApiAttrib
 {
   API_ATTRIB_INTELLIGENCE,

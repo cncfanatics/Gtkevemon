@@ -35,49 +35,18 @@ ApiCharSheet::set_api_data (EveApiData const& data)
   this->enforce_cache_time(API_CHAR_SHEET_MIN_CACHE_TIME);
 
   /* Find bonus attributes for skills. */
-
-  /* Analytical Mind (int): 3377
-   * Logic (int): 12376
-   *
-   * Spatial Awareness (per): 3379
-   * Clarity (per): 12387
-   *
-   * Empathy (cha): 3376
-   * Presence (cha): 12383
-   *
-   * Instant Recall (mem): 3378
-   * Eidetic Memory (mem): 12385
-   *
-   * Iron Will (wil): 3375
-   * Focus (wil): 12386
-   *
-   * Learning (2% to all): 3374
-   */
-  int learning = this->get_level_for_skill(3374);
+  this->skill = this->get_skill_attributes();
+  int learning = this->get_learning_skill_level();
   double factor = (double)learning * 0.02f;
 
-  this->skill.intl = this->get_level_for_skill(3377);
-  this->skill.intl += this->get_level_for_skill(12376);
   this->skill.intl += (this->base.intl
       + this->skill.intl + this->implant.intl) * factor;
-
-  this->skill.per = this->get_level_for_skill(3379);
-  this->skill.per += this->get_level_for_skill(12387);
   this->skill.per += (this->base.per
       + this->skill.per + this->implant.per) * factor;
-
-  this->skill.cha = this->get_level_for_skill(3376);
-  this->skill.cha += this->get_level_for_skill(12383);
   this->skill.cha += (this->base.cha
       + this->skill.cha + this->implant.cha) * factor;
-
-  this->skill.mem = this->get_level_for_skill(3378);
-  this->skill.mem += this->get_level_for_skill(12385);
   this->skill.mem += (this->base.mem
       + this->skill.mem + this->implant.mem) * factor;
-
-  this->skill.wil = this->get_level_for_skill(3375);
-  this->skill.wil += this->get_level_for_skill(12386);
   this->skill.wil += (this->base.wil
       + this->skill.wil + this->implant.wil) * factor;
 
@@ -458,25 +427,6 @@ ApiCharSheet::get_grade_for_class (int class_id) const
 
 /* ---------------------------------------------------------------- */
 
-int
-ApiCharSheet::calc_start_sp (int level, int rank)
-{
-  if (level == 0)
-    return 0;
-
-  return ApiCharSheet::calc_dest_sp(level - 1, rank);
-}
-
-/* ---------------------------------------------------------------- */
-
-int
-ApiCharSheet::calc_dest_sp (int level, int rank)
-{
-  return (int)::ceil(250.0 * rank * ::pow(32.0, level / 2.0));
-}
-
-/* ---------------------------------------------------------------- */
-
 unsigned int
 ApiCharSheet::get_spph_for_skill (ApiSkill const* skill,
     ApiCharAttribs const& attribs)
@@ -506,6 +456,67 @@ ApiCharSheet::get_spph_for_skill (ApiSkill const* skill,
 
   double sppm = (pri + sec / 2.0);
   return (unsigned int)(sppm * 60.0 + 0.5);
+}
+
+/* ---------------------------------------------------------------- */
+
+ApiCharAttribs
+ApiCharSheet::get_skill_attributes (void) const
+{
+  /*
+   * Analytical Mind (int): 3377      Logic (int): 12376
+   * Spatial Awareness (per): 3379    Clarity (per): 12387
+   * Empathy (cha): 3376              Presence (cha): 12383
+   * Instant Recall (mem): 3378       Eidetic Memory (mem): 12385
+   * Iron Will (wil): 3375            Focus (wil): 12386
+   *
+   * Learning (2% to all): 3374
+   */
+  ApiCharAttribs attribs;
+
+  attribs.intl = this->get_level_for_skill(API_SKILL_ID_ANALYTICAL_MIND);
+  attribs.intl += this->get_level_for_skill(API_SKILL_ID_LOGIC);
+
+  attribs.per = this->get_level_for_skill(API_SKILL_ID_AWARENESS);
+  attribs.per += this->get_level_for_skill(API_SKILL_ID_CLARITY);
+
+  attribs.cha = this->get_level_for_skill(API_SKILL_ID_EMPATHY);
+  attribs.cha += this->get_level_for_skill(API_SKILL_ID_PRESENCE);
+
+  attribs.mem = this->get_level_for_skill(API_SKILL_ID_INSTANT_RECALL);
+  attribs.mem += this->get_level_for_skill(API_SKILL_ID_EIDETIC_MEMORY);
+
+  attribs.wil = this->get_level_for_skill(API_SKILL_ID_IRON_WILL);
+  attribs.wil += this->get_level_for_skill(API_SKILL_ID_FOCUS);
+
+  return attribs;
+}
+
+/* ---------------------------------------------------------------- */
+
+int
+ApiCharSheet::get_learning_skill_level (void) const
+{
+  return this->get_level_for_skill(API_SKILL_ID_LEARNING);
+}
+
+/* ---------------------------------------------------------------- */
+
+int
+ApiCharSheet::calc_start_sp (int level, int rank)
+{
+  if (level <= 0)
+    return 0;
+
+  return ApiCharSheet::calc_dest_sp(level - 1, rank);
+}
+
+/* ---------------------------------------------------------------- */
+
+int
+ApiCharSheet::calc_dest_sp (int level, int rank)
+{
+  return (int)::ceil(250.0 * rank * ::pow(32.0, level / 2.0));
 }
 
 /* ---------------------------------------------------------------- */

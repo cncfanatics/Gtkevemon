@@ -10,6 +10,7 @@ include Makefile.$(PLATFORM)
 SOURCES = maingui.cc guiuserdata.cc guiconfiguration.cc guiaboutdialog.cc \
           guiskill.cc guiskillplanner.cc guixmlsource.cc guievelauncher.cc \
           guiversionchecker.cc guicharexport.cc guiskillqueue.cc \
+	  guiplanattribopt.cc \
           gtkevemon.cc gtkserver.cc gtkconfwidgets.cc gtkcharpage.cc \
           gtkportrait.cc gtkinfodisplay.cc gtkplannerbase.cc gtkhelpers.cc \
           gtkcolumnsbase.cc gtkdownloader.cc gtkitemdetails.cc \

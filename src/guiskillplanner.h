@@ -13,6 +13,7 @@
 #ifndef GUI_SKILL_PLANNER_HEADER
 #define GUI_SKILL_PLANNER_HEADER
 
+#include <gtkmm/paned.h>
 #include <gtkmm/notebook.h>
 
 #include "winbase.h"
@@ -38,10 +39,14 @@ class GuiSkillPlanner : public WinBase
     /* Misc. */
     Gtk::Notebook details_nb;
     Gtk::Notebook browser_nb;
+    Gtk::HPaned main_pane;
 
     void on_element_selected (ApiElement const* elem);
     void on_element_activated (ApiElement const* elem);
     void on_planning_requested (ApiSkill const* skill, int level);
+
+    void init_from_config (void);
+    void store_to_config (void);
 
     bool on_gtkmain_quit (void);
 
