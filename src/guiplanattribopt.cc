@@ -19,7 +19,8 @@ GtkTreeModelColumnsOptimizer::GtkTreeModelColumnsOptimizer (void)
 
 GtkTreeViewColumnsOptimizer::GtkTreeViewColumnsOptimizer(Gtk::TreeView* view,
     GtkTreeModelColumnsOptimizer* cols)
-  : GtkTreeViewColumns(view, cols), difference("Difference", cols->difference)
+  : GtkTreeViewColumns(view, cols),
+    difference("Difference", cols->difference)
 {
   this->append_column(&this->difference, GtkColumnOptions(true, true, true));
 }
@@ -68,7 +69,6 @@ GuiPlanAttribOpt::GuiPlanAttribOpt (void)
 Gtk::Widget*
 GuiPlanAttribOpt::create_config_page (void)
 {
-#if 1
   /* Some information on usage of the configuration. */
   Gtk::Image* info_image = MK_IMG(Gtk::Stock::DIALOG_QUESTION,
       Gtk::ICON_SIZE_DIALOG);
@@ -91,15 +91,20 @@ GuiPlanAttribOpt::create_config_page (void)
   Gtk::RadioButtonGroup rbg;
   this->rb_whole_plan.set_group(rbg);
   this->rb_partial_plan.set_group(rbg);
-
-  //Gtk::RadioButton* rb_whole = MK_RADIO("Optimize whole plan");
-  //Gtk::RadioButton* rb_part = MK_RADIO("Optimize plan starting with skill");
+  this->consider_learning_cb.set_label("Consider learning skills");
+  this->consider_learning_cb.set_tooltip_text("Check this if you want the "
+      "attributes gained by the learning skills, which are skipped by your "
+      "current selection, to be "
+      "taken into consideration for the optimization.");
+  this->set_selection_sensitivity(false);
+  this->consider_learning_cb.set_active(true);
 
   /* Create a table and add the widgets to it. */
-  Gtk::Table* dialog_tbl = MK_TABLE(3, 1);
+  Gtk::Table* dialog_tbl = MK_TABLE(3, 2);
   dialog_tbl->attach(this->rb_whole_plan, 1, 2, 0, 1, Gtk::FILL);
   dialog_tbl->attach(this->rb_partial_plan, 1, 2, 1, 2, Gtk::FILL);
   dialog_tbl->attach(this->skill_selection, 1, 2, 2, 3, Gtk::FILL);
+  dialog_tbl->attach(this->consider_learning_cb, 2, 3, 2, 3, Gtk::FILL);
 
   /* Create the button for the next page. */
   Gtk::Button* calculate_but = MK_BUT0;
@@ -121,16 +126,13 @@ GuiPlanAttribOpt::create_config_page (void)
 
   /* Add signal handlers to the radio buttons. */
   this->rb_whole_plan.signal_clicked().connect(sigc::bind(sigc::mem_fun
-      (skill_selection, &Gtk::ComboBox::set_sensitive), false));
+      (*this, &GuiPlanAttribOpt::set_selection_sensitivity), false));
   this->rb_partial_plan.signal_clicked().connect(sigc::bind(sigc::mem_fun
-      (skill_selection, &Gtk::ComboBox::set_sensitive), true));
+      (*this, &GuiPlanAttribOpt::set_selection_sensitivity), true));
   calculate_but->signal_clicked().connect(sigc::mem_fun
       (*this, &GuiPlanAttribOpt::on_calculate_clicked));
 
   return main_box;
-#else
-  return 0;
-#endif
 }
 
 /* ---------------------------------------------------------------- */
@@ -297,7 +299,6 @@ GuiPlanAttribOpt::set_plan (GtkSkillList const& plan)
   this->plan = plan;
 
   /* Fill the skill selection. */
-  this->skill_selection.set_sensitive(false);
   for (unsigned int i = 0; i < this->plan.size(); i++)
   {
     GtkSkillInfo& info = this->plan[i];
@@ -305,6 +306,7 @@ GuiPlanAttribOpt::set_plan (GtkSkillList const& plan)
     skillname += " " + Helpers::get_roman_from_int(info.plan_level);
     this->skill_selection.append_text(skillname);
   }
+  this->skill_selection.set_active(0);
 }
 
 /* ---------------------------------------------------------------- */
@@ -327,13 +329,19 @@ GuiPlanAttribOpt::on_calculate_clicked (void)
 /* ---------------------------------------------------------------- */
 
 void
+GuiPlanAttribOpt::set_selection_sensitivity (bool sensitive)
+{
+  this->skill_selection.set_sensitive(sensitive);
+  this->consider_learning_cb.set_sensitive(sensitive);
+}
+
+/* ---------------------------------------------------------------- */
+
+void
 GuiPlanAttribOpt::optimize_plan (void)
 {
-  /* Copy the original plan and remove elements we don't want. */
+  /* Copy the original plan because it may be altered later. */
   GtkSkillList plan_part = this->plan;
-  if (this->plan_offset > 0)
-    plan_part.erase(plan_part.begin(), plan_part.begin() + this->plan_offset);
-  GtkSkillList plan_orig = plan_part;
 
   /* Fetch the character from the plan. */
   ApiCharSheetPtr character = this->plan.get_character();
@@ -346,6 +354,64 @@ GuiPlanAttribOpt::optimize_plan (void)
   ApiCharAttribs skill_atts = character->get_skill_attributes();
   int learning_level = character->get_learning_skill_level();
   double learning_factor = learning_level * 0.02;
+
+  if (this->plan_offset > 0)
+  {
+    /* If the user wants the learning skills in the list trained before
+     * to be taken into consideration, do so. */
+    if (consider_learning_cb.get_active()) {
+      ApiCharSheetSkill* cskill = 0;
+
+      /* Go through the skills that are to be erased and check whether they are
+       * learning skills. If so apply their impact on the total_atts. */
+      for (unsigned int i = 0; i < plan_offset; i++)
+      {
+        GtkSkillInfo& info = plan_part[i];
+        ApiSkill const* skill = info.skill;
+
+        if (cskill == 0 || skill->id != cskill->id)
+          cskill = character->get_skill_for_id(skill->id);
+
+        if (cskill == 0 || cskill->level < info.plan_level)
+        {
+          switch (skill->id)
+          {
+            case API_SKILL_ID_ANALYTICAL_MIND:
+            case API_SKILL_ID_LOGIC:
+              skill_atts.intl += 1; break;
+
+            case API_SKILL_ID_AWARENESS:
+            case API_SKILL_ID_CLARITY:
+              skill_atts.per += 1; break;
+
+            case API_SKILL_ID_EMPATHY:
+            case API_SKILL_ID_PRESENCE:
+              skill_atts.cha += 1; break;
+
+            case API_SKILL_ID_INSTANT_RECALL:
+            case API_SKILL_ID_EIDETIC_MEMORY:
+              skill_atts.mem += 1; break;
+
+            case API_SKILL_ID_IRON_WILL:
+            case API_SKILL_ID_FOCUS:
+              skill_atts.wil += 1; break;
+
+            case API_SKILL_ID_LEARNING:
+              learning_level += 1; break;
+
+            default: break;
+          }
+        }
+      }
+      learning_factor = learning_level * 0.02;
+      total_atts = (implant_atts + skill_atts + base_atts)
+          * (learning_factor + 1.0f);
+    }
+    plan_part.erase(plan_part.begin(), plan_part.begin() + this->plan_offset);
+  }
+
+  /* Copy the possibly cleaned plan to have an original one for comparison. */
+  GtkSkillList plan_orig = plan_part;
 
   /* Use the current total time and base attributes as base. */
   ApiCharAttribs cur_base_atts = base_atts;
@@ -399,20 +465,7 @@ GuiPlanAttribOpt::optimize_plan (void)
             /* Calculate the total attributes based on the
              * current base attributes and the fetched learning skills
              * and implants. */
-            cur_total_atts.intl = (cur_base_atts.intl
-                + implant_atts.intl + skill_atts.intl)
-                * (learning_factor + 1.0f);
-            cur_total_atts.mem = (cur_base_atts.mem
-                + implant_atts.mem + skill_atts.mem)
-                * (learning_factor + 1.0f);
-            cur_total_atts.cha = (cur_base_atts.cha
-                + implant_atts.cha + skill_atts.cha)
-                * (learning_factor + 1.0f);
-            cur_total_atts.per = (cur_base_atts.per
-                + implant_atts.per + skill_atts.per)
-                * (learning_factor + 1.0f);
-            cur_total_atts.wil = (cur_base_atts.wil
-                + implant_atts.wil + skill_atts.wil)
+            cur_total_atts = (cur_base_atts + implant_atts + skill_atts)
                 * (learning_factor + 1.0f);
 
             ApiCharAttribs cur_total_atts_copy = cur_total_atts;

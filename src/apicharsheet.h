@@ -54,6 +54,25 @@ struct ApiCharAttribs
   double cha;
   double per;
   double wil;
+
+  ApiCharAttribs (void);
+  ApiCharAttribs (double value);
+
+  ApiCharAttribs operator+ (ApiCharAttribs const& atts) const;
+  ApiCharAttribs operator+ (double const& value) const;
+  ApiCharAttribs& operator+= (ApiCharAttribs const& atts);
+
+  ApiCharAttribs operator- (ApiCharAttribs const& atts) const;
+  ApiCharAttribs operator- (double const& value) const;
+  ApiCharAttribs& operator-= (ApiCharAttribs const& atts);
+
+  ApiCharAttribs operator* (ApiCharAttribs const& atts) const;
+  ApiCharAttribs operator* (double const& value) const;
+
+  ApiCharAttribs operator/ (ApiCharAttribs const& atts) const;
+  ApiCharAttribs operator/ (double const& value) const;
+
+  ApiCharAttribs& operator= (double const& value);
 };
 
 /* ---------------------------------------------------------------- */
@@ -141,6 +160,21 @@ class ApiCharSheet : public ApiBase
 };
 
 /* ---------------------------------------------------------------- */
+
+inline
+ApiCharAttribs::ApiCharAttribs (void)
+{
+}
+
+inline
+ApiCharAttribs::ApiCharAttribs (double value)
+{
+  this->intl = value;
+  this->mem = value;
+  this->cha = value;
+  this->per = value;
+  this->wil = value;
+}
 
 inline
 ApiCharSheet::ApiCharSheet (void) : valid(false)

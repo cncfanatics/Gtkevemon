@@ -61,6 +61,7 @@ class GuiPlanAttribOpt : public WinBase
     Gtk::RadioButton rb_whole_plan;
     Gtk::RadioButton rb_partial_plan;
     Gtk::ComboBoxText skill_selection;
+    Gtk::CheckButton consider_learning_cb;
 
     Gtk::Label base_cha_label;
     Gtk::Label base_intl_label;
@@ -90,6 +91,7 @@ class GuiPlanAttribOpt : public WinBase
     Gtk::Widget* create_breakdown_page (void);
 
     void on_calculate_clicked (void);
+    void set_selection_sensitivity (bool sensitive);
     void optimize_plan (void);
 
   public:

@@ -19,11 +19,6 @@
 
 GtkSkillList::GtkSkillList (void)
 {
-  ApiSkillTreePtr tree = ApiSkillTree::request();
-
-  //this->append_skill(tree->get_skill_for_id(3369), 3);
-  //this->append_skill(tree->get_skill_for_id(3369), 4);
-  //this->append_skill(tree->get_skill_for_id(3369), 5);
 }
 
 /* ---------------------------------------------------------------- */
@@ -183,12 +178,11 @@ GtkSkillList::calc_details (ApiCharAttribs& attribs, int learning_level,
 
     /* SP per second and per hour. */
     unsigned int spph;
-    double spps;
     if (active && use_active_spph)
       spph = this->training->get_current_spph();
     else
       spph = this->charsheet->get_spph_for_skill(skill, attribs);
-    spps = spph / 3600.0;
+    double spps = spph / 3600.0;
 
     /* Start SP, dest SP and current SP. */
     int ssp = this->charsheet->calc_start_sp(info.plan_level - 1, skill->rank);
@@ -523,7 +517,7 @@ GtkTrainingPlan::GtkTrainingPlan (void)
   //this->clean_plan_but.set_label("Clean up");
 
   /* Setup treeview. */
-  //this->treeview.get_selection()->set_mode(Gtk::SELECTION_MULIPLE);
+  //this->treeview.get_selection()->set_mode(Gtk::SELECTION_EXTENDED);
   this->treeview.set_headers_visible(true);
   this->treeview.set_rules_hint(true);
   this->treeview.set_reorderable(true);
@@ -807,8 +801,12 @@ GtkTrainingPlan::update_plan (bool rebuild)
   if (this->skills.empty())
     this->total_time.set_text("Skill plan is empty.");
   else
+  {
     this->total_time.set_text(EveTime::get_string_for_timediff
-        (this->skills.back().train_duration, false));
+        (this->skills.back().train_duration, false)
+        + "  (" + Helpers::get_string_from_int(this->skills.size())
+        + " skills)");
+  }
 }
 
 /* ---------------------------------------------------------------- */
@@ -1360,78 +1358,4 @@ GtkTrainingPlan::on_optimize_att ()
   GuiPlanAttribOpt* optimizer_dialog = new GuiPlanAttribOpt();
   optimizer_dialog->set_transient_for(*((Gtk::Window*)(this->get_toplevel())));
   optimizer_dialog->set_plan(this->skills);
-
-#if 0
-  Gtk::MessageDialog dialog(*toplevel, "Optimize whole plan?",
-      false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_OK_CANCEL);
-  dialog.set_secondary_text("Please select whether you want to optimize the "
-      "whole skill plan or just a part of it.");
-  dialog.set_title("Optimize plan - GtkEveMon");
-  dialog.set_default_response(Gtk::RESPONSE_OK);
-
-  /* Create widgets to select between optimizing the whole and a part of
-   * the plan. */
-  Gtk::RadioButtonGroup rbg;
-  Gtk::RadioButton* rb_whole = MK_RADIO("Optimize whole plan");
-  Gtk::RadioButton* rb_part = MK_RADIO("Optimize plan starting with skill");
-  rb_whole->set_group(rbg);
-  rb_part->set_group(rbg);
-
-  /* Create a combobox and fill it with all skills of the current plan. */
-  Gtk::ComboBoxText skill_selection;
-  for (unsigned int i = 0; i < this->skills.size(); i++)
-  {
-    GtkSkillInfo& info = (this->skills)[i];
-    ApiSkill const* skill = info.skill;
-    Glib::ustring skillname = skill->name;
-    skillname += " " + Helpers::get_roman_from_int(info.plan_level);
-    skill_selection.append_text(skillname);
-  }
-  skill_selection.set_active(0);
-  skill_selection.set_sensitive(false);
-
-  /* Create a table and add the widgets to it. */
-  Gtk::Table* dialog_tbl = MK_TABLE(3, 1);
-  dialog_tbl->attach(*rb_whole, 1, 2, 0, 1, Gtk::EXPAND | Gtk::FILL);
-  dialog_tbl->attach(*rb_part, 1, 2, 1, 2, Gtk::EXPAND | Gtk::FILL);
-  dialog_tbl->attach(skill_selection, 1, 2, 2, 3, Gtk::EXPAND | Gtk::FILL);
-
-  /* Add signal handlers to the radio buttons. */
-  rb_part->signal_clicked().connect(sigc::bind<bool>(
-      sigc::mem_fun(skill_selection, &Gtk::ComboBox::set_sensitive), true));
-  rb_whole->signal_clicked().connect(sigc::bind<bool>(
-      sigc::mem_fun(skill_selection, &Gtk::ComboBox::set_sensitive), false));
-
-  /* Add the table to the dialog and run it. */
-  Gtk::VBox* dialog_box = dialog.get_vbox();
-  dialog_box->pack_start(*dialog_tbl, false, false, 0);
-  dialog_box->show_all();
-  int ret = dialog.run();
-  dialog.hide();
-  if (ret != Gtk::RESPONSE_OK)
-    return;
-
-  /* Copy the current skill list to be able to remove a few entries in case
-   * the user wants to optimize only a part of the plan. */
-  GtkSkillList list_to_optimize = this->skills;
-
-  /* If the user wants to optimize only a part of the plan remove the entries
-   * that are not of interest. */
-  if (rb_part->get_active())
-  {
-    int startAt = skill_selection.get_active_row_number();
-    if (startAt > 0)
-    {
-      list_to_optimize.erase(list_to_optimize.begin(),
-          list_to_optimize.begin() + startAt);
-      list_to_optimize.calc_details();
-    }
-  }
-
-  /* Create an optimizer dialog and optimize the plan. */
-  GuiPlanAttribOpt* optimizer_dialog = new GuiPlanAttribOpt();
-  optimizer_dialog->set_transient_for(*((Gtk::Window*)(this->get_toplevel())));
-  optimizer_dialog->set_plan(this->skills);
-  optimizer_dialog->optimize_plan();
-#endif
 }

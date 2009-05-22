@@ -18,12 +18,7 @@ ApiCharSheet::set_api_data (EveApiData const& data)
   this->ApiBase::set_api_data(data);
 
   /* Reset values. */
-  this->implant.intl = 0;
-  this->implant.mem = 0;
-  this->implant.cha = 0;
-  this->implant.per = 0;
-  this->implant.wil = 0;
-
+  this->implant = 0.0;
   this->total_sp = 0;
   for (int i = 0; i < 6; ++i)
     this->skills_at[i] = 0;
@@ -39,22 +34,8 @@ ApiCharSheet::set_api_data (EveApiData const& data)
   int learning = this->get_learning_skill_level();
   double factor = (double)learning * 0.02f;
 
-  this->skill.intl += (this->base.intl
-      + this->skill.intl + this->implant.intl) * factor;
-  this->skill.per += (this->base.per
-      + this->skill.per + this->implant.per) * factor;
-  this->skill.cha += (this->base.cha
-      + this->skill.cha + this->implant.cha) * factor;
-  this->skill.mem += (this->base.mem
-      + this->skill.mem + this->implant.mem) * factor;
-  this->skill.wil += (this->base.wil
-      + this->skill.wil + this->implant.wil) * factor;
-
-  this->total.intl = this->base.intl + this->implant.intl + this->skill.intl;
-  this->total.mem = this->base.mem + this->implant.mem + this->skill.mem;
-  this->total.cha = this->base.cha + this->implant.cha + this->skill.cha;
-  this->total.per = this->base.per + this->implant.per + this->skill.per;
-  this->total.wil = this->base.wil + this->implant.wil + this->skill.wil;
+  this->skill += (this->base + this->skill + this->implant) * factor;
+  this->total = this->base + this->implant + this->skill;
 
   /* Calculate start SP, destination SP and completed. */
   ApiSkillTreePtr stree = ApiSkillTree::request();
@@ -539,4 +520,155 @@ ApiCharSheet::debug_dump (void)
     std::cout << "  " << /*this->certs[i].details->name*/ "Unnamed yet"
         << " (" << this->certs[i].id << ")" << std::endl;
   }
+}
+
+/* ---------------------------------------------------------------- */
+
+ApiCharAttribs
+ApiCharAttribs::operator+ (ApiCharAttribs const& atts) const
+{
+  ApiCharAttribs result;
+  result.cha = this->cha + atts.cha;
+  result.intl = this->intl + atts.intl;
+  result.mem = this->mem + atts.mem;
+  result.per = this->per + atts.per;
+  result.wil = this->wil + atts.wil;
+  return result;
+}
+
+/* ---------------------------------------------------------------- */
+
+ApiCharAttribs
+ApiCharAttribs::operator+ (double const& value) const
+{
+  ApiCharAttribs result;
+  result.cha = this->cha + value;
+  result.intl = this->intl + value;
+  result.mem = this->mem + value;
+  result.per = this->per + value;
+  result.wil = this->wil + value;
+  return result;
+}
+
+/* ---------------------------------------------------------------- */
+
+ApiCharAttribs&
+ApiCharAttribs::operator+= (ApiCharAttribs const& atts)
+{
+  this->cha += atts.cha;
+  this->intl += atts.intl;
+  this->mem += atts.mem;
+  this->per += atts.per;
+  this->wil += atts.wil;
+  return *this;
+}
+
+/* ---------------------------------------------------------------- */
+
+ApiCharAttribs
+ApiCharAttribs::operator- (ApiCharAttribs const& atts) const
+{
+  ApiCharAttribs result;
+  result.cha = this->cha - atts.cha;
+  result.intl = this->intl - atts.intl;
+  result.mem = this->mem - atts.mem;
+  result.per = this->per - atts.per;
+  result.wil = this->wil - atts.wil;
+  return result;
+}
+
+/* ---------------------------------------------------------------- */
+
+ApiCharAttribs
+ApiCharAttribs::operator- (double const& value) const
+{
+  ApiCharAttribs result;
+  result.cha = this->cha - value;
+  result.intl = this->intl - value;
+  result.mem = this->mem - value;
+  result.per = this->per - value;
+  result.wil = this->wil - value;
+  return result;
+}
+
+/* ---------------------------------------------------------------- */
+
+ApiCharAttribs&
+ApiCharAttribs::operator-= (ApiCharAttribs const& atts)
+{
+  this->cha -= atts.cha;
+  this->intl -= atts.intl;
+  this->mem -= atts.mem;
+  this->per -= atts.per;
+  this->wil -= atts.wil;
+  return *this;
+}
+
+/* ---------------------------------------------------------------- */
+
+ApiCharAttribs
+ApiCharAttribs::operator* (ApiCharAttribs const& atts) const
+{
+  ApiCharAttribs result;
+  result.cha = this->cha * atts.cha;
+  result.intl = this->intl * atts.intl;
+  result.mem = this->mem * atts.mem;
+  result.per = this->per * atts.per;
+  result.wil = this->wil * atts.wil;
+  return result;
+}
+
+/* ---------------------------------------------------------------- */
+
+ApiCharAttribs
+ApiCharAttribs::operator* (double const& value) const
+{
+  ApiCharAttribs result;
+  result.cha = this->cha * value;
+  result.intl = this->intl * value;
+  result.mem = this->mem * value;
+  result.per = this->per * value;
+  result.wil = this->wil * value;
+  return result;
+}
+
+/* ---------------------------------------------------------------- */
+
+ApiCharAttribs
+ApiCharAttribs::operator/ (ApiCharAttribs const& atts) const
+{
+  ApiCharAttribs result;
+  result.cha = this->cha / atts.cha;
+  result.intl = this->intl / atts.intl;
+  result.mem = this->mem / atts.mem;
+  result.per = this->per / atts.per;
+  result.wil = this->wil / atts.wil;
+  return result;
+}
+
+/* ---------------------------------------------------------------- */
+
+ApiCharAttribs
+ApiCharAttribs::operator/ (double const& value) const
+{
+  ApiCharAttribs result;
+  result.cha = this->cha / value;
+  result.intl = this->intl / value;
+  result.mem = this->mem / value;
+  result.per = this->per / value;
+  result.wil = this->wil / value;
+  return result;
+}
+
+/* ---------------------------------------------------------------- */
+
+ApiCharAttribs&
+ApiCharAttribs::operator= (double const& value)
+{
+  this->cha = value;
+  this->intl = value;
+  this->mem = value;
+  this->per = value;
+  this->wil = value;
+  return *this;
 }
