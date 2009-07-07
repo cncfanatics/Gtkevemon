@@ -33,12 +33,12 @@ class XmlDocument
   public:
     static XmlDocumentPtr create (void);
     static XmlDocumentPtr create (std::string const& data);
-    static XmlDocumentPtr create (char const* data, size_t size);
+    static XmlDocumentPtr create (char const* data, std::size_t size);
     static XmlDocumentPtr create_from_file (std::string const& filename);
     ~XmlDocument (void);
 
     void parse (std::string const& data);
-    void parse (char const* data, size_t size);
+    void parse (char const* data, std::size_t size);
     void parse_from_file (std::string const& filename);
     xmlNodePtr get_root_element (void);
 };
@@ -86,7 +86,7 @@ XmlDocument::create (std::string const& data)
 }
 
 inline XmlDocumentPtr
-XmlDocument::create (char const* data, size_t size)
+XmlDocument::create (char const* data, std::size_t size)
 {
   XmlDocumentPtr doc = XmlDocumentPtr(new XmlDocument);
   doc->parse(data, size);

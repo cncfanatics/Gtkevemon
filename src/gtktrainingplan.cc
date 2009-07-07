@@ -193,7 +193,8 @@ GtkSkillList::calc_details (ApiCharAttribs& attribs, int learning_level,
     if (active)
     {
       double live_spps = this->training->get_current_spph() / 3600.0;
-      csp = dsp - (int)((this->training->end_time_t - now_eve) * live_spps);
+      time_t diff_time = this->training->end_time_t - now_eve;
+      csp = dsp - (int)((double)diff_time * live_spps);
     }
     else if (cskill != 0)
     {
@@ -406,6 +407,7 @@ GtkSkillList::apply_attributes (ApiSkill const* skill,
 
 GtkTreeModelColumns::GtkTreeModelColumns (void)
 {
+  this->add(this->skill);
   this->add(this->skill_index);
   this->add(this->objective);
   this->add(this->skill_icon);
@@ -766,6 +768,7 @@ GtkTrainingPlan::update_plan (bool rebuild)
       attribs += " / ";
       attribs += ApiSkillTree::get_attrib_short_name(skill->secondary);
 
+      (*iter)[this->cols.skill] = skill;
       (*iter)[this->cols.skill_index] = i;
       (*iter)[this->cols.skill_name] = skillname;
       (*iter)[this->cols.objective] = info.is_objective;
@@ -804,7 +807,7 @@ GtkTrainingPlan::update_plan (bool rebuild)
   {
     this->total_time.set_text(EveTime::get_string_for_timediff
         (this->skills.back().train_duration, false)
-        + "  (" + Helpers::get_string_from_int(this->skills.size())
+        + "  (" + Helpers::get_string_from_sizet(this->skills.size())
         + " skills)");
   }
 }
@@ -1094,28 +1097,11 @@ GtkTrainingPlan::on_update_skill_time (void)
 /* ---------------------------------------------------------------- */
 
 bool
-GtkTrainingPlan::on_query_skillview_tooltip (int x, int y, bool key,
-    Glib::RefPtr<Gtk::Tooltip> const& tooltip)
+GtkTrainingPlan::on_query_skillview_tooltip (int x, int y,
+    bool /* key */, Glib::RefPtr<Gtk::Tooltip> const& tooltip)
 {
-  key = false;
-
-  Gtk::TreeModel::Path path;
-  Gtk::TreeViewDropPosition pos;
-
-  bool exists = this->treeview.get_dest_row_at_pos(x, y, path, pos);
-
-  if (!exists)
-    return false;
-
-  Gtk::TreeIter iter = this->liststore->get_iter(path);
-  unsigned int index = (*iter)[this->cols.skill_index];
-  ApiSkill const* skill = this->skills[index].skill;
-
-  if (skill == 0)
-    return false;
-
-  GtkHelpers::create_tooltip(tooltip, skill);
-  return true;
+  return GtkHelpers::create_tooltip_from_view(x, y, tooltip,
+      this->treeview, this->liststore, this->cols.skill);
 }
 
 /* ---------------------------------------------------------------- */

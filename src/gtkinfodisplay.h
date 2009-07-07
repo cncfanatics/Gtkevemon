@@ -80,7 +80,7 @@ class GuiInfoDisplayLog : public WinBase
 {
   private:
     std::vector<InfoItem> log;
-    unsigned int current_item;
+    std::size_t current_item;
     Gtk::Button prev_but;
     Gtk::Button next_but;
     Gtk::Label message;

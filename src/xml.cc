@@ -11,7 +11,7 @@ XmlDocument::parse (std::string const& data)
 {
   xmlFreeDoc(this->doc);
 
-  this->doc = xmlParseMemory(data.c_str(), data.size());
+  this->doc = xmlParseMemory(data.c_str(), (int)data.size());
   if (this->doc == 0)
     throw Exception("Document not parsed successfully!");
 }
@@ -19,11 +19,11 @@ XmlDocument::parse (std::string const& data)
 /* ---------------------------------------------------------------- */
 
 void
-XmlDocument::parse (char const* data, size_t size)
+XmlDocument::parse (char const* data, std::size_t size)
 {
   xmlFreeDoc(this->doc);
 
-  this->doc = xmlParseMemory(data, size);
+  this->doc = xmlParseMemory(data, (int)size);
   if (this->doc == 0)
     throw Exception("Document not parsed successfully!");
 }

@@ -110,7 +110,7 @@ GuiCharExport::fill_textbuffer (ApiCharSheetPtr charsheet)
   this->append_buf("Total Skillpoints: "
       + Helpers::get_dotted_str_from_uint(grandtotal) + "\n");
   this->append_buf("Total Number of Skills: "
-      + Helpers::get_string_from_uint(charsheet->skills.size()) + "\n\n");
+      + Helpers::get_string_from_sizet(charsheet->skills.size()) + "\n\n");
 
   for (unsigned int i = 0; i < skills_at.size(); ++i)
     this->append_buf("Skills at Level " + Helpers::get_string_from_int(i)

@@ -56,6 +56,43 @@ GtkHelpers::create_tooltip (Glib::RefPtr<Gtk::Tooltip> const& tooltip,
 
 /* ---------------------------------------------------------------- */
 
+bool
+GtkHelpers::create_tooltip_from_view (int x, int y,
+    Glib::RefPtr<Gtk::Tooltip> tip, Gtk::TreeView& view,
+    Glib::RefPtr<Gtk::TreeModel> store,
+    Gtk::TreeModelColumn<ApiElement const*> col)
+{
+  Gtk::TreeModel::Path path;
+  Gtk::TreeViewDropPosition pos;
+
+  bool exists = view.get_dest_row_at_pos(x, y, path, pos);
+
+  if (!exists)
+    return false;
+
+  Gtk::TreeIter iter = store->get_iter(path);
+  ApiElement const* elem = (*iter)[col];
+
+  if (elem == 0)
+    return false;
+
+  switch (elem->get_type())
+  {
+    case API_ELEM_SKILL:
+      GtkHelpers::create_tooltip(tip, (ApiSkill const*)elem);
+      break;
+    case API_ELEM_CERT:
+      GtkHelpers::create_tooltip(tip, (ApiCert const*)elem);
+      break;
+    default:
+      return false;
+  }
+
+  return true;
+}
+
+/* ---------------------------------------------------------------- */
+
 std::string
 GtkHelpers::locale_to_utf8 (Glib::ustring const& opsys_string)
 {

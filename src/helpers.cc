@@ -25,6 +25,16 @@ Helpers::get_string_from_uint (unsigned int value)
 /* ---------------------------------------------------------------- */
 
 std::string
+Helpers::get_string_from_sizet (std::size_t value)
+{
+  std::stringstream ss;
+  ss << value;
+  return ss.str();
+}
+
+/* ---------------------------------------------------------------- */
+
+std::string
 Helpers::get_string_from_float (float value, int digits)
 {
   std::stringstream ss;
@@ -129,7 +139,7 @@ Helpers::get_dotted_str_from_str (std::string const& str)
   std::string ret;
 
   int cnt = 0;
-  for (int i = str.size() - 1; i >= 0; --i)
+  for (int i = (int)str.size() - 1; i >= 0; --i)
   {
     if (cnt % 3 == 0 && cnt > 0)
       ret.insert(ret.begin(), 1, ',');
@@ -153,6 +163,17 @@ Helpers::get_dotted_isk (std::string const& isk_string)
   tmp += isk_string.substr(pos);
 
   return tmp;
+}
+
+/* ---------------------------------------------------------------- */
+
+std::string
+Helpers::trunc_string (std::string const& str, int len)
+{
+  if ((int)str.size() > len + 3)
+    return str.substr(0, 22).append("...");
+
+  return str;
 }
 
 /* ---------------------------------------------------------------- */

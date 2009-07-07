@@ -49,6 +49,7 @@ char const* default_config =
     "  minimize_on_close = false\n"
     "  startup_servercheck = true\n"
     "  tray_usage = never\n"
+    "  trunc_corpname = false\n"
     "  verbose_wintitle = true\n"
     "[skillqueue]\n"
     "  columns_format = +0 +1 -2 -3 -4 +5 -6 +7\n"

@@ -23,8 +23,10 @@ class Helpers
   public:
     static std::string get_string_from_int (int value);
     static std::string get_string_from_uint (unsigned int value);
+    static std::string get_string_from_sizet (std::size_t value);
     static std::string get_string_from_float (float value, int digits);
     static std::string get_string_from_double (double value, int digits);
+
     static int get_int_from_string (std::string const& value);
     static double get_double_from_string (std::string const& value);
     static float get_float_from_string (std::string const& value);
@@ -34,6 +36,8 @@ class Helpers
     static std::string get_dotted_str_from_uint (unsigned int value);
     static std::string get_dotted_str_from_str (std::string const& str);
     static std::string get_dotted_isk (std::string const& isk_string);
+
+    static std::string trunc_string (std::string const& str, int len);
 
     static StringVector split_string (std::string const& str, char delim);
     static StringVector tokenize_cmd (std::string const& str);

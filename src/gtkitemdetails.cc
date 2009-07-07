@@ -69,8 +69,8 @@ GtkItemHistory::update_sensitive (void)
 void
 GtkItemHistory::update_pos_label (void)
 {
-  this->position_label.set_text(Helpers::get_string_from_uint
-      (this->history_pos + 1) + "/" + Helpers::get_string_from_uint
+  this->position_label.set_text(Helpers::get_string_from_sizet
+      (this->history_pos + 1) + "/" + Helpers::get_string_from_sizet
       (this->history.size()));
 }
 

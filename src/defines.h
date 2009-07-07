@@ -14,7 +14,7 @@
 #define DEFINES_HEADER
 
 /* The version string used in the application. */
-#define GTKEVEMON_VERSION_STR "Revision 1.7-101"
+#define GTKEVEMON_VERSION_STR "Revision 1.7-102"
 
 /* General compile-time configuration. */
 #define LAUNCHER_CMD_AMOUNT 5

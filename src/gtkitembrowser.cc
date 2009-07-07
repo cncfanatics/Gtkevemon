@@ -114,38 +114,11 @@ ItemBrowserBase::on_view_button_pressed (GdkEventButton* event)
 /* ---------------------------------------------------------------- */
 
 bool
-ItemBrowserBase::on_query_element_tooltip (int x, int y, bool key,
-    Glib::RefPtr<Gtk::Tooltip> const& tooltip)
+ItemBrowserBase::on_query_element_tooltip (int x, int y,
+    bool /* key */, Glib::RefPtr<Gtk::Tooltip> const& tooltip)
 {
-  key = false;
-
-  Gtk::TreeModel::Path path;
-  Gtk::TreeViewDropPosition pos;
-
-  bool exists = this->view.get_dest_row_at_pos(x, y, path, pos);
-
-  if (!exists)
-    return false;
-
-  Gtk::TreeIter iter = this->store->get_iter(path);
-  ApiElement const* elem = (*iter)[this->cols.data];
-
-  if (elem == 0)
-    return false;
-
-  switch (elem->get_type())
-  {
-    case API_ELEM_SKILL:
-      GtkHelpers::create_tooltip(tooltip, (ApiSkill const*)elem);
-      break;
-    case API_ELEM_CERT:
-      GtkHelpers::create_tooltip(tooltip, (ApiCert const*)elem);
-      break;
-    default:
-      return false;
-  }
-
-  return true;
+  return GtkHelpers::create_tooltip_from_view(x, y, tooltip,
+      this->view, this->store, this->cols.data);
 }
 
 /* ================================================================ */

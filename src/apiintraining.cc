@@ -124,8 +124,8 @@ ApiInTraining::get_current_level_sp (void)
 unsigned int
 ApiInTraining::get_current_spph (void)
 {
-  double total_sp = this->dest_sp - this->start_sp;
-  double total_time = this->end_time_t - this->start_time_t;
+  double total_sp = (double)(this->dest_sp - this->start_sp);
+  double total_time = (double)(this->end_time_t - this->start_time_t);
 
   return (unsigned int)(total_sp * 3600.0 / total_time);
 }

@@ -148,7 +148,7 @@ XmlTrainingPlanExport::write_to_file (std::string const& filename)
     if (out == 0)
       throw Exception("Error writing to file: "
           + std::string(::strerror(errno))); // FIXME Use errno?
-    ::gzwrite(out, xmldata_str.c_str(), xmldata_str.size());
+    ::gzwrite(out, xmldata_str.c_str(), (unsigned int)xmldata_str.size());
     ::gzclose(out);
   }
   else if (extension == ".xml")

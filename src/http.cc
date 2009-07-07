@@ -293,8 +293,8 @@ Http::read_http_reply (Net::TCPSocket& sock)
   else if (this->bytes_total == 0)
   {
     /* The Server did not specify a content-length header. */
-    unsigned int size = 512;
-    unsigned int pos = 0;
+    std::size_t size = 512;
+    std::size_t pos = 0;
 
     while (true)
     {
@@ -358,7 +358,7 @@ Http::get_uint_from_hex (std::string const& str)
   unsigned int v = 0;
   unsigned int mult = 1;
 
-  for (int i = str.size() - 1; i >= 0; --i)
+  for (int i = (int)str.size() - 1; i >= 0; --i)
   {
     switch (str[i])
     {

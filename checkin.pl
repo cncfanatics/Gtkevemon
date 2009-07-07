@@ -9,10 +9,10 @@ close SVN;
 my $current_rev;
 foreach my $line (@svn_output)
 {
-  if ($line =~ /Revision /)
+  if ($line =~ /revision /)
   {
     $current_rev = $line;
-    $current_rev =~ s/^Revision (\d+)\.$/$1/;
+    $current_rev =~ s/^.* revision (\d+)\.$/$1/;
     chomp($current_rev);
   }
 }

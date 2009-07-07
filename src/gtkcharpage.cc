@@ -310,18 +310,30 @@ GtkCharPage::update_charsheet_details (void)
   }
   else
   {
+    /* Load some configuration. */
+    ConfValuePtr trunc_corpname = Config::conf.get_value
+        ("settings.trunc_corpname");
+
     /* Set character labels. */
     this->char_name_label.set_text("<b>" + this->sheet->name + "</b>");
     this->char_name_label.set_use_markup(true);
     this->char_info_label.set_text(this->sheet->gender + ", "
         + this->sheet->race + ", " + this->sheet->bloodline);
-    this->corp_label.set_text(this->sheet->corp);
     this->balance_label.set_text(Helpers::get_dotted_isk
         (this->sheet->balance) + " ISK");
 
+    if (trunc_corpname->get_bool())
+    {
+      this->corp_label.set_text(Helpers::trunc_string(this->sheet->corp, 25));
+      this->corp_label.set_tooltip_text(this->sheet->corp);
+    }
+    else
+      this->corp_label.set_text(this->sheet->corp);
+
+
     this->skill_points_label.set_text(Helpers::get_dotted_str_from_uint
         (this->sheet->total_sp));
-    this->known_skills_label.set_text(Helpers::get_string_from_uint
+    this->known_skills_label.set_text(Helpers::get_string_from_sizet
         (this->sheet->skills.size()) + " known skills ("
         + Helpers::get_string_from_uint(this->sheet->skills_at[5])
         + " at V)");
@@ -1176,11 +1188,11 @@ GtkCharPage::calc_live_values (double& level_sp, double& total_sp, double& frac)
   double spps = this->skill_info.sp_per_hour / 3600.0;
 
   /* Assign values. Do sanity checks, e.g. if SP/s is wrong. */
-  total_sp = skill->points_dest - diff * spps;
+  total_sp = (double)(skill->points_dest - diff) * spps;
   //if (total_sp < 0.0) total_sp = 0.0;
-  level_sp = total_sp - skill->points_start;
+  level_sp = total_sp - (double)skill->points_start;
   //if (level_sp < 0.0) level_sp = 0.0;
-  frac = level_sp / (skill->points_dest - skill->points_start);
+  frac = level_sp / (double)(skill->points_dest - skill->points_start);
 
   #if 0
   std::cout << "Live SP debugging for " << this->sheet->name << std::endl;

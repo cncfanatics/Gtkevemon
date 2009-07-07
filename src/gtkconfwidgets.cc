@@ -94,7 +94,7 @@ GtkConfComboBox::append_conf_row (std::string const& text,
   this->append_text(text);
 
   if (value == this->value->get_string())
-    this->set_active(this->values.size() - 1);
+    this->set_active((int)this->values.size() - 1);
 }
 
 /* ================================================================ */

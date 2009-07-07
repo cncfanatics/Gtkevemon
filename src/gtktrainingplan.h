@@ -39,6 +39,8 @@ enum GtkSkillIcon
   SKILL_STATUS_MISSING_DEPS
 };
 
+/* ---------------------------------------------------------------- */
+
 struct GtkSkillInfo
 {
   ApiSkill const* skill;
@@ -55,6 +57,8 @@ struct GtkSkillInfo
   int spph;
   GtkSkillIcon skill_icon;
 };
+
+/* ---------------------------------------------------------------- */
 
 class GtkSkillList : public std::vector<GtkSkillInfo>
 {
@@ -104,6 +108,7 @@ class GtkSkillList : public std::vector<GtkSkillInfo>
 class GtkTreeModelColumns : public Gtk::TreeModel::ColumnRecord
 {
   public:
+    Gtk::TreeModelColumn<ApiElement const*> skill;
     Gtk::TreeModelColumn<unsigned int> skill_index;
     Gtk::TreeModelColumn<bool> objective;
     Gtk::TreeModelColumn<Glib::RefPtr<Gdk::Pixbuf> > skill_icon;

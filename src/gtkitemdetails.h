@@ -37,7 +37,7 @@ class GtkItemHistory : public Gtk::HBox
 {
   private:
     std::vector<ApiElement const*> history;
-    unsigned int history_pos;
+    std::size_t history_pos;
     SignalApiElementSelected sig_elem_changed;
 
     Gtk::Button back_but;
