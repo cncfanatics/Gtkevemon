@@ -1188,7 +1188,7 @@ GtkCharPage::calc_live_values (double& level_sp, double& total_sp, double& frac)
   double spps = this->skill_info.sp_per_hour / 3600.0;
 
   /* Assign values. Do sanity checks, e.g. if SP/s is wrong. */
-  total_sp = (double)(skill->points_dest - diff) * spps;
+  total_sp = (double)skill->points_dest - (double)diff * spps;
   //if (total_sp < 0.0) total_sp = 0.0;
   level_sp = total_sp - (double)skill->points_start;
   //if (level_sp < 0.0) level_sp = 0.0;
@@ -1197,18 +1197,16 @@ GtkCharPage::calc_live_values (double& level_sp, double& total_sp, double& frac)
   #if 0
   std::cout << "Live SP debugging for " << this->sheet->name << std::endl;
   std::cout << "  EVE time: " << evetime << ", finish time: " << finish
-      << ", diff: " << diff << ", diff * SP/s: " << (int)(diff * spps)
+      << ", diff: " << diff << ", diff * SP/s: " << (double)diff * spps
       << std::endl
+
       << "  Start SP: " << skill->points_start << ", Dest SP: "
       << skill->points_dest << ", SP/s: " << spps << std::endl
 
-      << "  1) Total skill SP: " << (int)total_sp
-      << ", level skill SP: " << (int)level_sp
-      << ", SP/h: " << (int)(spps * 3600.0)
-      << std::endl
-      << "  2) Total skill SP: " << this->training->get_current_total_sp()
-      << ", level skill SP: " << this->training->get_current_level_sp()
-      << ", SP/h: " << this->training->get_current_spph() << std::endl;
+      << "  1) Total skill SP: " << total_sp
+      << ", level skill SP: " << level_sp
+      << ", SP/h: " << spps * 3600.0
+      << std::endl;
   #endif
 
   return true;
